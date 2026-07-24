@@ -413,7 +413,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
     }
   }
 
-  const startAudio = async (showFallback = true, mutedBridge = false) => {
+  const startAudio = async (showFallback = true) => {
     if (audioSegmentRef.current === 'waiting') {
       await startMainMusic()
       return
@@ -427,11 +427,17 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
     if (audioPlayingRef.current) {
       const audio = audioRef.current
       if (audio) {
-        audio.muted = false
-        audio.volume = INTRO_AUDIO_VOLUME
-        setAudioStarted(true)
-        setAutoplayBlocked(false)
-        scheduleChoiDrum()
+        try {
+          audio.muted = false
+          audio.volume = INTRO_AUDIO_VOLUME
+          await audio.play()
+          setAudioStarted(true)
+          setAutoplayBlocked(false)
+          scheduleChoiDrum()
+        } catch {
+          setAudioStarted(false)
+          if (showFallback) setAutoplayBlocked(true)
+        }
       }
       return
     }
@@ -466,22 +472,13 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
       audio.currentTime = getIntroAudioStart()
       audioMusicFadeInRef.current = false
       audio.volume = INTRO_AUDIO_VOLUME
-      audio.muted = mutedBridge
+      audio.muted = false
       audioSegmentRef.current = 'drums'
       audioPlayingRef.current = true
       await audio.play()
       setAudioStarted(true)
-      setAutoplayBlocked(mutedBridge)
+      setAutoplayBlocked(false)
       scheduleChoiDrum()
-
-      if (mutedBridge) {
-        window.setTimeout(() => {
-          if (!audioRef.current || audioRef.current !== audio) return
-
-          audio.muted = false
-          audio.volume = INTRO_AUDIO_VOLUME
-        }, 180)
-      }
 
       watchAudioWindow(audio)
     } catch {
@@ -499,16 +496,40 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
   }, [])
 
   useEffect(() => {
+    const tryAutoplay = () => {
+      if (!audioPlayingRef.current) void startAudio(false)
+    }
+
+    const unlockAudio = () => {
+      void startAudio(true)
+    }
+
+    const retryWhenVisible = () => {
+      if (document.visibilityState === 'visible' && !audioPlayingRef.current) {
+        void startAudio(false)
+      }
+    }
+
     const autoPlayTimer = window.setTimeout(() => {
-      void startAudio(false).then(() => {
-        if (!audioPlayingRef.current) {
-          void startAudio(true, true)
-        }
-      })
+      tryAutoplay()
     }, AUDIO_AUTOPLAY_DELAY_MS)
+
+    tryAutoplay()
+    window.addEventListener('focus', tryAutoplay)
+    window.addEventListener('pageshow', tryAutoplay)
+    window.addEventListener('pointerdown', unlockAudio, { capture: true })
+    window.addEventListener('touchstart', unlockAudio, { capture: true, passive: true })
+    window.addEventListener('keydown', unlockAudio, { capture: true })
+    document.addEventListener('visibilitychange', retryWhenVisible)
 
     return () => {
       window.clearTimeout(autoPlayTimer)
+      window.removeEventListener('focus', tryAutoplay)
+      window.removeEventListener('pageshow', tryAutoplay)
+      window.removeEventListener('pointerdown', unlockAudio, { capture: true })
+      window.removeEventListener('touchstart', unlockAudio, { capture: true })
+      window.removeEventListener('keydown', unlockAudio, { capture: true })
+      document.removeEventListener('visibilitychange', retryWhenVisible)
 
       if (audioStopTimerRef.current) {
         window.clearTimeout(audioStopTimerRef.current)
@@ -641,6 +662,9 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
         src={INTRO_AUDIO_SRC}
         preload="auto"
         autoPlay
+        onCanPlay={() => {
+          if (!audioPlayingRef.current) void startAudio(false)
+        }}
         onLoadedMetadata={(event) => {
           event.currentTarget.currentTime = getIntroAudioStart()
         }}
@@ -1157,7 +1181,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M4 9v6h4l5 5V4L8 9H4Zm12.5 3c0-1.6-.86-3-2.15-3.76v7.52A4.3 4.3 0 0 0 16.5 12Zm-2.15-7.4v2.06A6.4 6.4 0 0 1 18.5 12a6.4 6.4 0 0 1-4.15 6.02v2.06A8.35 8.35 0 0 0 20.5 12a8.35 8.35 0 0 0-6.15-7.4Z"/>
           </svg>
-          Bật câu hò
+          Chạm để nghe
         </button>
       )}
 
