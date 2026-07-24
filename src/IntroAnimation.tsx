@@ -227,7 +227,7 @@ const INTRO_AUDIO_END = 25
 const INTRO_AUDIO_VOLUME = 0.9
 const INTRO_AUDIO_FADE_IN = 1.05
 const INTRO_AUDIO_FADE_OUT = 2
-const AUDIO_AUTOPLAY_DELAY_MS = 120
+const AUDIO_AUTOPLAY_DELAY_MS = 0
 const AUDIO_HANDOFF_TOLERANCE_SEC = 1.1
 type AudioSegment = 'drums' | 'waiting' | 'music'
 
@@ -254,7 +254,9 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
   const drumTimerRef = useRef<number | null>(null)
   const drumPlayedRef = useRef(false)
   const [audioStarted, setAudioStarted] = useState(false)
-  const [autoplayBlocked, setAutoplayBlocked] = useState(false)
+  // Most browsers require a visitor gesture before audible playback.
+  // Show the sound control immediately while the autoplay attempt runs.
+  const [autoplayBlocked, setAutoplayBlocked] = useState(true)
 
   const getIntroAudioStart = () => {
     const elapsed = performance.now() - startedAtRef.current
@@ -446,30 +448,16 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
     if (!audio) return
 
     try {
-      if (audio.readyState < 1) {
-        await new Promise<void>((resolve, reject) => {
-          const cleanup = () => {
-            audio.removeEventListener('loadedmetadata', onLoaded)
-            audio.removeEventListener('error', onError)
-          }
-          const onLoaded = () => {
-            cleanup()
-            resolve()
-          }
-          const onError = () => {
-            cleanup()
-            reject(new Error('Intro audio failed to load'))
-          }
-          audio.addEventListener('loadedmetadata', onLoaded)
-          audio.addEventListener('error', onError)
-          audio.load()
-        })
-      }
-
       if (audioStopTimerRef.current) window.clearTimeout(audioStopTimerRef.current)
 
       audio.pause()
-      audio.currentTime = getIntroAudioStart()
+      // Call play() without awaiting metadata first. This preserves the first
+      // pointer/key action as a valid audio-unlock gesture on mobile browsers.
+      try {
+        audio.currentTime = getIntroAudioStart()
+      } catch {
+        // onLoadedMetadata below applies the synced position once it is known.
+      }
       audioMusicFadeInRef.current = false
       audio.volume = INTRO_AUDIO_VOLUME
       audio.muted = false
