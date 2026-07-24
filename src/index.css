@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-body: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+
+  --color-cream: #FFFFFF;
+  --color-cream-dark: #EAF6F3;
+  --color-cream-border: #006368;
+  --color-mint: #D7F0EA;
+  --color-teal: #EAF6F3;
+  --color-teal-dark: #006368;
+  --color-vermilion: #C44837;
+  --color-vermilion-dark: #7C2421;
+  --color-vermilion-light: #F29963;
+  --color-gold: #006368;
+  --color-gold-light: #F29963;
+  --color-gold-dark: #7C2421;
+  --color-brown: #006368;
+  --color-brown-light: #F29963;
+  --color-brown-muted: #D7F0EA;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #FFFFFF;
+  color: #006368;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #FFFFFF;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 99, 104, 0.45);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(242, 153, 99, 0.82);
+}
+
+/* Decorative Vietnamese lotus / border pattern via repeating gradient */
+.lotus-border {
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 12px,
+    rgba(0, 99, 104, 0.28) 12px,
+    rgba(0, 99, 104, 0.28) 13px
+  );
+}
+
+/* Subtle paper texture overlay */
+.paper-texture {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* Gold shimmer animation */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.gold-shimmer {
+  background: linear-gradient(90deg, #006368 0%, #F29963 38%, #006368 60%, #D7F0EA 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
+/* Audio wave animation */
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+
+.wave-bar {
+  animation: wave 1.2s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+/* Card hover lift */
+.card-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 42, 45, 0.28);
+}
+
+/* Traditional card frame */
+.bai-choi-card {
+  background: linear-gradient(160deg, #FFFFFF 0%, #F7FCFA 70%, #D7F0EA 100%);
+  border: 2px solid rgba(0, 99, 104, 0.78);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.bai-choi-card::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(0, 99, 104, 0.36);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* Section ornament divider */
+.ornament-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+.ornament-divider::before,
+.ornament-divider::after {
+  content: '';
+  flex: 1;
+  max-width: 80px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #006368);
+}
+.ornament-divider::after {
+  background: linear-gradient(90deg, #006368, transparent);
+}

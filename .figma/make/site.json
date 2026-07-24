@@ -1,0 +1,11 @@
+{
+  "title": "Bài Chòi",
+  "description": "Explore the vibrant heritage of Bai Choi through an interactive landing page featuring history, game rules, character insights, and multimedia content.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
