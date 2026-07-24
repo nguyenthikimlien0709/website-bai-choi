@@ -254,9 +254,8 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
   const drumTimerRef = useRef<number | null>(null)
   const drumPlayedRef = useRef(false)
   const [audioStarted, setAudioStarted] = useState(false)
-  // Most browsers require a visitor gesture before audible playback.
-  // Show the sound control immediately while the autoplay attempt runs.
-  const [autoplayBlocked, setAutoplayBlocked] = useState(true)
+  // Only show the fallback control after the browser actually rejects autoplay.
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false)
 
   const getIntroAudioStart = () => {
     const elapsed = performance.now() - startedAtRef.current
@@ -485,7 +484,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
 
   useEffect(() => {
     const tryAutoplay = () => {
-      if (!audioPlayingRef.current) void startAudio(false)
+      if (!audioPlayingRef.current) void startAudio(true)
     }
 
     const unlockAudio = () => {
@@ -494,7 +493,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
 
     const retryWhenVisible = () => {
       if (document.visibilityState === 'visible' && !audioPlayingRef.current) {
-        void startAudio(false)
+        void startAudio(true)
       }
     }
 
@@ -650,8 +649,18 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
         src={INTRO_AUDIO_SRC}
         preload="auto"
         autoPlay
+        onPlay={() => {
+          audioPlayingRef.current = true
+          setAudioStarted(true)
+          setAutoplayBlocked(false)
+        }}
+        onError={() => {
+          audioPlayingRef.current = false
+          setAudioStarted(false)
+          setAutoplayBlocked(true)
+        }}
         onCanPlay={() => {
-          if (!audioPlayingRef.current) void startAudio(false)
+          if (!audioPlayingRef.current) void startAudio(true)
         }}
         onLoadedMetadata={(event) => {
           event.currentTarget.currentTime = getIntroAudioStart()
