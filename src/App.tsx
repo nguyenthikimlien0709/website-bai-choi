@@ -1118,7 +1118,7 @@ export default function App() {
   useEffect(() => {
     if (!introShown || showContent) return
 
-    const fallbackTimer = window.setTimeout(handleIntroDone, 15000)
+    const fallbackTimer = window.setTimeout(handleIntroDone, 22000)
     return () => window.clearTimeout(fallbackTimer)
   }, [handleIntroDone, introShown, showContent])
 

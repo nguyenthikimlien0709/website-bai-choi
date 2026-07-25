@@ -54,14 +54,17 @@ const ORBIT_DELAY_AFTER_ZOOM_MS = 1640
 const MUSIC_CARD_SYNC_LEAD_MS = 400
 const ORBIT_TO_LINE_MS = LINE_ENTRY_BEAT_SEC * 1000
 const LINE_TO_CURTAIN_MS = 3240
-const CURTAIN_TO_DONE_MS = 1850
+const CURTAIN_TO_DONE_MS = 5000
 const CURTAIN_OPEN_MS = 1280
+const FESTIVAL_REVEAL_DELAY_MS = 420
 
 const TIMING = {
   glow: BLACK_HOLD_MS,
   choi: BLACK_HOLD_MS + CAMERA_ZOOM_MS + CHOI_DELAY_AFTER_ZOOM_MS,
   orbit: BLACK_HOLD_MS + CAMERA_ZOOM_MS + ORBIT_DELAY_AFTER_ZOOM_MS,
-  music: BLACK_HOLD_MS + CAMERA_ZOOM_MS + ORBIT_DELAY_AFTER_ZOOM_MS - MUSIC_CARD_SYNC_LEAD_MS,
+  // The soundtrack must stay on drums while the cards orbit and form a line.
+  // Music only enters as the cards part and reveal the festival scene.
+  music: BLACK_HOLD_MS + CAMERA_ZOOM_MS + ORBIT_DELAY_AFTER_ZOOM_MS - MUSIC_CARD_SYNC_LEAD_MS + ORBIT_TO_LINE_MS + LINE_TO_CURTAIN_MS + FESTIVAL_REVEAL_DELAY_MS,
   line: BLACK_HOLD_MS + CAMERA_ZOOM_MS + ORBIT_DELAY_AFTER_ZOOM_MS - MUSIC_CARD_SYNC_LEAD_MS + ORBIT_TO_LINE_MS,
   curtain: BLACK_HOLD_MS + CAMERA_ZOOM_MS + ORBIT_DELAY_AFTER_ZOOM_MS - MUSIC_CARD_SYNC_LEAD_MS + ORBIT_TO_LINE_MS + LINE_TO_CURTAIN_MS,
   done: BLACK_HOLD_MS + CAMERA_ZOOM_MS + ORBIT_DELAY_AFTER_ZOOM_MS - MUSIC_CARD_SYNC_LEAD_MS + ORBIT_TO_LINE_MS + LINE_TO_CURTAIN_MS + CURTAIN_TO_DONE_MS,
@@ -259,8 +262,8 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
 
   const getIntroAudioStart = () => {
     const elapsed = performance.now() - startedAtRef.current
-    const secondsUntilMusic = Math.max(0, (TIMING.music - elapsed) / 1000)
-    return Math.max(DRUM_AUDIO_START, MUSIC_AUDIO_START - secondsUntilMusic)
+    const drumWindow = MUSIC_AUDIO_START - DRUM_AUDIO_START
+    return DRUM_AUDIO_START + ((elapsed / 1000) % drumWindow)
   }
 
   const skipIntro = () => {
@@ -336,12 +339,12 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
       let segment = audioSegmentRef.current
 
       if (segment === 'drums' && audio.currentTime >= MUSIC_AUDIO_START - 0.06) {
-        stopChoiDrumLayer()
-        audioMusicFadeInRef.current = false
-        audio.volume = INTRO_AUDIO_VOLUME
-        audioPlayingRef.current = true
-        audioSegmentRef.current = 'music'
-        segment = 'music'
+        // Loop only the drum section. Never let the source music leak into the
+        // card animation before the festival reveal.
+        audio.currentTime = DRUM_AUDIO_START
+        void audio.play().catch(() => {
+          audioPlayingRef.current = false
+        })
       }
 
       if (segment === 'music') {
@@ -630,8 +633,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
   const displayedCards = lineOn ? activeCards : [...activeCards].sort((a, b) => a.zIdx - b.zIdx);
   const choiVisible = elapsedMs >= TIMING.choi - CHOI_REVEAL_LEAD_MS
   const choiRiseDistance = Math.min(190, viewport.h * 0.3)
-  const choiFloatY = curtainOn ? 0 : Math.sin(elapsedMs / 820) * 5
-  const choiY = lerp(choiRiseDistance, 0, choiRiseProgress) + choiFloatY
+  const choiY = lerp(choiRiseDistance, 0, choiRiseProgress)
   const choiScale = lerp(0.72, 1, choiRiseProgress) * (1 + choiExitProgress * 1.85)
   const choiOpacity = choiVisible ? Math.max(0, choiRiseProgress - choiExitProgress * 0.95) : 0
   const choiTransform = `translate(-50%, -50%) translateY(${choiY}px) scale(${choiScale})`
@@ -666,7 +668,6 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
           event.currentTarget.currentTime = getIntroAudioStart()
         }}
       />
-
       <style>{`
         @keyframes choiFloat{
           0%,100%{transform: translateY(0) rotateX(4deg)}
@@ -789,6 +790,32 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
             position: 'absolute',
             left: '50%',
             top: '50%',
+            width: 'clamp(92px, 15vw, 175px)',
+            zIndex: 5,
+            animation: `cameraFrameZoom ${CAMERA_ZOOM_MS}ms cubic-bezier(0.22, 1, 0.36, 1) both`,
+            pointerEvents: 'none',
+            willChange: 'transform, opacity',
+          }}
+        >
+          <img
+            src="/assets/choi-transparent.png"
+            alt="Logo Chòi"
+            style={{
+              display: 'block',
+              width: '100%',
+              height: 'auto',
+              filter: 'brightness(1.08) saturate(0.82) hue-rotate(-4deg) drop-shadow(0 0 12px rgba(242,153,99,0.2))',
+            }}
+          />
+        </div>
+      )}
+
+      {cameraVisible && (
+        <div
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
             width: 'min(98vw, 980px)',
             height: 'min(74vh, 560px)',
             transformOrigin: '50% 50%',
@@ -885,6 +912,27 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
           zIndex: 132,
           pointerEvents: 'none',
         }} />
+      )}
+
+      {curtainOn && (
+        <img
+          src="/assets/nen.png"
+          alt="Cảnh lễ hội Bài Chòi"
+          aria-label="Cảnh lễ hội Bài Chòi"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            opacity: easeOutCubic(clamp01((elapsedMs - TIMING.curtain - FESTIVAL_REVEAL_DELAY_MS) / 720)),
+            transform: `scale(${lerp(1.055, 1, easeOutCubic(clamp01((elapsedMs - TIMING.curtain) / 1500)))})`,
+            filter: 'saturate(1.06) contrast(1.04) brightness(0.92)',
+            zIndex: 126,
+            pointerEvents: 'none',
+          }}
+        />
       )}
 
       {running && !lineOn && (
@@ -1040,7 +1088,9 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
 
       {choiVisible && (
         <div style={{
-          position: 'absolute', left: '50%', top: '50%', 
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
           transform: choiTransform,
           opacity: choiOpacity,
           filter: choiOpacity > 0.2 ? 'blur(0px)' : 'blur(10px)',
@@ -1049,16 +1099,17 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
           willChange: 'transform, opacity',
         }}>
           <div style={{
-            width: 'clamp(220px, 32vw, 380px)',
+            width: 'clamp(210px, 30vw, 350px)',
             position: 'relative',
             willChange: 'transform, opacity',
           }}>
             <img 
-              src="/assets/choi.png" 
+              src="/assets/choi-transparent.png" 
               alt="Chòi" 
               style={{
                 width: '100%', 
-                filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.95))',
+                display: 'block',
+                filter: 'brightness(1.08) saturate(0.82) hue-rotate(-4deg) drop-shadow(0 0 20px rgba(242,153,99,0.22)) drop-shadow(0 0 34px rgba(0,99,104,0.18))',
                 opacity: 1,
               }} 
             />
@@ -1093,6 +1144,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
       {running && !lineOn && (
         <div style={{
           position: 'absolute', bottom: '10%', left: '50%',
+          display: 'none',
           animation: 'titleFade 2s ease-out forwards',
           zIndex: 100, textAlign: 'center'
         }}>
@@ -1112,6 +1164,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
           position: 'absolute',
           left: '50%',
           top: '48%',
+          display: 'none',
           transform: 'translate(-50%, -50%)',
           animation: 'inkReveal 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards',
           opacity: Math.max(0, 1 - choiExitProgress * 1.12),
