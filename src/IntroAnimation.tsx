@@ -644,7 +644,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
-      style={{background:'#080504'}} role="presentation"
+      style={{background:'#032F33'}} role="presentation"
       onPointerDown={() => { void startAudio() }}>
       <audio
         ref={audioRef}
@@ -752,8 +752,8 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
       {phase !== 'black' && (
         <div className="absolute inset-0" style={{
           background: `
-            radial-gradient(circle at 50% 48%, rgba(0, 99, 104, 1) 0%, rgba(0, 63, 64, 1) 44%, rgba(8,5,4,0.96) 100%),
-            linear-gradient(180deg, rgba(0,99,104,0.82), rgba(8,5,4,0.9))
+            radial-gradient(circle at 50% 47%, rgba(0,99,104,0.98) 0%, rgba(0,73,77,0.98) 42%, rgba(3,47,51,1) 72%, rgba(2,34,37,1) 100%),
+            linear-gradient(180deg, #006368 0%, #032F33 64%, #022225 100%)
           `,
           opacity: 0,
           animation: `introBackgroundReveal ${CAMERA_ZOOM_MS}ms cubic-bezier(0.22, 1, 0.36, 1) forwards`,
@@ -771,8 +771,8 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
             height: 'min(64vh, 500px)',
             borderRadius: 20,
             border: '2px solid rgba(216,176,105,0.38)',
-            background: 'radial-gradient(circle at 50% 50%, rgba(216,176,105,0.24) 0%, rgba(0,99,104,0.24) 46%, transparent 74%)',
-            boxShadow: 'inset 0 0 48px rgba(8,5,4,0.46), 0 0 28px rgba(216,176,105,0.12)',
+            background: 'radial-gradient(circle at 50% 50%, rgba(242,153,99,0.18) 0%, rgba(0,99,104,0.2) 48%, transparent 76%)',
+            boxShadow: 'inset 0 0 48px rgba(2,34,37,0.5), 0 0 28px rgba(242,153,99,0.1)',
             transformOrigin: '50% 52%',
             animation: `cameraFrameZoom ${CAMERA_ZOOM_MS}ms cubic-bezier(0.22, 1, 0.36, 1) both`,
             pointerEvents: 'none',
@@ -804,7 +804,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
               display: 'block',
               width: '100%',
               height: 'auto',
-              filter: 'brightness(1.08) saturate(0.82) hue-rotate(-4deg) drop-shadow(0 0 12px rgba(242,153,99,0.2))',
+              filter: 'none',
             }}
           />
         </div>
@@ -821,7 +821,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
             transformOrigin: '50% 50%',
             animation: `cameraLightZoom ${CAMERA_ZOOM_MS}ms cubic-bezier(0.22, 1, 0.36, 1) both`,
             backgroundImage: [
-              'radial-gradient(circle at 50% 50%, rgba(216,176,105,0.32) 0%, rgba(242,153,99,0.16) 22%, rgba(0,99,104,0.38) 48%, rgba(8,5,4,0.08) 74%, transparent 100%)',
+              'radial-gradient(circle at 50% 50%, rgba(242,153,99,0.26) 0%, rgba(216,176,105,0.14) 24%, rgba(0,99,104,0.3) 52%, rgba(3,47,51,0.08) 76%, transparent 100%)',
             ].join(', '),
             mixBlendMode: 'screen',
             pointerEvents: 'none',
@@ -838,7 +838,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'radial-gradient(circle at 50% 48%, transparent 0%, transparent 18%, rgba(8,5,4,0.22) 54%, rgba(8,5,4,0.92) 100%)',
+            background: 'radial-gradient(circle at 50% 48%, transparent 0%, transparent 20%, rgba(3,47,51,0.18) 56%, rgba(2,34,37,0.84) 100%)',
             animation: `cameraVignetteZoom ${CAMERA_ZOOM_MS}ms cubic-bezier(0.22, 1, 0.36, 1) both`,
             pointerEvents: 'none',
             zIndex: 5,
@@ -856,7 +856,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
           height: '72%',
           transformOrigin: '50% 100%',
           clipPath: 'polygon(44% 100%, 56% 100%, 100% 0, 0 0)',
-          background: 'linear-gradient(0deg, rgba(0,99,104,0.38) 0%, rgba(216,176,105,0.24) 34%, rgba(242,153,99,0.11) 58%, transparent 100%)',
+          background: 'linear-gradient(0deg, rgba(0,99,104,0.42) 0%, rgba(242,153,99,0.2) 36%, rgba(216,176,105,0.09) 60%, transparent 100%)',
           animation: `stageBeamZoomSync ${CAMERA_ZOOM_MS}ms cubic-bezier(0.22, 1, 0.36, 1) forwards`,
           filter: 'blur(10px)',
           mixBlendMode: 'screen',
@@ -1109,7 +1109,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
               style={{
                 width: '100%', 
                 display: 'block',
-                filter: 'brightness(1.08) saturate(0.82) hue-rotate(-4deg) drop-shadow(0 0 20px rgba(242,153,99,0.22)) drop-shadow(0 0 34px rgba(0,99,104,0.18))',
+                filter: 'none',
                 opacity: 1,
               }} 
             />
