@@ -389,7 +389,7 @@ function Nav({ lang, setLang, c }: { lang: Lang; setLang: (l: Lang) => void; c: 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 function Hero({ c }: { c: typeof content.VIE }) {
   return (
-    <section id="home" className="relative overflow-hidden" style={{ paddingTop: 80, minHeight: '100vh', background: '#FFFFFF' }}>
+    <section id="home" className="relative overflow-hidden" style={{ paddingTop: 80, minHeight: '100vh', background: '#408A8C' }}>
       {/* Background decorative circles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-10" style={{ background: '#C44837' }} />
@@ -417,7 +417,7 @@ function Hero({ c }: { c: typeof content.VIE }) {
                 {[0,1,2].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: i === 0 ? '#C44837' : i === 1 ? '#F29963' : '#006368', opacity: 1 - i * 0.18 }} />)}
               </div>
               <span className="text-xs font-semibold tracking-widest uppercase px-4 py-1.5 rounded-full border"
-                style={{ color: '#006368', borderColor: 'rgba(0,99,104,0.28)', background: 'rgba(0,99,104,0.08)', fontFamily: 'var(--font-body)' }}>
+                style={{ color: '#174F51', borderColor: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.78)', fontFamily: 'var(--font-body)' }}>
                 {c.hero.badge}
               </span>
             </div>
@@ -425,7 +425,7 @@ function Hero({ c }: { c: typeof content.VIE }) {
             {/* Title */}
             <div>
               <h1 className="text-5xl lg:text-6xl xl:text-7xl font-black leading-none mb-2"
-                style={{ fontFamily: 'var(--font-display)', color: '#006368', letterSpacing: 0 }}>
+                style={{ fontFamily: 'var(--font-display)', color: '#FFFFFF', letterSpacing: 0, textShadow: '0 6px 24px rgba(23,79,81,0.24)' }}>
                 {c.hero.title}
               </h1>
               <h2 className="text-lg lg:text-xl font-semibold tracking-[0.12em]"
@@ -437,7 +437,7 @@ function Hero({ c }: { c: typeof content.VIE }) {
             <DragonDivider />
 
             <p className="text-base lg:text-lg leading-relaxed max-w-lg"
-              style={{ color: 'rgba(0,99,104,0.82)', fontFamily: 'var(--font-body)', lineHeight: 1.8 }}>
+              style={{ color: 'rgba(255,255,255,0.9)', fontFamily: 'var(--font-body)', lineHeight: 1.8 }}>
               {c.hero.body}
             </p>
 
@@ -451,7 +451,7 @@ function Hero({ c }: { c: typeof content.VIE }) {
               </a>
               <a href="#gallery"
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-sm border-2 transition-all duration-200 hover:scale-105"
-                style={{ borderColor: '#006368', color: '#006368', fontFamily: 'var(--font-body)', background: 'rgba(0,99,104,0.09)' }}>
+                style={{ borderColor: 'rgba(255,255,255,0.72)', color: '#FFFFFF', fontFamily: 'var(--font-body)', background: 'rgba(23,79,81,0.18)' }}>
                 {c.hero.cta2}
                 <span>↗</span>
               </a>
@@ -466,7 +466,7 @@ function Hero({ c }: { c: typeof content.VIE }) {
               ].map(s => (
                 <div key={s.num}>
                   <div className="text-2xl font-black" style={{ fontFamily: 'var(--font-display)', color: '#F29963' }}>{s.num}</div>
-                  <div className="text-xs font-medium mt-0.5" style={{ color: 'rgba(0,99,104,0.68)', letterSpacing: '0.05em' }}>{s.label}</div>
+                  <div className="text-xs font-medium mt-0.5" style={{ color: 'rgba(255,255,255,0.78)', letterSpacing: '0.05em' }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -523,7 +523,7 @@ function Hero({ c }: { c: typeof content.VIE }) {
       {/* Bottom wave */}
       <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none">
         <svg viewBox="0 0 1440 64" preserveAspectRatio="none" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0 64 L0 32 Q360 0 720 32 Q1080 64 1440 32 L1440 64 Z" fill="#FFFFFF"/>
+          <path d="M0 64 L0 32 Q360 0 720 32 Q1080 64 1440 32 L1440 64 Z" fill="#E7F1F1"/>
         </svg>
       </div>
     </section>
@@ -533,7 +533,7 @@ function Hero({ c }: { c: typeof content.VIE }) {
 // ─── History ──────────────────────────────────────────────────────────────────
 function History({ c }: { c: typeof content.VIE }) {
   return (
-    <section id="history" className="py-20 lg:py-28" style={{ background: '#FFFFFF' }}>
+    <section id="history" className="py-20 lg:py-28" style={{ background: '#E7F1F1' }}>
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-14">
@@ -615,7 +615,7 @@ function History({ c }: { c: typeof content.VIE }) {
 // ─── Rules ────────────────────────────────────────────────────────────────────
 function Rules({ c }: { c: typeof content.VIE }) {
   return (
-    <section id="rules" className="py-20 lg:py-28" style={{ background: '#FFFFFF' }}>
+    <section id="rules" className="py-20 lg:py-28" style={{ background: '#D5E8E8' }}>
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-14">
@@ -700,7 +700,7 @@ function Characters({ c }: { c: typeof content.VIE }) {
   const [flipped, setFlipped] = useState<number | null>(null)
 
   return (
-    <section id="characters" className="py-20 lg:py-28" style={{ background: '#FFFFFF' }}>
+    <section id="characters" className="py-20 lg:py-28" style={{ background: '#E7F1F1' }}>
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-14">
@@ -967,7 +967,7 @@ function Gallery({ c }: { c: typeof content.VIE }) {
 // ─── Audio + Gallery Section ──────────────────────────────────────────────────
 function AudioGallerySection({ c }: { c: typeof content.VIE }) {
   return (
-    <section id="gallery" className="py-20 lg:py-28" style={{ background: '#FFFFFF' }}>
+    <section id="gallery" className="py-20 lg:py-28" style={{ background: '#D5E8E8' }}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-[380px,1fr] gap-12 lg:gap-16">
           {/* Audio player column */}
@@ -1022,7 +1022,7 @@ function QRCode() {
 // ─── Footer ───────────────────────────────────────────────────────────────────
 function Footer({ c }: { c: typeof content.VIE }) {
   return (
-    <footer style={{ background: '#FFFFFF', borderTop: '3px solid #006368' }}>
+    <footer style={{ background: '#E7F1F1', borderTop: '3px solid #408A8C' }}>
       {/* Top gold line */}
       <div className="h-1" style={{ background: 'linear-gradient(90deg, #C44837, #006368, #C44837, #006368, #C44837)' }} />
 
@@ -1132,7 +1132,7 @@ export default function App() {
       <div 
         style={{ 
           fontFamily: 'var(--font-body)', 
-          background: '#FFFFFF', 
+          background: '#408A8C', 
           color: '#006368',
           opacity: showContent ? 1 : 0,
           transition: 'opacity 0.8s ease',

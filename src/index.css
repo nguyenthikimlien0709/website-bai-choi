@@ -6,11 +6,11 @@
   --font-body: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
 
   --color-cream: #ffffff;
-  --color-cream-dark: #eaf6f3;
-  --color-cream-border: #006368;
-  --color-mint: #d7f0ea;
-  --color-teal: #eaf6f3;
-  --color-teal-dark: #006368;
+  --color-cream-dark: #e7f1f1;
+  --color-cream-border: #408a8c;
+  --color-mint: #d5e8e8;
+  --color-teal: #e7f1f1;
+  --color-teal-dark: #408a8c;
   --color-vermilion: #c44837;
   --color-vermilion-dark: #7c2421;
   --color-vermilion-light: #f29963;
@@ -31,7 +31,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   font-family: var(--font-body);
-  background-color: #ffffff;
+  background-color: #408a8c;
   color: #006368;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

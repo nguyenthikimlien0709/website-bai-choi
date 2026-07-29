@@ -644,7 +644,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
-      style={{background:'#032F33'}} role="presentation"
+      style={{background:'#408A8C'}} role="presentation"
       onPointerDown={() => { void startAudio() }}>
       <audio
         ref={audioRef}
@@ -752,8 +752,8 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
       {phase !== 'black' && (
         <div className="absolute inset-0" style={{
           background: `
-            radial-gradient(circle at 50% 47%, rgba(0,99,104,0.98) 0%, rgba(0,73,77,0.98) 42%, rgba(3,47,51,1) 72%, rgba(2,34,37,1) 100%),
-            linear-gradient(180deg, #006368 0%, #032F33 64%, #022225 100%)
+            radial-gradient(circle at 50% 47%, rgba(92,163,165,0.98) 0%, rgba(64,138,140,0.98) 45%, rgba(47,116,118,1) 74%, rgba(34,91,93,1) 100%),
+            linear-gradient(180deg, #5CA3A5 0%, #408A8C 60%, #225B5D 100%)
           `,
           opacity: 0,
           animation: `introBackgroundReveal ${CAMERA_ZOOM_MS}ms cubic-bezier(0.22, 1, 0.36, 1) forwards`,
@@ -772,7 +772,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
             borderRadius: 20,
             border: '2px solid rgba(216,176,105,0.38)',
             background: 'radial-gradient(circle at 50% 50%, rgba(242,153,99,0.18) 0%, rgba(0,99,104,0.2) 48%, transparent 76%)',
-            boxShadow: 'inset 0 0 48px rgba(2,34,37,0.5), 0 0 28px rgba(242,153,99,0.1)',
+            boxShadow: 'inset 0 0 48px rgba(34,91,93,0.42), 0 0 28px rgba(242,153,99,0.1)',
             transformOrigin: '50% 52%',
             animation: `cameraFrameZoom ${CAMERA_ZOOM_MS}ms cubic-bezier(0.22, 1, 0.36, 1) both`,
             pointerEvents: 'none',
@@ -838,7 +838,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'radial-gradient(circle at 50% 48%, transparent 0%, transparent 20%, rgba(3,47,51,0.18) 56%, rgba(2,34,37,0.84) 100%)',
+            background: 'radial-gradient(circle at 50% 48%, transparent 0%, transparent 20%, rgba(47,116,118,0.18) 56%, rgba(34,91,93,0.72) 100%)',
             animation: `cameraVignetteZoom ${CAMERA_ZOOM_MS}ms cubic-bezier(0.22, 1, 0.36, 1) both`,
             pointerEvents: 'none',
             zIndex: 5,
