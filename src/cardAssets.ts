@@ -2,7 +2,7 @@
 // Muốn thay thiết kế sau này, chỉ cần chép đè các file the1.jpg–the10.jpg
 // trong public/assets. Nếu đổi tên file, sửa đường dẫn tại đây một lần.
 export const CARD_ASSETS = [
-  { src: '/assets/the1.jpg', alt: 'Thẻ bài Nhứt Trò' },
+  { src: '/assets/the1.jpg', alt: 'Thẻ bài Nhất Trò' },
   { src: '/assets/the2.jpg', alt: 'Thẻ bài Nhì Bí' },
   { src: '/assets/the3.jpg', alt: 'Thẻ bài Tam Quan' },
   { src: '/assets/the4.jpg', alt: 'Thẻ bài Tứ Hương' },

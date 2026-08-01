@@ -98,7 +98,7 @@ const content = {
       title: 'Thẻ Bài',
       sub: 'Mười hình tượng tiêu biểu trong bộ bài Chòi',
       cards: [
-        { name: 'Nhứt Trò', symbol: '一', meaning: 'Hình tượng người nghệ sĩ trong cuộc chơi, gợi tinh thần diễn xướng, sự dí dỏm và niềm vui hội làng.' },
+        { name: 'Nhất Trò', symbol: '一', meaning: 'Hình tượng người nghệ sĩ trong cuộc chơi, gợi tinh thần diễn xướng, sự dí dỏm và niềm vui hội làng.' },
         { name: 'Nhì Bí', symbol: '二', meaning: 'Quả bầu dân dã tượng trưng cho sự no đủ, sinh sôi và nét mộc mạc trong đời sống miền Trung.' },
         { name: 'Tam Quan', symbol: '三', meaning: 'Cổng tam quan biểu trưng cho không gian cộng đồng, nơi con người gặp gỡ và cùng gìn giữ nếp xưa.' },
         { name: 'Tứ Hương', symbol: '四', meaning: 'Hương khói gợi lòng thành kính với tổ tiên, kết nối đời sống hiện tại với những giá trị truyền thống.' },
@@ -209,7 +209,7 @@ const content = {
       title: 'Introducing 10 Chòi Cards',
       sub: 'Ten representative characters from the Chòi card deck',
       cards: [
-        { name: 'Nhứt Trò', symbol: '一', meaning: 'The performer represents folk theatre, playful improvisation and the joy of a village gathering.' },
+        { name: 'Nhất Trò', symbol: '一', meaning: 'The performer represents folk theatre, playful improvisation and the joy of a village gathering.' },
         { name: 'Nhì Bí', symbol: '二', meaning: 'The humble gourd symbolizes abundance, growth and the simple rhythms of life in Central Vietnam.' },
         { name: 'Tam Quan', symbol: '三', meaning: 'The three-entrance gate represents a communal space where people meet and preserve shared traditions.' },
         { name: 'Tứ Hương', symbol: '四', meaning: 'Incense evokes respect for ancestors and the enduring connection between present life and tradition.' },
@@ -1568,9 +1568,9 @@ function QRCode() {
 function Footer({ c }: { c: typeof content.VIE }) {
   const isVietnamese = c === content.VIE
   const contacts = [
-    { icon: '@', label: 'hoasivy@gmail.com', href: 'mailto:hoasivy@gmail.com' },
-    { icon: 'Bē', label: 'behance.net/vykiu', href: 'https://www.behance.net/vykiu' },
-    { icon: '☎', label: '0378708376', href: 'tel:+84378708376' },
+    { icon: '@', label: 'th.txxngvan@gmail.com', href: 'mailto:th.txxngvan@gmail.com' },
+    
+    { icon: '☎', label: '0848180081', href: 'tel:+84378708376' },
   ]
 
   return (

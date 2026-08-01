@@ -592,15 +592,14 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
 
     schedule(() => { setPhase('glow');       phaseRef.current='glow' },         TIMING.glow)
     schedule(() => { setPhase('choi-appear'); phaseRef.current='choi-appear' },   TIMING.choi)
-    schedule(() => { void startMainMusic() },                                    TIMING.music)
     schedule(() => {
       setPhase('running')
       phaseRef.current='running'
     }, TIMING.orbit)
     
     schedule(() => { lineFormTRef.current = 0; setPhase('cards-line'); phaseRef.current='cards-line' }, TIMING.line)
-    schedule(() => { setPhase('curtain-open');phaseRef.current='curtain-open' },  TIMING.curtain)
-    schedule(skipIntro,                                                           TIMING.done)
+    // Khi hàng bài hoàn tất, đi thẳng vào website; không hiện cảnh ảnh cuối.
+    schedule(skipIntro,                                                           TIMING.curtain)
     
     return () => {
       timeoutsRef.current.forEach(id => window.clearTimeout(id));
