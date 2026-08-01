@@ -1,7 +1,8 @@
 import { Component, useCallback, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import IntroAnimation from './IntroAnimation'
 import { CARD_ASSETS } from './cardAssets'
-import { PUBLICATION_IMAGES, PUBLICATIONS_ARE_DEMOS } from './publications'
+import { PUBLICATION_GROUPS, PUBLICATIONS_ARE_DEMOS } from './publications'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Lang = 'VIE' | 'ENG'
@@ -97,16 +98,16 @@ const content = {
       title: 'Thẻ Bài',
       sub: 'Mười hình tượng tiêu biểu trong bộ bài Chòi',
       cards: [
-        { name: 'Ông Ầm', symbol: '龍', verse: 'Ông ầm ầm / Đùng đùng tiếng trống / Hội làng vui suốt / Đêm dài thâu canh' },
-        { name: 'Thái Tử', symbol: '王', verse: 'Thái tử ngự trên ngai / Áo vàng rực rỡ / Nhân nghĩa trị vì / Muôn dân thái bình' },
-        { name: 'Ba Gà', symbol: '鳳', verse: 'Ba con gà gáy / Sáng trời hừng đông / Làng quê thức dậy / Tiếng hát vang lừng' },
-        { name: 'Nhứt Nọc', symbol: '一', verse: 'Một cây nêu dựng / Giữa sân đình làng / Xuân về phơi phới / Hội vui miên man' },
-        { name: 'Tứ Cẳng', symbol: '四', verse: 'Bốn chân con ngựa / Ruổi khắp đồng quê / Mang theo tin vui / Từ làng về làng' },
-        { name: 'Trường Hầm', symbol: '將', verse: 'Trường hầm sâu thẳm / Ẩn chứa bao điều / Người chơi khéo léo / Vận may mỉm cười' },
-        { name: 'Ngũ Trợt', symbol: '五', verse: 'Năm sắc hoa văn / Tô điểm trang phục / Nghệ nhân tài hoa / Dệt nên sắc xuân' },
-        { name: 'Bạch Huê', symbol: '白', verse: 'Hoa trắng tinh khôi / Nở giữa vườn xuân / Thanh cao dịu dàng / Như lòng người quê' },
-        { name: 'Nhì Nghèo', symbol: '二', verse: 'Hai bàn tay trắng / Mà nghĩa tình đầy / Câu hò mộc mạc / Ấm lòng hôm nay' },
-        { name: 'Sáu Miếng', symbol: '六', verse: 'Sáu miếng bài tre / Theo câu hô hát / Nhịp phách rộn ràng / Vui khắp xóm làng' },
+        { name: 'Nhứt Trò', symbol: '一', meaning: 'Hình tượng người nghệ sĩ trong cuộc chơi, gợi tinh thần diễn xướng, sự dí dỏm và niềm vui hội làng.' },
+        { name: 'Nhì Bí', symbol: '二', meaning: 'Quả bầu dân dã tượng trưng cho sự no đủ, sinh sôi và nét mộc mạc trong đời sống miền Trung.' },
+        { name: 'Tam Quan', symbol: '三', meaning: 'Cổng tam quan biểu trưng cho không gian cộng đồng, nơi con người gặp gỡ và cùng gìn giữ nếp xưa.' },
+        { name: 'Tứ Hương', symbol: '四', meaning: 'Hương khói gợi lòng thành kính với tổ tiên, kết nối đời sống hiện tại với những giá trị truyền thống.' },
+        { name: 'Ngũ Trượt', symbol: '五', meaning: 'Chuyển động linh hoạt tượng trưng cho khả năng ứng biến và tinh thần vượt qua thử thách.' },
+        { name: 'Lục Xơ', symbol: '六', meaning: 'Khung dệt và sợi tơ tôn vinh đôi tay khéo léo của người thợ cùng những nghề thủ công truyền thống.' },
+        { name: 'Thất Nhọn', symbol: '七', meaning: 'Hình khối sắc nhọn tượng trưng cho sự tỉnh táo, quyết đoán và nguồn năng lượng mạnh mẽ.' },
+        { name: 'Bát Bồng', symbol: '八', meaning: 'Hình ảnh bồng bế gợi tình thân, sự chở che và hơi ấm của gia đình.' },
+        { name: 'Cửu Thầy', symbol: '九', meaning: 'Bút nghiên và người thầy tượng trưng cho tri thức, đạo học và sự truyền dạy qua nhiều thế hệ.' },
+        { name: 'Thái Tử', symbol: '王', meaning: 'Hình tượng thái tử biểu trưng cho phẩm chất cao quý, trách nhiệm và khát vọng hướng tới tương lai.' },
       ],
     },
     publications: {
@@ -208,16 +209,16 @@ const content = {
       title: 'Introducing 10 Chòi Cards',
       sub: 'Ten representative characters from the Chòi card deck',
       cards: [
-        { name: 'Ông Ầm', symbol: '龍', verse: 'The booming elder / Drums thunder loud / Village festival joy / Through the long night' },
-        { name: 'Thái Tử', symbol: '王', verse: 'The prince on his throne / Golden robes gleaming / Benevolent rule / People live in peace' },
-        { name: 'Ba Gà', symbol: '鳳', verse: 'Three roosters crow / Dawn breaks over fields / Villages awaken / Songs ring through the air' },
-        { name: 'Nhứt Nọc', symbol: '一', verse: 'One pole stands tall / In the village courtyard / Spring comes blooming / Festival joy flows' },
-        { name: 'Tứ Cẳng', symbol: '四', verse: 'Four hooves of the horse / Gallop through the fields / Carrying good news / From village to village' },
-        { name: 'Trường Hầm', symbol: '將', verse: 'The deep long tunnel / Holds so many secrets / The skillful player / Smiles at fortune' },
-        { name: 'Ngũ Trợt', symbol: '五', verse: 'Five colorful patterns / Adorn the costume / Skilled artisan hands / Weave in spring colors' },
-        { name: 'Bạch Huê', symbol: '白', verse: 'Pure white blossoms / Open in spring gardens / Graceful and gentle / As village hearts' },
-        { name: 'Nhì Nghèo', symbol: '二', verse: 'Two empty hands / Yet rich in kindness / A humble folk verse / Warms every heart' },
-        { name: 'Sáu Miếng', symbol: '六', verse: 'Six bamboo cards / Follow the chanting / Clappers beat brightly / Joy fills the village' },
+        { name: 'Nhứt Trò', symbol: '一', meaning: 'The performer represents folk theatre, playful improvisation and the joy of a village gathering.' },
+        { name: 'Nhì Bí', symbol: '二', meaning: 'The humble gourd symbolizes abundance, growth and the simple rhythms of life in Central Vietnam.' },
+        { name: 'Tam Quan', symbol: '三', meaning: 'The three-entrance gate represents a communal space where people meet and preserve shared traditions.' },
+        { name: 'Tứ Hương', symbol: '四', meaning: 'Incense evokes respect for ancestors and the enduring connection between present life and tradition.' },
+        { name: 'Ngũ Trượt', symbol: '五', meaning: 'Fluid movement symbolizes adaptability, quick thinking and the courage to overcome challenges.' },
+        { name: 'Lục Xơ', symbol: '六', meaning: 'The loom and threads honor skilled hands and the enduring value of traditional crafts.' },
+        { name: 'Thất Nhọn', symbol: '七', meaning: 'Sharp forms suggest alertness, decisiveness and a strong, focused source of energy.' },
+        { name: 'Bát Bồng', symbol: '八', meaning: 'The act of carrying a child represents kinship, protection and the warmth of family.' },
+        { name: 'Cửu Thầy', symbol: '九', meaning: 'The teacher and writing brush stand for knowledge, learning and wisdom passed through generations.' },
+        { name: 'Thái Tử', symbol: '王', meaning: 'The prince represents dignity, responsibility and aspirations for a promising future.' },
       ],
     },
     publications: {
@@ -443,96 +444,107 @@ function ReferenceLanding({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
     <main>
         {/* Screen 1: visual opening */}
         <ReferenceScreen id="home">
-        <div className="grid items-center gap-7 sm:gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
-          <div data-reveal="left" className="intro-float-slow mx-auto w-full max-w-[min(82vw,320px)] overflow-hidden bg-white/70 p-2 shadow-[0_18px_45px_rgba(33,91,79,0.18)] sm:max-w-md">
+        <div data-reveal="up" className="mx-auto w-full max-w-[900px] xl:max-w-[980px]">
+          <div className="home-hero-stage relative -translate-y-7 overflow-hidden sm:-translate-y-9 lg:-translate-y-12">
             <img
-              src="/assets/trangchu1.jpg"
-              alt="Minh họa văn hóa các vùng miền Việt Nam"
-              className="aspect-square w-full object-contain"
+              src="/assets/trangchu2.png"
+              alt="Nữ nghệ nhân và tiêu đề Bài Chòi"
+              className="home-hero-composite aspect-[3/2] w-full object-contain"
             />
-          </div>
 
-          <div data-reveal="right" className="flex flex-col items-center text-center">
-            <h1
-              className="whitespace-nowrap text-[clamp(2.25rem,12vw,7.4rem)] leading-[0.92] tracking-[-0.045em]"
-              style={{ fontFamily: 'var(--font-section)', color: '#466858' }}
-            >
-              BÀI CHÒI
-            </h1>
-            <p className="mt-3 text-[10px] tracking-[0.12em] min-[380px]:text-xs sm:text-base sm:tracking-[0.18em]" style={{ color: '#527363' }}>
-              {isVietnamese ? 'NHỊP PHÁCH · CÂU HÔ · HỒN VIỆT' : 'RHYTHM · CHANTS · VIETNAMESE SOUL'}
-            </p>
-            <div className="mt-7 grid w-full max-w-xl grid-cols-2 gap-3 sm:mt-10 sm:gap-5">
+            <div className="absolute bottom-[31%] left-[51%] right-[4%] z-30 hidden text-center lg:block">
+              <div className="grid grid-cols-2 gap-4">
+                <a
+                  href="#overview"
+                  className="rounded-2xl border border-white/25 px-4 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 xl:text-base"
+                  style={{ background: 'rgba(4,55,79,0.84)', boxShadow: '0 10px 28px rgba(0,28,48,0.3)' }}
+                >
+                  {isVietnamese ? 'Khám Phá' : 'Explore'}
+                </a>
+                <a
+                  href="#rules"
+                  className="rounded-2xl border border-white/25 px-4 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 xl:text-base"
+                  style={{ background: 'rgba(4,55,79,0.84)', boxShadow: '0 10px 28px rgba(0,28,48,0.3)' }}
+                >
+                  {isVietnamese ? 'Luật Chơi' : 'Game Rules'}
+                </a>
+              </div>
+            </div>
+
+            <div className="absolute bottom-[26%] left-[48%] right-[3%] z-30 text-center lg:hidden">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <a
-                href="#history"
-                className="rounded-xl px-3 py-3 text-sm font-medium transition hover:-translate-y-1 sm:rounded-2xl sm:px-5 sm:py-4 sm:text-lg"
-                style={{ background: 'rgba(84,119,109,0.25)', color: '#466858', backdropFilter: 'blur(7px)' }}
+                href="#overview"
+                className="rounded-lg border border-white/25 px-2 py-2 text-[10px] font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 min-[420px]:text-xs sm:rounded-xl sm:px-3 sm:py-2.5 sm:text-sm"
+                style={{ background: 'rgba(4,55,79,0.82)', boxShadow: '0 6px 18px rgba(0,28,48,0.26)' }}
               >
                 {isVietnamese ? 'Khám Phá' : 'Explore'}
               </a>
               <a
                 href="#rules"
-                className="rounded-xl px-3 py-3 text-sm font-medium transition hover:-translate-y-1 sm:rounded-2xl sm:px-5 sm:py-4 sm:text-lg"
-                style={{ background: 'rgba(84,119,109,0.25)', color: '#466858', backdropFilter: 'blur(7px)' }}
+                className="rounded-lg border border-white/25 px-2 py-2 text-[10px] font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 min-[420px]:text-xs sm:rounded-xl sm:px-3 sm:py-2.5 sm:text-sm"
+                style={{ background: 'rgba(4,55,79,0.82)', boxShadow: '0 6px 18px rgba(0,28,48,0.26)' }}
               >
                 {isVietnamese ? 'Luật Chơi' : 'Game Rules'}
               </a>
+              </div>
             </div>
           </div>
         </div>
         </ReferenceScreen>
 
       {/* Screen 2: home introduction */}
-        <ReferenceScreen>
-        <div className="grid items-center gap-8 sm:gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
-          <div data-reveal="left" className="mx-auto max-w-2xl lg:mx-0">
-            <img
-              src="/assets/choi-transparent.png"
-              alt="Logo Chòi"
-              className="mb-6 h-24 w-auto object-contain sm:mb-8 sm:h-36"
-              style={{ filter: 'sepia(1) saturate(.35) hue-rotate(90deg) brightness(.58)' }}
-            />
-            <p className="text-base leading-8 sm:text-lg sm:leading-9" style={{ color: '#172D27' }}>
-              {c.hero.body}
-            </p>
-            <p className="mt-6 max-w-xl text-sm leading-7 sm:text-base" style={{ color: '#294A40' }}>
-              {overview}
-            </p>
-          </div>
+        <ReferenceScreen id="overview">
+        <div className="mx-auto w-full max-w-5xl">
+          <p
+            data-reveal="up"
+            className="mx-auto max-w-4xl text-base leading-8 sm:text-lg sm:leading-9 lg:text-xl lg:leading-9"
+            style={{ color: '#172D27' }}
+          >
+            {c.hero.body}
+          </p>
 
-          <div data-reveal="right" className="intro-float-slow mx-auto w-full max-w-[min(88vw,440px)] border-[6px] border-white/70 bg-white/70 p-1 shadow-[0_18px_42px_rgba(39,91,80,0.18)] sm:max-w-lg sm:border-[10px]">
+          <figure data-reveal="up" className="mx-auto mt-5 w-full max-w-3xl sm:mt-7">
+            <div className="overflow-hidden border-[5px] border-white/75 bg-white/80 p-1 shadow-[0_18px_42px_rgba(39,91,80,0.18)] sm:border-[8px]">
             <img
               src="/assets/trangchu2.jpg"
-              alt="Người trẻ trong trang phục truyền thống"
-              className="aspect-[4/5] w-full object-contain"
+              alt="Lễ đón bằng UNESCO ghi danh Nghệ thuật Bài Chòi Trung Bộ Việt Nam"
+              className="aspect-[16/10] w-full object-cover"
             />
+            </div>
+            <figcaption
+              className="mx-auto mt-3 max-w-[92%] text-left text-xs leading-6 sm:text-sm sm:leading-7 lg:text-base"
+              style={{ color: '#294A40' }}
+            >
+              {overview}
+            </figcaption>
+          </figure>
           </div>
-        </div>
         </ReferenceScreen>
 
       {/* Screen 3: card introduction */}
         <ReferenceScreen id="history">
-        <div>
-          <h2
-            data-reveal="up"
-            className="mb-8 flex items-center gap-3 text-2xl sm:mb-12 sm:gap-4 sm:text-4xl lg:text-5xl"
-            style={{ fontFamily: 'var(--font-section)', color: '#466858' }}
-          >
-            <span className="h-3 w-3 shrink-0 rounded-full sm:h-4 sm:w-4" style={{ background: '#527867' }} />
-            {isVietnamese ? 'GIỚI THIỆU' : 'INTRODUCTION'}
-          </h2>
-
-          <div className="grid items-center gap-7 sm:gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20">
-            <p data-reveal="left" className="text-base leading-8 sm:text-lg sm:leading-9" style={{ color: '#203A32' }}>
+        <div className="grid items-start gap-7 sm:gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
+          <div>
+            <h2
+              data-reveal="up"
+              className="mb-6 flex items-center gap-3 text-2xl sm:mb-8 sm:gap-4 sm:text-4xl lg:text-5xl"
+              style={{ fontFamily: 'var(--font-section)', color: '#466858' }}
+            >
+              <span className="h-3 w-3 shrink-0 rounded-full sm:h-4 sm:w-4" style={{ background: '#527867' }} />
+              {isVietnamese ? 'GIỚI THIỆU' : 'INTRODUCTION'}
+            </h2>
+            <p data-reveal="left" className="text-base leading-8 sm:text-lg sm:leading-9 lg:pl-5" style={{ color: '#203A32' }}>
               {c.history.description}
             </p>
-            <div data-reveal="right" className="overflow-hidden shadow-[0_18px_42px_rgba(39,91,80,0.17)]">
+          </div>
+
+          <div data-reveal="right" className="overflow-hidden lg:pt-1">
               <img
                 src="/assets/gioithieu1.jpg"
                 alt="Bộ thẻ bài Chòi"
-                className="aspect-[16/10] w-full object-contain"
+                className="artwork-blend artwork-blend-cards aspect-[16/10] w-full object-contain"
               />
-            </div>
           </div>
         </div>
         </ReferenceScreen>
@@ -840,7 +852,18 @@ function Rules({ c }: { c: typeof content.VIE }) {
 
 // ─── Characters ───────────────────────────────────────────────────────────────
 function Characters({ c }: { c: typeof content.VIE }) {
+  const [flippedCards, setFlippedCards] = useState<Set<number>>(() => new Set())
   const cardRows = [CARD_ASSETS.slice(0, 3), CARD_ASSETS.slice(3, 6), CARD_ASSETS.slice(6, 10)]
+  const isVietnamese = c === content.VIE
+
+  const toggleCard = (cardIndex: number) => {
+    setFlippedCards((current) => {
+      const next = new Set(current)
+      if (next.has(cardIndex)) next.delete(cardIndex)
+      else next.add(cardIndex)
+      return next
+    })
+  }
 
   return (
     <section id="characters" className="scroll-mt-24 px-4 py-20 sm:px-8 lg:px-12 lg:py-28">
@@ -872,34 +895,70 @@ function Characters({ c }: { c: typeof content.VIE }) {
             >
               {row.map((card) => {
                 const cardIndex = CARD_ASSETS.findIndex((item) => item.src === card.src)
+                const cardInfo = c.characters.cards[cardIndex]
+                const isFlipped = flippedCards.has(cardIndex)
 
                 return (
-                  <figure
+                  <button
+                    type="button"
                     key={card.src}
-                    className="group min-w-0 overflow-hidden rounded-xl bg-white/95 p-1.5 transition-all duration-300 hover:-translate-y-2 sm:rounded-2xl sm:p-2"
+                    className="group min-w-0 rounded-xl bg-white/95 p-1.5 text-left transition-all duration-300 hover:-translate-y-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#F29963]/45 sm:rounded-2xl sm:p-2"
                     style={{
                       border: '1.5px solid rgba(0,99,104,0.3)',
                       boxShadow: '0 10px 26px rgba(0,42,45,0.14)',
                     }}
+                    onClick={() => toggleCard(cardIndex)}
+                    aria-pressed={isFlipped}
+                    aria-label={`${isVietnamese ? 'Lật thẻ' : 'Flip card'} ${cardInfo.name}`}
                   >
                     <div
-                      className="relative w-full overflow-hidden rounded-xl"
+                      className="card-flip-scene relative w-full rounded-xl"
                       style={{ aspectRatio: '1 / 2', background: '#FFFDEB' }}
                     >
-                      <img
-                        src={card.src}
-                        alt={card.alt}
-                        loading="lazy"
-                        className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.025]"
-                      />
+                      <div className={`card-flip-inner ${isFlipped ? 'is-flipped' : ''}`}>
+                        <div className="card-flip-face card-flip-front overflow-hidden rounded-xl">
+                          <img
+                            src={card.src}
+                            alt={card.alt}
+                            loading="lazy"
+                            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.025]"
+                          />
+                          <span
+                            className="absolute inset-x-2 bottom-2 rounded-full px-2 py-1.5 text-center text-[8px] font-bold uppercase tracking-[0.08em] sm:inset-x-3 sm:bottom-3 sm:text-[10px]"
+                            style={{ background: 'rgba(0,65,70,0.82)', color: '#FFF8D8', backdropFilter: 'blur(5px)' }}
+                          >
+                            {isVietnamese ? 'Chạm để xem ý nghĩa' : 'Tap to see the meaning'}
+                          </span>
+                        </div>
+
+                        <div className="card-flip-face card-flip-back flex flex-col items-center justify-center overflow-hidden rounded-xl px-3 py-4 text-center sm:px-5 sm:py-6">
+                          <div className="absolute inset-x-5 top-5 h-px bg-gradient-to-r from-transparent via-[#E2BC5B] to-transparent" />
+                          <span className="text-3xl font-black text-[#E2BC5B] sm:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
+                            {cardInfo.symbol}
+                          </span>
+                          <span className="mt-2 text-[8px] font-bold uppercase tracking-[0.16em] text-[#E2BC5B] sm:text-[10px]">
+                            {isVietnamese ? 'Ý nghĩa lá bài' : 'Card meaning'}
+                          </span>
+                          <h3 className="mt-2 text-base font-bold leading-tight text-white sm:mt-3 sm:text-2xl" style={{ fontFamily: 'var(--font-display)' }}>
+                            {cardInfo.name}
+                          </h3>
+                          <div className="my-3 h-px w-10 bg-[#E2BC5B]/75 sm:my-5 sm:w-14" />
+                          <p className="text-[10px] leading-4 text-white/85 sm:text-sm sm:leading-6">
+                            {cardInfo.meaning}
+                          </p>
+                          <span className="absolute inset-x-2 bottom-3 text-[8px] font-semibold uppercase tracking-[0.1em] text-white/55 sm:text-[9px]">
+                            {isVietnamese ? 'Chạm để xem mặt trước' : 'Tap to see the front'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <figcaption
-                      className="px-2 pb-2 pt-3 text-center text-xs font-semibold uppercase tracking-[0.14em]"
+                    <div
+                      className="px-1 pb-2 pt-3 text-center text-[10px] font-semibold uppercase tracking-[0.1em] sm:px-2 sm:text-xs sm:tracking-[0.14em]"
                       style={{ color: 'rgba(0,99,104,0.68)' }}
                     >
-                      {String(cardIndex + 1).padStart(2, '0')}
-                    </figcaption>
-                  </figure>
+                      {String(cardIndex + 1).padStart(2, '0')} · {cardInfo.name}
+                    </div>
+                  </button>
                 )
               })}
             </div>
@@ -916,54 +975,107 @@ function Characters({ c }: { c: typeof content.VIE }) {
 
 // ─── Publications ─────────────────────────────────────────────────────────────
 function Publications({ c }: { c: typeof content.VIE }) {
-  const [selectedImage, setSelectedImage] = useState<number | null>(null)
+  const [selectedImage, setSelectedImage] = useState<{ groupIndex: number; imageIndex: number } | null>(null)
   const isVietnamese = c === content.VIE
   const showcases = isVietnamese
     ? [
         {
-          eyebrow: 'Quà tặng sự kiện',
+          eyebrow: '01 · Bao bì bộ bài',
+          title: 'Hộp Đựng Bài',
+          description: 'Hộp đựng bài được thiết kế như một vật phẩm lưu giữ trọn vẹn tinh thần Bài Chòi. Cấu trúc chắc chắn giúp bảo vệ bộ thẻ, trong khi hệ màu vàng kem, xanh ngọc cùng họa tiết mây và sóng tạo nên diện mạo trang nhã, gần gũi với bản sắc miền Trung.',
+        },
+        {
+          eyebrow: '02 · Quà tặng sự kiện',
           title: 'Bộ Quà Tặng Chòi',
-          description: 'Những vật phẩm lưu niệm mang tinh thần Bài Chòi được phát triển đồng bộ từ màu sắc, họa tiết đến cách đặt logo. Bộ quà có thể ứng dụng cho sự kiện, triển lãm và các hoạt động quảng bá văn hóa.',
+          description: 'Từ áo, lịch để bàn, móc khóa đến bộ gốm, mỗi món quà đều mang một mảnh ký ức của nghệ thuật Bài Chòi. Các vật phẩm được phát triển đồng bộ về màu sắc và họa tiết, phù hợp làm quà lưu niệm tại triển lãm, lễ hội và những hoạt động kết nối văn hóa.',
         },
         {
-          eyebrow: 'Ứng dụng thương hiệu',
-          title: 'Bộ Nhận Diện Chòi',
-          description: 'Hệ thống nhận diện được mở rộng trên danh thiếp, bao bì, vật dụng và tài liệu truyền thông. Cách trình bày hiện tại là bản minh họa để dễ dàng thay thế bằng thiết kế chính thức sau này.',
+          eyebrow: '03 · Bao bì ứng dụng',
+          title: 'Túi Giấy & Tote Bag',
+          description: 'Túi giấy và túi tote đưa nhận diện Chòi bước ra đời sống thường ngày bằng một hình thức tiện dụng và thân thiện. Logo mái chòi kết hợp cùng hoa văn dân gian tạo điểm nhấn rõ ràng, giúp mỗi chiếc túi trở thành một phương tiện lan tỏa câu chuyện di sản.',
         },
         {
-          eyebrow: 'Thiết kế truyền thông',
-          title: 'Bộ Ấn Phẩm Sáng Tạo',
-          description: 'Các ấn phẩm kết hợp ngôn ngữ đồ họa trẻ trung với chất liệu văn hóa miền Trung, tạo nên một hệ thống gần gũi với thế hệ trẻ nhưng vẫn giữ được nét nhận diện riêng của Chòi.',
+          eyebrow: '04 · Ấn phẩm sự kiện',
+          title: 'Vé Tham Gia & Vé Mời',
+          description: 'Hệ thống vé tham gia và vé mời được xây dựng như lời mở đầu cho hành trình trải nghiệm Bài Chòi. Bố cục trang trọng, thông tin dễ đọc và các chi tiết đồ họa lấy cảm hứng từ mây, núi, hoa văn truyền thống giúp sự kiện có một dấu ấn nhất quán ngay từ điểm chạm đầu tiên.',
+        },
+        {
+          eyebrow: '05 · Không gian trải nghiệm',
+          title: 'Booth Sự Kiện',
+          description: 'Booth sự kiện tái hiện tinh thần mái chòi trong một không gian trưng bày hiện đại. Hệ nhận diện được triển khai xuyên suốt từ cổng chào, quầy tiếp đón đến khu vực giới thiệu sản phẩm, tạo nên điểm gặp gỡ nổi bật để khách tham quan khám phá, chụp ảnh và kết nối với văn hóa Bài Chòi.',
+        },
+        {
+          eyebrow: '06 · Truyền thông thị giác',
+          title: 'Poster Bài Chòi',
+          description: 'Poster cô đọng không khí một đêm hội Bài Chòi qua hình ảnh mái chòi, người hiệu, khán giả, ánh trăng và những rặng tre miền Trung. Sắc xanh đậm kết hợp xanh ngọc tạo chiều sâu thị giác, giúp ấn phẩm vừa mang hơi thở truyền thống, vừa đủ nổi bật để sử dụng trong triển lãm, sự kiện và các chiến dịch truyền thông văn hóa.',
         },
       ]
     : [
         {
-          eyebrow: 'Event gifts',
+          eyebrow: '01 · Card packaging',
+          title: 'Card Boxes',
+          description: 'Designed as a keepsake for the complete Bài Chòi card set, these sturdy boxes combine practical protection with a refined palette of cream, jade, cloud and wave motifs inspired by Central Vietnam.',
+        },
+        {
+          eyebrow: '02 · Event gifts',
           title: 'Chòi Gift Collection',
-          description: 'A coordinated collection of cultural souvenirs developed from Bài Chòi colors, motifs and identity. The collection can be adapted for events, exhibitions and cultural promotion.',
+          description: 'From shirts and desk calendars to key rings and ceramics, every item carries a fragment of Bài Chòi culture. The coordinated collection is designed for exhibitions, festivals and meaningful cultural gifts.',
         },
         {
-          eyebrow: 'Brand applications',
-          title: 'Chòi Identity System',
-          description: 'The identity expands across stationery, packaging, merchandise and communication materials. These preview images can be replaced easily when the final designs are ready.',
+          eyebrow: '03 · Branded packaging',
+          title: 'Paper & Tote Bags',
+          description: 'Paper and tote bags bring the Chòi identity into everyday life. The pavilion logo and folk-inspired patterns turn each practical object into a small, mobile story about Vietnamese heritage.',
         },
         {
-          eyebrow: 'Communication design',
-          title: 'Creative Publications',
-          description: 'A youthful graphic language meets Central Vietnamese cultural material, creating publications that feel approachable while preserving Chòi’s distinctive character.',
+          eyebrow: '04 · Event stationery',
+          title: 'Tickets & Invitations',
+          description: 'The ticket and invitation system introduces the Bài Chòi experience with clear information, ceremonial balance and graphic details inspired by clouds, mountains and traditional ornament.',
+        },
+        {
+          eyebrow: '05 · Experience space',
+          title: 'Event Booth',
+          description: 'The booth reinterprets the traditional pavilion as a contemporary exhibition environment, carrying the identity from the entrance and welcome desk to displays where visitors can discover and engage with Bài Chòi culture.',
+        },
+        {
+          eyebrow: '06 · Visual communication',
+          title: 'Bài Chòi Poster',
+          description: 'The poster distills the atmosphere of a Bài Chòi evening through the pavilion, caller, audience, moonlight and Central Vietnamese bamboo. Deep navy and jade create a striking visual suitable for exhibitions, events and cultural communication campaigns.',
         },
       ]
 
-  useEffect(() => {
-    if (selectedImage === null) return
+  const stepSelectedImage = (direction: number) => {
+    setSelectedImage((current) => {
+      if (current === null) return null
+      const imageCount = PUBLICATION_GROUPS[current.groupIndex].images.length
+      return {
+        ...current,
+        imageIndex: (current.imageIndex + direction + imageCount) % imageCount,
+      }
+    })
+  }
 
+  useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setSelectedImage(null)
+      if (event.key === 'ArrowLeft') stepSelectedImage(-1)
+      if (event.key === 'ArrowRight') stepSelectedImage(1)
     }
 
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [])
+
+  useEffect(() => {
+    if (selectedImage === null) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
   }, [selectedImage])
+
+  const activeGroup = selectedImage === null ? null : PUBLICATION_GROUPS[selectedImage.groupIndex]
+  const activeImage = selectedImage === null ? null : activeGroup?.images[selectedImage.imageIndex]
 
   return (
     <section id="publications" className="scroll-mt-20 py-20 lg:py-28">
@@ -989,13 +1101,13 @@ function Publications({ c }: { c: typeof content.VIE }) {
         </div>
 
         <div className="space-y-10 sm:space-y-14 lg:space-y-20">
-          {PUBLICATION_IMAGES.map((image, index) => {
+          {PUBLICATION_GROUPS.map((group, index) => {
             const item = showcases[index]
             const imageOnRight = index % 2 === 0
 
             return (
               <article
-                key={image.src}
+                key={item.title}
                 className="grid items-center gap-7 overflow-hidden rounded-[24px] px-4 py-6 sm:min-h-[68vh] sm:rounded-[34px] sm:px-10 sm:py-8 lg:grid-cols-2 lg:gap-14 lg:px-14"
                 style={{
                   background: 'linear-gradient(135deg, rgba(5,66,65,0.96), rgba(10,82,78,0.94))',
@@ -1003,21 +1115,36 @@ function Publications({ c }: { c: typeof content.VIE }) {
                   boxShadow: '0 18px 44px rgba(0,42,45,0.2)',
                 }}
               >
-                <button
-                  type="button"
+                <div
                   data-reveal={imageOnRight ? 'right' : 'left'}
-                  className={`group relative block aspect-[4/3] w-full overflow-hidden rounded-[18px] p-2 sm:rounded-[24px] sm:p-3 ${
+                  className={`relative grid aspect-[4/3] w-full gap-2 overflow-hidden rounded-[18px] p-2 sm:gap-3 sm:rounded-[24px] sm:p-3 ${
                     imageOnRight ? 'lg:order-2' : 'lg:order-1'
+                  } ${group.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'} ${
+                    group.images.length === 4 ? 'grid-rows-2' : 'grid-rows-1'
                   }`}
                   style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.98), rgba(229,241,237,0.95))' }}
-                  onClick={() => setSelectedImage(index)}
-                  aria-label={`${c.publications.viewLabel}: ${item.title}`}
                 >
-                  <img
-                    src={image.src}
-                    alt={image.alt}
-                    className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.025]"
-                  />
+                  {group.images.map((image, imageIndex) => (
+                    <button
+                      type="button"
+                      key={image.src}
+                      className="group relative min-h-0 min-w-0 cursor-zoom-in overflow-hidden rounded-xl bg-[#f6f4e9] sm:rounded-2xl"
+                      onClick={() => setSelectedImage({ groupIndex: index, imageIndex })}
+                      aria-label={`${c.publications.viewLabel}: ${image.alt}`}
+                    >
+                      <img
+                        src={image.src}
+                        alt={image.alt}
+                        className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.035]"
+                      />
+                      <span
+                        className="absolute inset-x-3 bottom-3 translate-y-2 rounded-full px-3 py-2 text-[10px] font-semibold opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:text-xs"
+                        style={{ background: 'rgba(0,75,80,0.9)', color: '#FFFFFF' }}
+                      >
+                        {c.publications.viewLabel}
+                      </span>
+                    </button>
+                  ))}
 
                   {PUBLICATIONS_ARE_DEMOS && (
                     <span
@@ -1031,14 +1158,7 @@ function Publications({ c }: { c: typeof content.VIE }) {
                       {c.publications.demoLabel}
                     </span>
                   )}
-
-                  <span
-                    className="absolute bottom-5 right-5 translate-y-2 rounded-full px-4 py-2 text-xs font-semibold opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
-                    style={{ background: 'rgba(0,75,80,0.9)', color: '#FFFFFF' }}
-                  >
-                    {c.publications.viewLabel}
-                  </span>
-                </button>
+                </div>
 
                 <div
                   data-reveal={imageOnRight ? 'left' : 'right'}
@@ -1058,7 +1178,7 @@ function Publications({ c }: { c: typeof content.VIE }) {
                     type="button"
                     className="mt-8 w-fit rounded-full px-6 py-3 text-sm font-semibold transition hover:-translate-y-1"
                     style={{ background: '#E2BC5B', color: '#164F49' }}
-                    onClick={() => setSelectedImage(index)}
+                    onClick={() => setSelectedImage({ groupIndex: index, imageIndex: 0 })}
                   >
                     {c.publications.viewLabel} ↗
                   </button>
@@ -1069,9 +1189,9 @@ function Publications({ c }: { c: typeof content.VIE }) {
         </div>
       </div>
 
-      {selectedImage !== null && (
+      {selectedImage !== null && activeGroup && activeImage && createPortal(
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-label={c.publications.viewLabel}
@@ -1086,13 +1206,63 @@ function Publications({ c }: { c: typeof content.VIE }) {
           >
             ×
           </button>
-          <img
-            src={PUBLICATION_IMAGES[selectedImage].src}
-            alt={PUBLICATION_IMAGES[selectedImage].alt}
-            className="max-h-[88vh] max-w-[94vw] rounded-2xl object-contain shadow-2xl"
+          <div
+            className="relative flex max-h-[94vh] w-full max-w-6xl flex-col items-center gap-3"
             onClick={(event) => event.stopPropagation()}
-          />
-        </div>
+          >
+            <img
+              src={activeImage.src}
+              alt={activeImage.alt}
+              className="max-h-[76vh] max-w-full rounded-2xl bg-white object-contain shadow-2xl"
+            />
+
+            {activeGroup.images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="absolute left-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-3xl shadow-lg transition hover:scale-105 sm:left-4"
+                  style={{ color: '#006368' }}
+                  onClick={() => stepSelectedImage(-1)}
+                  aria-label="Ảnh trước"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-3xl shadow-lg transition hover:scale-105 sm:right-4"
+                  style={{ color: '#006368' }}
+                  onClick={() => stepSelectedImage(1)}
+                  aria-label="Ảnh tiếp theo"
+                >
+                  ›
+                </button>
+              </>
+            )}
+
+            <div className="flex max-w-full items-center gap-2 overflow-x-auto rounded-2xl bg-black/35 p-2">
+              {activeGroup.images.map((image, imageIndex) => (
+                <button
+                  type="button"
+                  key={image.src}
+                  className="h-14 w-16 shrink-0 overflow-hidden rounded-lg transition sm:h-16 sm:w-20"
+                  style={{
+                    border: imageIndex === selectedImage.imageIndex ? '3px solid #E2BC5B' : '2px solid rgba(255,255,255,0.45)',
+                    opacity: imageIndex === selectedImage.imageIndex ? 1 : 0.72,
+                  }}
+                  onClick={() => setSelectedImage({ groupIndex: selectedImage.groupIndex, imageIndex })}
+                  aria-label={`${c.publications.viewLabel}: ${image.alt}`}
+                >
+                  <img src={image.src} alt="" className="h-full w-full bg-white object-contain" />
+                </button>
+              ))}
+            </div>
+
+            <p className="rounded-full bg-black/45 px-4 py-2 text-center text-xs text-white sm:text-sm">
+              {activeImage.alt} · {selectedImage.imageIndex + 1}/{activeGroup.images.length}
+            </p>
+          </div>
+        </div>,
+        document.body,
       )}
     </section>
   )

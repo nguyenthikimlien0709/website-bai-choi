@@ -1,24 +1,75 @@
 // CẤU HÌNH ẢNH ẤN PHẨM
-// Cách nhanh nhất để thay ảnh chính:
-// 1. Chép ảnh mới vào public/assets.
-// 2. Đổi đường dẫn `src` tương ứng bên dưới.
-//
-// Nếu giữ nguyên tên anpham1.png, anpham2.png, anpham3.png thì chỉ cần
-// chép đè file ảnh trong public/assets, không phải sửa code.
-// Khi đã có ảnh chính thức, đổi giá trị này thành false để ẩn nhãn minh họa.
-export const PUBLICATIONS_ARE_DEMOS = true
+// Muốn thay ảnh về sau: chép ảnh mới vào public/assets rồi sửa đường dẫn `src`
+// trong đúng nhóm bên dưới. Mỗi nhóm có thể chứa một hoặc nhiều ảnh.
+export const PUBLICATIONS_ARE_DEMOS = false
 
-export const PUBLICATION_IMAGES = [
+export const PUBLICATION_GROUPS = [
   {
-    src: '/assets/anpham1.png',
-    alt: 'Bộ nhận diện và bao bì ấn phẩm Chòi',
+    images: [
+      {
+        src: '/assets/thedungbai.jpg',
+        alt: 'Hộp đứng đựng bộ thẻ Bài Chòi',
+      },
+      {
+        src: '/assets/thedungbai1.jpg',
+        alt: 'Hộp ngang đựng bộ thẻ Bài Chòi',
+      },
+    ],
   },
   {
-    src: '/assets/anpham2.png',
-    alt: 'Ứng dụng nhận diện Chòi trên vật phẩm',
+    images: [
+      {
+        src: '/assets/quatangsukien(1).jpg',
+        alt: 'Áo quà tặng mang nhận diện Bài Chòi',
+      },
+      {
+        src: '/assets/quatangsukien(2).jpg',
+        alt: 'Bộ quà tặng gốm Bài Chòi',
+      },
+      {
+        src: '/assets/quatangsukien(3).jpg',
+        alt: 'Lịch để bàn Bài Chòi',
+      },
+      {
+        src: '/assets/quatangsukien4.jpg',
+        alt: 'Bộ móc khóa lưu niệm Bài Chòi',
+      },
+    ],
   },
   {
-    src: '/assets/anpham3.png',
-    alt: 'Bộ ấn phẩm truyền thông Chòi',
+    images: [
+      {
+        src: '/assets/anpham1.png',
+        alt: 'Túi giấy và túi tote Bài Chòi',
+      },
+    ],
+  },
+  {
+    images: [
+      {
+        src: '/assets/ve(1).jpg',
+        alt: 'Vé tham gia sự kiện Bài Chòi',
+      },
+      {
+        src: '/assets/vethamgia.jpg',
+        alt: 'Thiệp mời tham dự sự kiện Bài Chòi',
+      },
+    ],
+  },
+  {
+    images: [
+      {
+        src: '/assets/booth.jpg',
+        alt: 'Không gian booth sự kiện Bài Chòi',
+      },
+    ],
+  },
+  {
+    images: [
+      {
+        src: '/assets/poster.jpg',
+        alt: 'Poster quảng bá nghệ thuật Bài Chòi',
+      },
+    ],
   },
 ] as const

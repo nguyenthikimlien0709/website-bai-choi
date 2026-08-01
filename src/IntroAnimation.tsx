@@ -167,6 +167,7 @@ function BaiChoiCard({ card, width = 64 }: { card: CardData; width?: number }) {
         src={card.image}
         alt={card.name}
         draggable={false}
+        decoding="async"
         style={{
           display: 'block',
           width: '100%',
@@ -251,6 +252,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
   const globalTRef  = useRef(0)
   const lineFormTRef = useRef(0)
   const prevMsRef   = useRef(0)
+  const lastPaintMsRef = useRef(0)
   const rafRef      = useRef(0)
   const phaseRef    = useRef<Phase>('black')
   const timeoutsRef = useRef<number[]>([])
@@ -569,7 +571,11 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
       if (currentPhase === 'cards-line') {
         lineFormTRef.current += dt
       }
-      if (needsFrame) setFrame(f => f + 1)
+      const frameInterval = window.innerWidth < 640 ? 25 : 0
+      if (needsFrame && (frameInterval === 0 || now - lastPaintMsRef.current >= frameInterval)) {
+        lastPaintMsRef.current = now
+        setFrame(f => f + 1)
+      }
       rafRef.current = requestAnimationFrame(loop)
     }
     rafRef.current = requestAnimationFrame(loop)
@@ -954,7 +960,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
         </>
       )}
 
-      {phase !== 'black' && !cameraVisible && <FogLayer />}
+      {phase !== 'black' && !cameraVisible && !compactIntro && <FogLayer />}
 
       {curtainOn && (
         <div style={{
@@ -1126,7 +1132,8 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
             transformOrigin: 'right center',
             borderRadius: 999,
             background: 'linear-gradient(90deg, transparent 0%, rgba(196,72,55,0.38) 22%, rgba(242,153,99,0.38) 48%, rgba(216,176,105,0.24) 70%, transparent 100%)',
-            animation: 'silkBreath 1.2s ease-in-out infinite',
+            animation: compactIntro ? 'none' : 'silkBreath 1.2s ease-in-out infinite',
+            filter: compactIntro ? 'blur(5px)' : undefined,
             opacity: lineRibbonProgress * 0.72,
             pointerEvents: 'none',
             zIndex: 122,
@@ -1205,19 +1212,24 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
               : `translate(-50%, -50%) translate3d(${sceneCardX}px, ${sceneCardY}px, 0) scale(${sceneCardScale}) rotateZ(${cardRot}deg)`,
             opacity: cardOpacity,
             zIndex: lineOn ? 150 + item.index : item.zIdx,
-            filter: lineOn
-              ? `drop-shadow(0 16px 30px rgba(0,0,0,0.62)) drop-shadow(0 0 ${7 + beatPulse * 24}px rgba(216,176,105,${0.14 + beatPulse * 0.36}))`
-              : `drop-shadow(0 ${15 * item.pose.scale}px ${25 * item.pose.scale}px rgba(0,0,0,0.7)) drop-shadow(0 0 ${4 + beatPulse * 12}px rgba(216,176,105,${beatPulse * 0.24}))`,
+            filter: compactIntro
+              ? lineOn
+                ? 'drop-shadow(0 7px 10px rgba(0,0,0,0.42))'
+                : 'drop-shadow(0 6px 10px rgba(0,0,0,0.46))'
+              : lineOn
+                ? `drop-shadow(0 16px 30px rgba(0,0,0,0.62)) drop-shadow(0 0 ${7 + beatPulse * 24}px rgba(216,176,105,${0.14 + beatPulse * 0.36}))`
+                : `drop-shadow(0 ${15 * item.pose.scale}px ${25 * item.pose.scale}px rgba(0,0,0,0.7)) drop-shadow(0 0 ${4 + beatPulse * 12}px rgba(216,176,105,${beatPulse * 0.24}))`,
             pointerEvents: 'none',
             transition,
             transitionDelay: curtainOn ? `${Math.abs(item.index - 4.5) * 28}ms` : '0ms',
             willChange: 'transform, opacity',
+            contain: 'layout paint style',
           }}>
             <div style={{
               position: 'relative',
               transformStyle: 'preserve-3d',
             }}>
-              {beatPulse > 0.04 && !curtainOn && (
+              {!compactIntro && beatPulse > 0.04 && !curtainOn && (
                 <div
                   style={{
                     position: 'absolute',
@@ -1230,7 +1242,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
                   }}
                 />
               )}
-              {lineOn && !curtainOn && rawLineProgress > 0 && rawLineProgress < 0.96 && (
+              {!compactIntro && lineOn && !curtainOn && rawLineProgress > 0 && rawLineProgress < 0.96 && (
                 <div style={{
                   position: 'absolute',
                   inset: '9% -68% 9% 18%',
