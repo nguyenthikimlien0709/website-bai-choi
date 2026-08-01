@@ -113,7 +113,6 @@ const content = {
     publications: {
       title: 'Ấn Phẩm',
       sub: 'Từ di sản đến ngôn ngữ thiết kế đương đại',
-      description: 'Những thử nghiệm ứng dụng tinh thần Bài Chòi trên bộ nhận diện, bao bì và các sản phẩm truyền thông. Hình ảnh hiện tại được sử dụng để minh họa bố cục và sẽ được thay bằng thiết kế chính thức.',
       demoLabel: 'Ảnh minh họa',
       viewLabel: 'Xem toàn ảnh',
       items: [
