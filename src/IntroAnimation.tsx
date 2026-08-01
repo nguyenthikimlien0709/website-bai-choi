@@ -1,29 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
+import { getIntroBackground } from './introBackgrounds'
+import { CARD_ASSETS } from './cardAssets'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 type Phase = 'black' | 'glow' | 'choi-appear' | 'running' | 'cards-line' | 'curtain-open' | 'done'
 
 interface CardData {
   name: string;
-  symbol: string;
-  top: string;
-  color: string;
-  accent: string;
+  image: string;
 }
 
 // ─── 10 quân bài ─────────────────────────────────────────────────────────────
-const CARDS: CardData[] = [
-  { name: 'Ông Ầm',      symbol: '龍', top: '老', color: '#7C2421', accent: '#C44837' },
-  { name: 'Thái Tử',    symbol: '王', top: '君', color: '#006368', accent: '#D8B069' },
-  { name: 'Ba Gà',      symbol: '鳳', top: '三', color: '#7C2421', accent: '#C44837' },
-  { name: 'Nhứt Nọc',   symbol: '一', top: '木', color: '#006368', accent: '#D8B069' },
-  { name: 'Tứ Cẳng',    symbol: '四', top: '馬', color: '#7C2421', accent: '#C44837' },
-  { name: 'Trường Hầm', symbol: '將', top: '隧', color: '#006368', accent: '#D8B069' },
-  { name: 'Ngũ Trợt',   symbol: '五', top: '滑', color: '#7C2421', accent: '#C44837' },
-  { name: 'Bạch Huê',   symbol: '白', top: '花', color: '#006368', accent: '#D8B069' },
-  { name: 'Nhì Nghèo',  symbol: '二', top: '貧', color: '#7C2421', accent: '#C44837' },
-  { name: 'Sáu Miếng',  symbol: '六', top: '片', color: '#006368', accent: '#D8B069' },
-]
+const CARDS: CardData[] = CARD_ASSETS.map(card => ({
+  name: card.alt,
+  image: card.src,
+}))
 
 const RX = 385   
 const RY = 128   
@@ -140,12 +131,12 @@ function musicWaveAt(seconds: number, index: number) {
   return Math.cos(phase * Math.PI * 2) * accent
 }
 
-function cardPose(t: number) {
+function cardPose(t: number, radiusX = RX, radiusY = RY) {
   if (t <= 0) return null
   const ROT_SPEED = Math.PI * 0.95; 
   const expandFactor = Math.tanh(t * 3.0); 
-  const rX = RX * expandFactor;
-  const rY = RY * expandFactor;
+  const rX = radiusX * expandFactor;
+  const rY = radiusY * expandFactor;
   const angle = -t * ROT_SPEED;
   const x = Math.cos(angle) * rX;
   const y = Math.sin(angle) * rY; 
@@ -158,18 +149,33 @@ function cardPose(t: number) {
 }
 
 function BaiChoiCard({ card, width = 64 }: { card: CardData; width?: number }) {
-  const h = Math.round(width * 1.65)
+  const h = Math.round(width * 2)
+
   return (
-    <svg width={width} height={h} viewBox="0 0 72 119" xmlns="http://www.w3.org/2000/svg">
-      <rect x="1" y="1" width="70" height="117" rx="6" fill="#006368" stroke="#D8B069" strokeWidth="2.5"/>
-      <rect x="5" y="5" width="62" height="109" rx="4" fill="none" stroke="#D8B069" strokeWidth="0.8" strokeDasharray="2,2"/>
-      <rect x="1" y="1" width="70" height="22" rx="6" fill={card.color}/>
-      <text x="36" y="14" textAnchor="middle" dominantBaseline="middle" fontSize="10" fontWeight="900" fill="#D8B069" style={{fontFamily:'serif'}}>{card.top}</text>
-      <text x="36" y="63" textAnchor="middle" dominantBaseline="middle" fontSize="36" fontWeight="900" fill="#D8B069" style={{fontFamily:'serif'}}>{card.symbol}</text>
-      <text x="36" y="100" textAnchor="middle" dominantBaseline="middle" fontSize="7.5" fontWeight="700" fill="#D8B069" style={{fontFamily:'serif'}}>{card.name}</text>
-      <rect x="1" y="97" width="70" height="21" rx="6" fill={card.color}/>
-      <text x="36" y="109" textAnchor="middle" dominantBaseline="middle" fontSize="9" fontWeight="700" fill="#D8B069" style={{fontFamily:'serif'}}>✦</text>
-    </svg>
+    <div
+      style={{
+        width,
+        height: h,
+        overflow: 'hidden',
+        borderRadius: Math.max(4, width * 0.07),
+        background: '#FFFDEB',
+        border: `${Math.max(1, width * 0.025)}px solid rgba(216,176,105,0.88)`,
+        boxShadow: 'inset 0 0 0 1px rgba(0,99,104,0.16)',
+      }}
+    >
+      <img
+        src={card.image}
+        alt={card.name}
+        draggable={false}
+        style={{
+          display: 'block',
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain',
+          userSelect: 'none',
+        }}
+      />
+    </div>
   )
 }
 
@@ -235,6 +241,7 @@ const AUDIO_HANDOFF_TOLERANCE_SEC = 1.1
 type AudioSegment = 'drums' | 'waiting' | 'music'
 
 export default function IntroAnimation({ onDone }: { onDone: () => void }) {
+  const [introBackground] = useState(getIntroBackground)
   const [phase, setPhase]  = useState<Phase>('black')
   const [frame, setFrame]  = useState(0)
   const [viewport, setViewport] = useState(() => ({
@@ -259,6 +266,13 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
   const [audioStarted, setAudioStarted] = useState(false)
   // Only show the fallback control after the browser actually rejects autoplay.
   const [autoplayBlocked, setAutoplayBlocked] = useState(false)
+
+  useEffect(() => {
+    CARD_ASSETS.forEach(card => {
+      const image = new Image()
+      image.src = card.src
+    })
+  }, [])
 
   const getIntroAudioStart = () => {
     const elapsed = performance.now() - startedAtRef.current
@@ -609,11 +623,14 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
     : 0
   const lanternProgress = easeOutCubic(clamp01((elapsedMs - (TIMING.choi + 120)) / 1450))
   const lanternGlow = lanternProgress * (0.74 + Math.sin(elapsedMs / 180) * 0.08 + beatBasePulse * 0.16)
+  const compactIntro = viewport.w < 640
+  const orbitRadiusX = Math.min(RX, Math.max(108, viewport.w * (compactIntro ? 0.32 : 0.36)))
+  const orbitRadiusY = Math.min(RY, Math.max(66, viewport.h * (compactIntro ? 0.095 : 0.14)))
 
   const allCards = CARDS.map((card, i) => {
     const cardT = globalTRef.current - (i * SPACING);
-    const pose = cardPose(cardT) ?? {
-      x: -RX,
+    const pose = cardPose(cardT, orbitRadiusX, orbitRadiusY) ?? {
+      x: -orbitRadiusX,
       y: 0,
       scale: 0.4,
       opacity: 0,
@@ -637,10 +654,18 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
   const choiScale = lerp(0.72, 1, choiRiseProgress) * (1 + choiExitProgress * 1.85)
   const choiOpacity = choiVisible ? Math.max(0, choiRiseProgress - choiExitProgress * 0.95) : 0
   const choiTransform = `translate(-50%, -50%) translateY(${choiY}px) scale(${choiScale})`
-  const cardWidth = Math.round(Math.min(CARD_WIDTH, Math.max(42, viewport.w * 0.12)))
-  const lineStep = Math.max(cardWidth * 0.76, Math.min(LINE_STEP, (viewport.w * 0.78) / (CARDS.length - 1)))
+  const cardWidth = Math.round(Math.min(CARD_WIDTH, Math.max(34, viewport.w * (compactIntro ? 0.105 : 0.12))))
+  const lineAvailableWidth = Math.max(250, viewport.w - (compactIntro ? 24 : 48))
+  const responsiveLineStep = (lineAvailableWidth - cardWidth) / (CARDS.length - 1)
+  const lineStep = Math.min(LINE_STEP, Math.max(cardWidth * 0.66, responsiveLineStep))
   const lineStartX = -((CARDS.length - 1) * lineStep) / 2
   const lineY = Math.round(Math.min(LINE_Y, Math.max(72, viewport.h * 0.18)))
+  const viewportAspect = viewport.w / Math.max(1, viewport.h)
+  const finalSceneSrc = viewportAspect < 1.05
+    ? '/assets/nen.png'
+    : viewportAspect > 2.05
+      ? '/assets/nen-ultrawide.png'
+      : '/assets/nen-wide.png'
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
@@ -747,14 +772,43 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
           26%{opacity:.7; transform:translate(-50%, -50%) scale(.86)}
           100%{opacity:0; transform:translate(-50%, -50%) scale(1.22)}
         }
+        @keyframes festivalSceneBreath{
+          0%,100%{transform:scale(1.002) translate3d(0,0,0)}
+          50%{transform:scale(1.006) translate3d(0,-1px,0)}
+        }
+        @keyframes festivalPeopleSway{
+          0%,100%{transform:translate3d(0,0,0) rotate(0deg)}
+          50%{transform:translate3d(1px,-2px,0) rotate(.12deg)}
+        }
+        @keyframes festivalAudienceBreath{
+          0%,100%{transform:translate3d(0,0,0) scale(1)}
+          50%{transform:translate3d(-1px,-1px,0) scale(1.002)}
+        }
+        @keyframes festivalCloudDrift{
+          0%{transform:translate3d(-24vw,0,0) scale(.82);opacity:0}
+          12%{opacity:.38}
+          84%{opacity:.32}
+          100%{transform:translate3d(124vw,-8px,0) scale(1.04);opacity:0}
+        }
+        @keyframes festivalLeafFall{
+          0%{transform:translate3d(0,-14vh,0) rotate(0deg);opacity:0}
+          10%{opacity:.72}
+          42%{transform:translate3d(34px,35vh,0) rotate(150deg)}
+          72%{transform:translate3d(-18px,76vh,0) rotate(270deg);opacity:.64}
+          100%{transform:translate3d(52px,114vh,0) rotate(420deg);opacity:0}
+        }
+        @keyframes festivalGlowPulse{
+          0%,100%{opacity:.2;transform:scale(.72)}
+          50%{opacity:.72;transform:scale(1.2)}
+        }
       `}</style>
 
       {phase !== 'black' && (
         <div className="absolute inset-0" style={{
-          background: `
-            radial-gradient(circle at 50% 47%, rgba(92,163,165,0.98) 0%, rgba(64,138,140,0.98) 45%, rgba(47,116,118,1) 74%, rgba(34,91,93,1) 100%),
-            linear-gradient(180deg, #5CA3A5 0%, #408A8C 60%, #225B5D 100%)
-          `,
+          backgroundImage: `${introBackground.overlay}, url("${introBackground.src}")`,
+          backgroundSize: 'cover',
+          backgroundPosition: introBackground.position,
+          backgroundRepeat: 'no-repeat',
           opacity: 0,
           animation: `introBackgroundReveal ${CAMERA_ZOOM_MS}ms cubic-bezier(0.22, 1, 0.36, 1) forwards`,
           willChange: 'opacity',
@@ -916,7 +970,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
 
       {curtainOn && (
         <img
-          src="/assets/nen.png"
+          src={finalSceneSrc}
           alt="Cảnh lễ hội Bài Chòi"
           aria-label="Cảnh lễ hội Bài Chòi"
           style={{
@@ -925,14 +979,122 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            objectPosition: 'center',
-            opacity: easeOutCubic(clamp01((elapsedMs - TIMING.curtain - FESTIVAL_REVEAL_DELAY_MS) / 720)),
-            transform: `scale(${lerp(1.055, 1, easeOutCubic(clamp01((elapsedMs - TIMING.curtain) / 1500)))})`,
-            filter: 'saturate(1.06) contrast(1.04) brightness(0.92)',
+            objectPosition: 'center center',
+            background: '#075E87',
+            opacity: easeOutCubic(clamp01((elapsedMs - TIMING.curtain - FESTIVAL_REVEAL_DELAY_MS) / 900)),
+            transform: 'scale(1)',
+            transformOrigin: 'center center',
+            filter: 'saturate(1.04) contrast(1.02) brightness(0.96)',
+            animation: 'festivalSceneBreath 9s ease-in-out infinite',
             zIndex: 126,
             pointerEvents: 'none',
           }}
         />
+      )}
+
+      {curtainOn && (
+        <>
+          <img
+            src={finalSceneSrc}
+            alt=""
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center center',
+              opacity: easeOutCubic(clamp01((elapsedMs - TIMING.curtain - FESTIVAL_REVEAL_DELAY_MS) / 900)),
+              filter: 'saturate(1.04) contrast(1.02) brightness(0.96)',
+              WebkitMaskImage: 'radial-gradient(ellipse 18% 34% at 52% 42%, #000 20%, transparent 72%)',
+              maskImage: 'radial-gradient(ellipse 18% 34% at 52% 42%, #000 20%, transparent 72%)',
+              animation: 'festivalPeopleSway 5.8s ease-in-out infinite',
+              zIndex: 127,
+              pointerEvents: 'none',
+            }}
+          />
+          <img
+            src={finalSceneSrc}
+            alt=""
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center center',
+              opacity: easeOutCubic(clamp01((elapsedMs - TIMING.curtain - FESTIVAL_REVEAL_DELAY_MS) / 900)),
+              filter: 'saturate(1.04) contrast(1.02) brightness(0.96)',
+              WebkitMaskImage: 'radial-gradient(ellipse 30% 23% at 52% 72%, #000 22%, transparent 74%)',
+              maskImage: 'radial-gradient(ellipse 30% 23% at 52% 72%, #000 22%, transparent 74%)',
+              animation: 'festivalAudienceBreath 6.6s ease-in-out infinite',
+              zIndex: 127,
+              pointerEvents: 'none',
+            }}
+          />
+
+          {[0, 1, 2].map((cloud) => (
+            <div
+              key={`festival-cloud-${cloud}`}
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: `${10 + cloud * 11}%`,
+                width: `${110 + cloud * 28}px`,
+                height: `${30 + cloud * 6}px`,
+                borderRadius: '50%',
+                background: 'radial-gradient(ellipse at 28% 70%, rgba(255,232,151,.72) 0 24%, transparent 26%), radial-gradient(ellipse at 52% 50%, rgba(255,238,172,.68) 0 34%, transparent 36%), radial-gradient(ellipse at 76% 72%, rgba(218,221,145,.58) 0 25%, transparent 27%)',
+                filter: 'blur(1.5px)',
+                animation: `festivalCloudDrift ${22 + cloud * 7}s linear ${-cloud * 9}s infinite`,
+                zIndex: 128,
+                pointerEvents: 'none',
+              }}
+            />
+          ))}
+
+          {Array.from({ length: 14 }, (_, leaf) => (
+            <span
+              key={`festival-leaf-${leaf}`}
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                left: `${3 + ((leaf * 17) % 93)}%`,
+                top: '-8%',
+                width: `${7 + (leaf % 4) * 2}px`,
+                height: `${13 + (leaf % 3) * 3}px`,
+                borderRadius: '90% 10% 90% 10%',
+                background: leaf % 3 === 0 ? '#E3B962' : leaf % 3 === 1 ? '#8FAF68' : '#F29963',
+                boxShadow: '0 2px 5px rgba(9,61,67,.22)',
+                animation: `festivalLeafFall ${7.8 + (leaf % 5) * 1.3}s linear ${-(leaf * 1.17)}s infinite`,
+                zIndex: 130,
+                pointerEvents: 'none',
+              }}
+            />
+          ))}
+
+          {Array.from({ length: 7 }, (_, glow) => (
+            <span
+              key={`festival-glow-${glow}`}
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                left: `${14 + ((glow * 19) % 74)}%`,
+                top: `${16 + ((glow * 23) % 58)}%`,
+                width: 5,
+                height: 5,
+                borderRadius: '50%',
+                background: '#FFE795',
+                boxShadow: '0 0 12px 4px rgba(255,218,101,.34)',
+                animation: `festivalGlowPulse ${2.4 + glow * 0.35}s ease-in-out ${-glow * 0.42}s infinite`,
+                zIndex: 129,
+                pointerEvents: 'none',
+              }}
+            />
+          ))}
+        </>
       )}
 
       {running && !lineOn && (
@@ -940,8 +1102,8 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
           position: 'absolute',
           left: '50%',
           top: '50%',
-          width: Math.min(viewport.w * 0.74, RX * 2.18),
-          height: Math.min(viewport.h * 0.28, RY * 2.12),
+          width: Math.min(viewport.w * 0.76, orbitRadiusX * 2.18),
+          height: Math.min(viewport.h * 0.28, orbitRadiusY * 2.12),
           transform: 'translate(-50%, -50%) rotate(-3deg)',
           borderRadius: '50%',
           border: '1px solid rgba(216,176,105,0.15)',
@@ -1099,7 +1261,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
           willChange: 'transform, opacity',
         }}>
           <div style={{
-            width: 'clamp(210px, 30vw, 350px)',
+            width: Math.min(350, Math.max(160, viewport.w * (compactIntro ? 0.5 : 0.3))),
             position: 'relative',
             willChange: 'transform, opacity',
           }}>
@@ -1123,8 +1285,8 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
                     position: 'absolute',
                     left: `${spot.left}%`,
                     top: `${spot.top}%`,
-                    width: spot.size,
-                    height: spot.size,
+                    width: spot.size * (compactIntro ? 0.66 : 1),
+                    height: spot.size * (compactIntro ? 0.66 : 1),
                     transform: 'translate(-50%, -50%)',
                     borderRadius: '50%',
                     background: 'radial-gradient(circle, rgba(242,153,99,0.9) 0%, rgba(216,176,105,0.58) 28%, rgba(196,72,55,0.2) 52%, transparent 74%)',
@@ -1226,7 +1388,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
             void startAudio()
           }}
           onClick={(event) => event.stopPropagation()}
-          className="absolute bottom-10 left-10 flex items-center gap-3 rounded-full border border-[#D8B069]/30 bg-black/40 px-5 py-3 text-xs font-semibold uppercase text-[#D8B069] shadow-[0_12px_34px_rgba(0,0,0,0.35)] backdrop-blur transition-all hover:bg-[#D8B069]/10 z-[200]"
+          className="absolute bottom-4 left-4 z-[200] flex items-center gap-2 rounded-full border border-[#D8B069]/30 bg-black/40 px-4 py-2.5 text-[10px] font-semibold uppercase text-[#D8B069] shadow-[0_12px_34px_rgba(0,0,0,0.35)] backdrop-blur transition-all hover:bg-[#D8B069]/10 sm:bottom-10 sm:left-10 sm:gap-3 sm:px-5 sm:py-3 sm:text-xs"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M4 9v6h4l5 5V4L8 9H4Zm12.5 3c0-1.6-.86-3-2.15-3.76v7.52A4.3 4.3 0 0 0 16.5 12Zm-2.15-7.4v2.06A6.4 6.4 0 0 1 18.5 12a6.4 6.4 0 0 1-4.15 6.02v2.06A8.35 8.35 0 0 0 20.5 12a8.35 8.35 0 0 0-6.15-7.4Z"/>
@@ -1238,7 +1400,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
       <button 
         onClick={skipIntro} 
         onPointerDown={(event) => event.stopPropagation()}
-        className="absolute bottom-10 right-10 px-8 py-3 rounded-full border border-[#D8B069]/20 bg-black/30 text-[#D8B069]/60 text-xs tracking-widest hover:bg-[#D8B069]/10 hover:text-[#D8B069] transition-all z-[200] uppercase"
+        className="absolute bottom-4 right-4 z-[200] rounded-full border border-[#D8B069]/20 bg-black/30 px-4 py-2.5 text-[10px] uppercase tracking-wider text-[#D8B069]/60 transition-all hover:bg-[#D8B069]/10 hover:text-[#D8B069] sm:bottom-10 sm:right-10 sm:px-8 sm:py-3 sm:text-xs sm:tracking-widest"
       >
         Bỏ qua →
       </button>
