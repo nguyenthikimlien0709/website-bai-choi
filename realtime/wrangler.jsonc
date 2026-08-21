@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bai-choi-realtime",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-21",
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "ROOMS",
+        "class_name": "BaiChoiRoom"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["BaiChoiRoom"]
+    }
+  ]
+}

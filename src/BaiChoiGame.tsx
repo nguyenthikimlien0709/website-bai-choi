@@ -119,8 +119,8 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
 
   const connectRoom = (action: 'createRoom' | 'joinRoom') => {
     setRoomError('')
-    const configuredRealtimeUrl = import.meta.env.VITE_REALTIME_URL?.trim()
     const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+    const configuredRealtimeUrl = import.meta.env.VITE_REALTIME_URL?.trim() || (isLocalHost ? '' : 'wss://bai-choi-realtime.lienntk-ce190812.workers.dev/bai-choi-ws')
     if (!configuredRealtimeUrl && !isLocalHost) {
       setRoomError('Phòng chơi online chưa được kết nối với máy chủ realtime trên bản public.')
       return
@@ -128,12 +128,16 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
     setSocketStatus('connecting')
     socketRef.current?.close()
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const realtimeUrl = configuredRealtimeUrl || `${protocol}//${window.location.host}/bai-choi-ws`
-    const socket = new WebSocket(realtimeUrl)
+    const baseRealtimeUrl = configuredRealtimeUrl || `${protocol}//${window.location.host}/bai-choi-ws`
+    const realtimeUrl = new URL(baseRealtimeUrl)
+    realtimeUrl.searchParams.set('action', action)
+    realtimeUrl.searchParams.set('name', playerName)
+    if (action === 'joinRoom') realtimeUrl.searchParams.set('roomId', joinCode)
+    const socket = new WebSocket(realtimeUrl.toString())
     socketRef.current = socket
     socket.onopen = () => {
       setSocketStatus('connected')
-      socket.send(JSON.stringify({ type: action, name: playerName, roomId: joinCode }))
+      if (!configuredRealtimeUrl) socket.send(JSON.stringify({ type: action, name: playerName, roomId: joinCode }))
     }
     socket.onerror = () => { setRoomError(isLocalHost ? 'Không thể kết nối máy chủ phòng. Hãy khởi động lại npm run dev.' : 'Máy chủ phòng online đang không phản hồi.'); setSocketStatus('idle') }
     socket.onclose = () => setSocketStatus('idle')
@@ -301,7 +305,7 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
               <div className="rounded-2xl border border-white/15 bg-black/10 p-5">
                 <h3 className="font-bold">Vào hội bằng mã</h3>
                 <input value={joinCode} onChange={(event) => setJoinCode(event.target.value.toUpperCase())} placeholder="CHOI-286" className="mt-4 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-center font-bold uppercase outline-none" />
-                <button onClick={() => connectRoom('joinRoom')} disabled={!/^CHOI-\d{3}$/.test(joinCode) || socketStatus === 'connecting'} className="mt-3 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:cursor-not-allowed disabled:opacity-35">Vào hội</button>
+                <button onClick={() => connectRoom('joinRoom')} disabled={!/^CHOI-\d{3,6}$/.test(joinCode) || socketStatus === 'connecting'} className="mt-3 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:cursor-not-allowed disabled:opacity-35">Vào hội</button>
               </div>
             </div> : <div className="mt-7">
               <div className="rounded-2xl border border-[#f29963]/40 bg-black/10 p-5 text-center"><p className="text-xs uppercase tracking-[.2em] text-white/55">Mã hội của bạn</p><div className="mt-2 text-3xl font-black tracking-wider text-[#f29963]">{roomCode}</div><button onClick={() => void navigator.clipboard?.writeText(roomCode)} className="mt-3 text-xs underline text-white/65">Sao chép mã</button></div>
