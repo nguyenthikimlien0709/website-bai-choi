@@ -356,8 +356,8 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
             <div className="grid gap-5 lg:grid-cols-[1fr_1.25fr]">
               <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
                 <p className="mb-4 text-center text-sm text-white/70">{message}</p>
-                <div className="mx-auto aspect-[3/4] max-w-[240px] overflow-hidden rounded-2xl border-4 border-[#f29963]/50 bg-[#063f42] p-2 shadow-xl">
-                  {currentCard ? <img src={currentCard.image} alt={currentCard.name} className="h-full w-full rounded-xl object-cover" /> : <div className="grid h-full place-items-center text-center text-white/40">Chờ Anh Hiệu<br />rút thẻ</div>}
+                <div className="mx-auto flex aspect-[3/4] max-h-[56vh] max-w-[240px] items-center justify-center overflow-hidden rounded-2xl border-4 border-[#f29963]/50 bg-[#063f42] p-2 shadow-xl">
+                  {currentCard ? <img src={currentCard.image} alt={currentCard.name} className="max-h-full max-w-full rounded-xl object-contain" /> : <div className="grid h-full place-items-center text-center text-white/40">Chờ Anh Hiệu<br />rút thẻ</div>}
                 </div>
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   <button onClick={drawNext} disabled={Boolean(winner) || (onlineMode ? playerId !== hostId : drawIndex >= deck.length - 1)} className="rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:opacity-40">{onlineMode && playerId !== hostId ? 'Chờ chủ hội' : drawIndex < 0 ? 'Bắt đầu hô' : 'Hô con tiếp'}</button>
@@ -368,7 +368,7 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
                 <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
                   <p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#f29963]">Ba thẻ trong chòi của bạn</p>
                   <div className="grid grid-cols-3 gap-3">
-                    {hand.map((card) => <div key={card.id} className={`overflow-hidden rounded-xl border-2 transition ${claimed.includes(card.id) ? 'border-[#f29963] opacity-45' : 'border-white/20'}`}><img src={card.image} alt={card.name} className="aspect-[3/4] w-full object-cover" /><p className="bg-black/25 px-1 py-2 text-center text-[10px] font-bold sm:text-sm">{claimed.includes(card.id) ? '⚑ ' : ''}{card.name}</p></div>)}
+                    {hand.map((card) => <div key={card.id} className={`overflow-hidden rounded-xl border-2 bg-[#063f42] transition ${claimed.includes(card.id) ? 'border-[#f29963] opacity-45' : 'border-white/20'}`}><div className="flex aspect-[3/4] items-center justify-center p-1"><img src={card.image} alt={card.name} className="max-h-full max-w-full object-contain" /></div><p className="bg-black/25 px-1 py-2 text-center text-[10px] font-bold sm:text-sm">{claimed.includes(card.id) ? '⚑ ' : ''}{card.name}</p></div>)}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
