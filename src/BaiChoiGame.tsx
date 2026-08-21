@@ -58,6 +58,7 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
   const [playerId, setPlayerId] = useState('')
   const [hostId, setHostId] = useState('')
   const [roomError, setRoomError] = useState('')
+  const [roomCodeCopied, setRoomCodeCopied] = useState(false)
   const [socketStatus, setSocketStatus] = useState<'idle' | 'connecting' | 'connected'>('idle')
   const [drawnCard, setDrawnCard] = useState<Card | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -132,7 +133,7 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
 
   const playCall = async (card: Card) => {
     stopAudio(false)
-    setMessage('Lắng nghe Anh Hiệu hô…')
+    setMessage('Lắng nghe Chị Hiệu hô…')
     const audio = audioRef.current || new Audio()
     audio.src = card.sound
     audio.preload = 'auto'
@@ -277,6 +278,21 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
     connectRoom('createRoom')
   }
 
+  const copyRoomCode = async () => {
+    try {
+      await navigator.clipboard.writeText(roomCode)
+    } catch {
+      const input = document.createElement('input')
+      input.value = roomCode
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      input.remove()
+    }
+    setRoomCodeCopied(true)
+    window.setTimeout(() => setRoomCodeCopied(false), 1800)
+  }
+
   return (
     <div className="fixed inset-0 z-[300] overflow-y-auto bg-[#052f32]/95 text-white backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Trò chơi Bài Chòi">
       <div className="pointer-events-none fixed inset-0 opacity-20" style={{ backgroundImage: 'url(/assets/Background-toan.jpg)', backgroundSize: 'cover' }} />
@@ -334,11 +350,11 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
               </div>
               <div className="rounded-2xl border border-white/15 bg-black/10 p-5">
                 <h3 className="font-bold">Vào hội bằng mã</h3>
-                <input value={joinCode} onChange={(event) => setJoinCode(event.target.value.toUpperCase())} placeholder="CHOI-286" className="mt-4 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-center font-bold uppercase outline-none" />
-                <button onClick={() => { void unlockAudio(); connectRoom('joinRoom') }} disabled={!/^CHOI-\d{3,6}$/.test(joinCode) || socketStatus === 'connecting'} className="mt-3 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:cursor-not-allowed disabled:opacity-35">Vào hội</button>
+                <input inputMode="numeric" value={joinCode} onChange={(event) => setJoinCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="286194" className="mt-4 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-center font-bold tracking-widest outline-none" />
+                <button onClick={() => { void unlockAudio(); connectRoom('joinRoom') }} disabled={!/^\d{6}$/.test(joinCode) || socketStatus === 'connecting'} className="mt-3 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:cursor-not-allowed disabled:opacity-35">Vào hội</button>
               </div>
             </div> : <div className="mt-7">
-              <div className="rounded-2xl border border-[#f29963]/40 bg-black/10 p-5 text-center"><p className="text-xs uppercase tracking-[.2em] text-white/55">Mã hội của bạn</p><div className="mt-2 text-3xl font-black tracking-wider text-[#f29963]">{roomCode}</div><button onClick={() => void navigator.clipboard?.writeText(roomCode)} className="mt-3 text-xs underline text-white/65">Sao chép mã</button></div>
+              <div className="rounded-2xl border border-[#f29963]/40 bg-black/10 p-5 text-center"><p className="text-xs uppercase tracking-[.2em] text-white/55">Mã hội của bạn</p><div className="mt-2 text-3xl font-black tracking-[.2em] text-[#f29963]">{roomCode}</div><button onClick={() => void copyRoomCode()} className="mt-3 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white">{roomCodeCopied ? 'Đã sao chép ✓' : 'Sao chép mã'}</button></div>
               <div className="mt-4 space-y-2">{onlinePlayers.map((player) => <div key={player.id} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3"><span className="font-semibold">{player.name} {player.id === hostId && '👑'}</span><span className={player.ready ? 'text-[#f29963]' : 'text-white/45'}>{player.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span></div>)}</div>
               {playerId !== hostId && <button onClick={() => { void unlockAudio(); socketRef.current?.send(JSON.stringify({ type: 'ready', ready: !onlinePlayers.find((player) => player.id === playerId)?.ready })) }} className="mt-5 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a]">{onlinePlayers.find((player) => player.id === playerId)?.ready ? 'Hủy sẵn sàng' : 'Tôi đã sẵn sàng'}</button>}
               {playerId === hostId && <button onClick={() => { void unlockAudio(); socketRef.current?.send(JSON.stringify({ type: 'startGame' })) }} disabled={onlinePlayers.length < 2 || onlinePlayers.some((player) => !player.ready)} className="mt-5 w-full rounded-xl bg-[#c44837] px-4 py-3 font-bold disabled:cursor-not-allowed disabled:opacity-35">{onlinePlayers.length < 2 ? 'Chờ ít nhất một người bạn…' : onlinePlayers.some((player) => !player.ready) ? 'Chờ mọi người sẵn sàng…' : 'Khai hội'}</button>}
@@ -357,7 +373,7 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
               <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
                 <p className="mb-4 text-center text-sm text-white/70">{message}</p>
                 <div className={`mx-auto flex items-center justify-center overflow-hidden rounded-2xl bg-[#063f42] p-2 shadow-xl ${currentCard ? 'w-fit max-w-full' : 'aspect-[3/4] w-full max-w-[240px]'}`}>
-                  {currentCard ? <img src={currentCard.image} alt={currentCard.name} className="h-auto max-h-[56vh] w-auto max-w-full rounded-xl object-contain" /> : <div className="grid h-full place-items-center text-center text-white/40">Chờ Anh Hiệu<br />rút thẻ</div>}
+                  {currentCard ? <img src={currentCard.image} alt={currentCard.name} className="h-auto max-h-[56vh] w-auto max-w-full rounded-xl object-contain" /> : <div className="grid h-full place-items-center text-center text-white/40">Chờ Chị Hiệu<br />rút thẻ</div>}
                 </div>
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   <button onClick={drawNext} disabled={Boolean(winner) || (onlineMode ? playerId !== hostId : drawIndex >= deck.length - 1)} className="rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:opacity-40">{onlineMode && playerId !== hostId ? 'Chờ chủ hội' : drawIndex < 0 ? 'Bắt đầu hô' : 'Hô con tiếp'}</button>

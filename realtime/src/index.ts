@@ -44,8 +44,8 @@ export default {
     const name = (url.searchParams.get('name') || '').normalize('NFC').trim().replace(/\s+/g, ' ').slice(0, 16)
     let roomId = (url.searchParams.get('roomId') || '').toUpperCase().trim()
     if (name.length < 2) return json({ error: 'Tên không hợp lệ.' }, 400)
-    if (action === 'createRoom') roomId = `CHOI-${Math.floor(100000 + Math.random() * 900000)}`
-    if (!/^CHOI-\d{3,6}$/.test(roomId)) return json({ error: 'Mã hội không hợp lệ.' }, 400)
+    if (action === 'createRoom') roomId = String(Math.floor(100000 + Math.random() * 900000))
+    if (!/^\d{6}$/.test(roomId)) return json({ error: 'Mã hội không hợp lệ.' }, 400)
 
     const room = env.ROOMS.getByName(roomId)
     const target = new URL(request.url)

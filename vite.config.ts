@@ -80,8 +80,8 @@ function baiChoiRealtimePlugin(): Plugin {
           const name = String(message.name || '').normalize('NFC').trim().replace(/\s+/g, ' ').slice(0, 16)
 
           if (message.type === 'createRoom') {
-            roomId = `CHOI-${Math.floor(100 + Math.random() * 900)}`
-            while (rooms.has(roomId)) roomId = `CHOI-${Math.floor(100 + Math.random() * 900)}`
+            roomId = String(Math.floor(100000 + Math.random() * 900000))
+            while (rooms.has(roomId)) roomId = String(Math.floor(100000 + Math.random() * 900000))
             playerId = crypto.randomUUID()
             const player: RoomPlayer = { id: playerId, name, ready: true, hand: [], claimed: [] }
             const room: GameRoom = { id: roomId, hostId: playerId, players: new Map([[playerId, player]]), status: 'waiting', deck: [], drawIndex: -1, currentCard: null }
