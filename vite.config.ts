@@ -2,6 +2,7 @@ import { defineConfig, type HtmlTagDescriptor, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
+import { WebSocketServer, type WebSocket } from 'ws'
 
 import siteConfiguration from './.figma/make/site.json'
 
@@ -23,6 +24,7 @@ export default defineConfig(({ mode }) => {
       figmaErrorOverlayReplay(),
       figmaReactRefreshBoundaryFallback(),
       figmaMakeKitPlugin({ storiesGlob: '/src/**/*.stories.{ts,tsx,js,jsx}' }),
+      baiChoiRealtimePlugin(),
     ],
     resolve: {
       alias: {
@@ -41,6 +43,100 @@ export default defineConfig(({ mode }) => {
     },
   }
 })
+
+type RoomPlayer = { id: string; name: string; ready: boolean; hand: string[]; claimed: string[] }
+type GameRoom = { id: string; hostId: string; players: Map<string, RoomPlayer>; status: 'waiting' | 'playing'; deck: string[]; drawIndex: number; currentCard: string | null }
+
+function baiChoiRealtimePlugin(): Plugin {
+  const rooms = new Map<string, GameRoom>()
+  const sockets = new Map<string, WebSocket>()
+  const cardIds = ['nhat-tro', 'nhi-bi', 'tam-quan', 'tu-huong', 'ngu-truot', 'luc-xo', 'that-nhon', 'bat-bong', 'cuu-thay', 'thai-tu']
+  const shuffle = <T,>(items: T[]) => [...items].sort(() => Math.random() - 0.5)
+  const publicRoom = (room: GameRoom) => ({
+    roomId: room.id,
+    hostId: room.hostId,
+    status: room.status,
+    players: [...room.players.values()].map(({ id, name, ready, claimed }) => ({ id, name, ready, flags: claimed.length })),
+  })
+  const send = (socket: WebSocket | undefined, data: object) => socket?.readyState === socket.OPEN && socket.send(JSON.stringify(data))
+  const broadcast = (room: GameRoom, data: object) => room.players.forEach((player) => send(sockets.get(player.id), data))
+
+  return {
+    name: 'bai-choi-realtime',
+    apply: 'serve',
+    configureServer(server) {
+      const wss = new WebSocketServer({ noServer: true })
+      server.httpServer?.on('upgrade', (request, socket, head) => {
+        if (request.url?.split('?')[0] !== '/bai-choi-ws') return
+        wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request))
+      })
+
+      wss.on('connection', (socket) => {
+        let playerId = ''
+        let roomId = ''
+        socket.on('message', (raw) => {
+          let message: any
+          try { message = JSON.parse(raw.toString()) } catch { return }
+          const name = String(message.name || '').normalize('NFC').trim().replace(/\s+/g, ' ').slice(0, 16)
+
+          if (message.type === 'createRoom') {
+            roomId = `CHOI-${Math.floor(100 + Math.random() * 900)}`
+            while (rooms.has(roomId)) roomId = `CHOI-${Math.floor(100 + Math.random() * 900)}`
+            playerId = crypto.randomUUID()
+            const player: RoomPlayer = { id: playerId, name, ready: true, hand: [], claimed: [] }
+            const room: GameRoom = { id: roomId, hostId: playerId, players: new Map([[playerId, player]]), status: 'waiting', deck: [], drawIndex: -1, currentCard: null }
+            rooms.set(roomId, room); sockets.set(playerId, socket)
+            send(socket, { type: 'roomJoined', playerId, ...publicRoom(room) })
+          }
+
+          if (message.type === 'joinRoom') {
+            roomId = String(message.roomId || '').toUpperCase().trim()
+            const room = rooms.get(roomId)
+            if (!room) return send(socket, { type: 'error', message: 'Mã hội không tồn tại hoặc đã kết thúc.' })
+            if (room.status !== 'waiting') return send(socket, { type: 'error', message: 'Hội này đã bắt đầu.' })
+            if (room.players.size >= 5) return send(socket, { type: 'error', message: 'Hội đã đủ 5 chòi.' })
+            const normalized = name.toLocaleLowerCase('vi-VN')
+            if ([...room.players.values()].some((player) => player.name.toLocaleLowerCase('vi-VN') === normalized)) return send(socket, { type: 'error', message: `Tên “${name}” đã có trong hội.` })
+            playerId = crypto.randomUUID()
+            room.players.set(playerId, { id: playerId, name, ready: false, hand: [], claimed: [] }); sockets.set(playerId, socket)
+            send(socket, { type: 'roomJoined', playerId, ...publicRoom(room) }); broadcast(room, { type: 'roomState', ...publicRoom(room) })
+          }
+
+          const room = rooms.get(roomId)
+          if (!room || !playerId) return
+          if (message.type === 'ready') {
+            const player = room.players.get(playerId); if (player) player.ready = Boolean(message.ready)
+            broadcast(room, { type: 'roomState', ...publicRoom(room) })
+          }
+          if (message.type === 'startGame' && room.hostId === playerId && room.players.size >= 2 && [...room.players.values()].every((p) => p.ready)) {
+            room.status = 'playing'; room.deck = shuffle(cardIds); room.drawIndex = -1; room.currentCard = null
+            room.players.forEach((player) => { player.hand = shuffle(cardIds).slice(0, 3); player.claimed = []; send(sockets.get(player.id), { type: 'gameStarted', hand: player.hand, ...publicRoom(room) }) })
+          }
+          if (message.type === 'draw' && room.hostId === playerId && room.status === 'playing' && room.drawIndex < room.deck.length - 1) {
+            room.drawIndex += 1; room.currentCard = room.deck[room.drawIndex]
+            broadcast(room, { type: 'cardDrawn', cardId: room.currentCard, drawIndex: room.drawIndex })
+          }
+          if (message.type === 'claim' && room.currentCard) {
+            const player = room.players.get(playerId)
+            if (!player || !player.hand.includes(room.currentCard) || player.claimed.includes(room.currentCard)) return send(socket, { type: 'claimRejected' })
+            player.claimed.push(room.currentCard)
+            broadcast(room, { type: 'flagsUpdated', playerId, flags: player.claimed.length })
+            if (player.claimed.length === 3) broadcast(room, { type: 'winner', playerId, name: player.name })
+          }
+        })
+
+        socket.on('close', () => {
+          sockets.delete(playerId)
+          const room = rooms.get(roomId); if (!room || !playerId) return
+          room.players.delete(playerId)
+          if (!room.players.size) return void rooms.delete(roomId)
+          if (room.hostId === playerId) room.hostId = room.players.keys().next().value || ''
+          broadcast(room, { type: 'roomState', ...publicRoom(room) })
+        })
+      })
+    },
+  }
+}
 
 type FigmaSiteConfiguration = {
   title?: string

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import IntroAnimation from './IntroAnimation'
 import { CARD_ASSETS } from './cardAssets'
 import { PUBLICATION_GROUPS, PUBLICATIONS_ARE_DEMOS } from './publications'
+import BaiChoiGame from './BaiChoiGame'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Lang = 'VIE' | 'ENG'
@@ -276,7 +277,7 @@ function DragonDivider() {
 }
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
-function Nav({ lang, setLang, c }: { lang: Lang; setLang: (l: Lang) => void; c: typeof content.VIE }) {
+function Nav({ lang, setLang, c, onPlay }: { lang: Lang; setLang: (l: Lang) => void; c: typeof content.VIE; onPlay: () => void }) {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -353,8 +354,8 @@ function Nav({ lang, setLang, c }: { lang: Lang; setLang: (l: Lang) => void; c: 
           </div>
 
           {/* CTA */}
-          <a
-            href="#rules"
+          <button
+            onClick={onPlay}
             className="hidden sm:block px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95"
             style={{
               background: 'linear-gradient(135deg, #C44837 0%, #7C2421 100%)',
@@ -364,7 +365,7 @@ function Nav({ lang, setLang, c }: { lang: Lang; setLang: (l: Lang) => void; c: 
             }}
           >
             {c.nav.cta}
-          </a>
+          </button>
 
           {/* Mobile hamburger */}
           <button
@@ -398,11 +399,11 @@ function Nav({ lang, setLang, c }: { lang: Lang; setLang: (l: Lang) => void; c: 
                 </button>
               ))}
             </div>
-            <a href="#rules" onClick={() => setMobileOpen(false)}
+            <button onClick={() => { setMobileOpen(false); onPlay() }}
               className="flex-1 text-center px-4 py-2 rounded-full text-sm font-semibold"
               style={{ background: '#C44837', color: '#FFFFFF' }}>
               {c.nav.cta}
-            </a>
+            </button>
           </div>
         </div>
       )}
@@ -430,7 +431,7 @@ function ReferenceScreen({
   )
 }
 
-function ReferenceLanding({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
+function ReferenceLanding({ c, lang, onPlay }: { c: typeof content.VIE; lang: Lang; onPlay: () => void }) {
   const isVietnamese = lang === 'VIE'
   const overview = isVietnamese
     ? 'Ngày 07/12/2017, Bài Chòi Trung Bộ Việt Nam được UNESCO ghi danh là Di sản văn hóa phi vật thể đại diện của nhân loại, tôn vinh giá trị nghệ thuật và tinh thần cộng đồng.'
@@ -453,13 +454,13 @@ function ReferenceLanding({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
 
             <div className="absolute bottom-[31%] left-[51%] right-[4%] z-30 hidden text-center lg:block">
               <div className="grid grid-cols-2 gap-4">
-                <a
-                  href="#overview"
+                <button
+                  onClick={onPlay}
                   className="rounded-2xl border border-white/25 px-4 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 xl:text-base"
-                  style={{ background: 'rgba(4,55,79,0.84)', boxShadow: '0 10px 28px rgba(0,28,48,0.3)' }}
+                  style={{ background: 'rgba(196,72,55,0.94)', boxShadow: '0 10px 28px rgba(0,28,48,0.3)' }}
                 >
-                  {isVietnamese ? 'Khám Phá' : 'Explore'}
-                </a>
+                  {isVietnamese ? 'Chơi Ngay' : 'Play Now'}
+                </button>
                 <a
                   href="#rules"
                   className="rounded-2xl border border-white/25 px-4 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 xl:text-base"
@@ -472,13 +473,13 @@ function ReferenceLanding({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
 
             <div className="absolute bottom-[26%] left-[48%] right-[3%] z-30 text-center lg:hidden">
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
-              <a
-                href="#overview"
+              <button
+                onClick={onPlay}
                 className="rounded-lg border border-white/25 px-2 py-2 text-[10px] font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 min-[420px]:text-xs sm:rounded-xl sm:px-3 sm:py-2.5 sm:text-sm"
-                style={{ background: 'rgba(4,55,79,0.82)', boxShadow: '0 6px 18px rgba(0,28,48,0.26)' }}
+                style={{ background: 'rgba(196,72,55,0.94)', boxShadow: '0 6px 18px rgba(0,28,48,0.26)' }}
               >
-                {isVietnamese ? 'Khám Phá' : 'Explore'}
-              </a>
+                {isVietnamese ? 'Chơi Ngay' : 'Play Now'}
+              </button>
               <a
                 href="#rules"
                 className="rounded-lg border border-white/25 px-2 py-2 text-[10px] font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 min-[420px]:text-xs sm:rounded-xl sm:px-3 sm:py-2.5 sm:text-sm"
@@ -1655,6 +1656,7 @@ export default function App() {
   // ── Intro animation state ──
   const [introShown, setIntroShown] = useState(false)
   const [showContent, setShowContent] = useState(false)
+  const [gameOpen, setGameOpen] = useState(false)
 
   useEffect(() => {
     document.title = 'Chòi'
@@ -1712,7 +1714,7 @@ export default function App() {
           transition: 'opacity 0.8s ease',
         }}
       >
-        <Nav lang={lang} setLang={setLang} c={c} />
+        <Nav lang={lang} setLang={setLang} c={c} onPlay={() => setGameOpen(true)} />
         <div className="relative isolate">
           <div
             aria-hidden="true"
@@ -1726,7 +1728,7 @@ export default function App() {
             }}
           />
           <div className={`relative z-10 ${showContent ? 'site-content-enter' : ''}`}>
-            <ReferenceLanding c={c} lang={lang} />
+            <ReferenceLanding c={c} lang={lang} onPlay={() => setGameOpen(true)} />
             <Characters c={c} />
             <Rules c={c} />
             <Publications c={c} />
@@ -1734,6 +1736,7 @@ export default function App() {
           </div>
         </div>
       </div>
+      {gameOpen && <BaiChoiGame onClose={() => setGameOpen(false)} />}
     </>
   )
 }
