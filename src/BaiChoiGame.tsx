@@ -119,16 +119,23 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
 
   const connectRoom = (action: 'createRoom' | 'joinRoom') => {
     setRoomError('')
+    const configuredRealtimeUrl = import.meta.env.VITE_REALTIME_URL?.trim()
+    const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+    if (!configuredRealtimeUrl && !isLocalHost) {
+      setRoomError('Phòng chơi online chưa được kết nối với máy chủ realtime trên bản public.')
+      return
+    }
     setSocketStatus('connecting')
     socketRef.current?.close()
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const socket = new WebSocket(`${protocol}//${window.location.host}/bai-choi-ws`)
+    const realtimeUrl = configuredRealtimeUrl || `${protocol}//${window.location.host}/bai-choi-ws`
+    const socket = new WebSocket(realtimeUrl)
     socketRef.current = socket
     socket.onopen = () => {
       setSocketStatus('connected')
       socket.send(JSON.stringify({ type: action, name: playerName, roomId: joinCode }))
     }
-    socket.onerror = () => { setRoomError('Không thể kết nối máy chủ phòng. Hãy chạy lại npm run dev.'); setSocketStatus('idle') }
+    socket.onerror = () => { setRoomError(isLocalHost ? 'Không thể kết nối máy chủ phòng. Hãy khởi động lại npm run dev.' : 'Máy chủ phòng online đang không phản hồi.'); setSocketStatus('idle') }
     socket.onclose = () => setSocketStatus('idle')
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data)
