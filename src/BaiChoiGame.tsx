@@ -79,11 +79,33 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
     return () => window.clearTimeout(timer)
   }, [countdown, screen])
 
-  const stopAudio = () => {
+  const stopAudio = (release = true) => {
     if (!audioRef.current) return
     audioRef.current.pause()
     audioRef.current.currentTime = 0
-    audioRef.current = null
+    audioRef.current.onended = null
+    if (release) {
+      audioRef.current.removeAttribute('src')
+      audioRef.current.load()
+      audioRef.current = null
+    }
+  }
+
+  const unlockAudio = async () => {
+    if (audioRef.current) return
+    const audio = new Audio()
+    audio.preload = 'auto'
+    audio.src = CARDS[0].sound
+    audio.volume = 0
+    audioRef.current = audio
+    try {
+      await audio.play()
+      audio.pause()
+      audio.currentTime = 0
+      audio.volume = 1
+    } catch {
+      audio.volume = 1
+    }
   }
 
   useEffect(() => () => {
@@ -109,12 +131,15 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
   }
 
   const playCall = async (card: Card) => {
-    stopAudio()
+    stopAudio(false)
     setMessage('Lắng nghe Anh Hiệu hô…')
-    const audio = new Audio(card.sound)
+    const audio = audioRef.current || new Audio()
+    audio.src = card.sound
+    audio.preload = 'auto'
+    audio.volume = 1
     audioRef.current = audio
     audio.onended = () => setMessage(`Quân ${card.name}! Nếu có thẻ, hãy gõ mõ.`)
-    try { await audio.play() } catch { setMessage(`Quân ${card.name}! Nếu có thẻ, hãy gõ mõ.`) }
+    try { await audio.play() } catch { setMessage(`Quân ${card.name}! Chạm GÕ MÕ nếu bạn có thẻ. Trình duyệt đang chặn âm thanh.`) }
   }
 
   const connectRoom = (action: 'createRoom' | 'joinRoom') => {
@@ -223,8 +248,10 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
   const finishGame = (winnerName: string) => {
     setWinner(winnerName)
     setMessage(winnerName === playerName ? 'TỚI! Ba cờ đã về chòi của bạn!' : `${winnerName} đã hô TỚI!`)
-    audioRef.current?.pause()
-    const audio = new Audio('/sound/Toi-Goi.mp3')
+    stopAudio(false)
+    const audio = audioRef.current || new Audio()
+    audio.src = '/sound/Toi-Goi.mp3'
+    audio.volume = 1
     audioRef.current = audio
     void audio.play().catch(() => undefined)
     window.setTimeout(() => setScreen('result'), 1400)
@@ -245,7 +272,10 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
     if (nextClaimed.length === 3) window.setTimeout(() => finishGame(playerName), 500)
   }
 
-  const createRoom = () => connectRoom('createRoom')
+  const createRoom = () => {
+    void unlockAudio()
+    connectRoom('createRoom')
+  }
 
   return (
     <div className="fixed inset-0 z-[300] overflow-y-auto bg-[#052f32]/95 text-white backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Trò chơi Bài Chòi">
@@ -305,13 +335,13 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
               <div className="rounded-2xl border border-white/15 bg-black/10 p-5">
                 <h3 className="font-bold">Vào hội bằng mã</h3>
                 <input value={joinCode} onChange={(event) => setJoinCode(event.target.value.toUpperCase())} placeholder="CHOI-286" className="mt-4 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-center font-bold uppercase outline-none" />
-                <button onClick={() => connectRoom('joinRoom')} disabled={!/^CHOI-\d{3,6}$/.test(joinCode) || socketStatus === 'connecting'} className="mt-3 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:cursor-not-allowed disabled:opacity-35">Vào hội</button>
+                <button onClick={() => { void unlockAudio(); connectRoom('joinRoom') }} disabled={!/^CHOI-\d{3,6}$/.test(joinCode) || socketStatus === 'connecting'} className="mt-3 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:cursor-not-allowed disabled:opacity-35">Vào hội</button>
               </div>
             </div> : <div className="mt-7">
               <div className="rounded-2xl border border-[#f29963]/40 bg-black/10 p-5 text-center"><p className="text-xs uppercase tracking-[.2em] text-white/55">Mã hội của bạn</p><div className="mt-2 text-3xl font-black tracking-wider text-[#f29963]">{roomCode}</div><button onClick={() => void navigator.clipboard?.writeText(roomCode)} className="mt-3 text-xs underline text-white/65">Sao chép mã</button></div>
               <div className="mt-4 space-y-2">{onlinePlayers.map((player) => <div key={player.id} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3"><span className="font-semibold">{player.name} {player.id === hostId && '👑'}</span><span className={player.ready ? 'text-[#f29963]' : 'text-white/45'}>{player.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span></div>)}</div>
-              {playerId !== hostId && <button onClick={() => socketRef.current?.send(JSON.stringify({ type: 'ready', ready: !onlinePlayers.find((player) => player.id === playerId)?.ready }))} className="mt-5 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a]">{onlinePlayers.find((player) => player.id === playerId)?.ready ? 'Hủy sẵn sàng' : 'Tôi đã sẵn sàng'}</button>}
-              {playerId === hostId && <button onClick={() => socketRef.current?.send(JSON.stringify({ type: 'startGame' }))} disabled={onlinePlayers.length < 2 || onlinePlayers.some((player) => !player.ready)} className="mt-5 w-full rounded-xl bg-[#c44837] px-4 py-3 font-bold disabled:cursor-not-allowed disabled:opacity-35">{onlinePlayers.length < 2 ? 'Chờ ít nhất một người bạn…' : onlinePlayers.some((player) => !player.ready) ? 'Chờ mọi người sẵn sàng…' : 'Khai hội'}</button>}
+              {playerId !== hostId && <button onClick={() => { void unlockAudio(); socketRef.current?.send(JSON.stringify({ type: 'ready', ready: !onlinePlayers.find((player) => player.id === playerId)?.ready })) }} className="mt-5 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a]">{onlinePlayers.find((player) => player.id === playerId)?.ready ? 'Hủy sẵn sàng' : 'Tôi đã sẵn sàng'}</button>}
+              {playerId === hostId && <button onClick={() => { void unlockAudio(); socketRef.current?.send(JSON.stringify({ type: 'startGame' })) }} disabled={onlinePlayers.length < 2 || onlinePlayers.some((player) => !player.ready)} className="mt-5 w-full rounded-xl bg-[#c44837] px-4 py-3 font-bold disabled:cursor-not-allowed disabled:opacity-35">{onlinePlayers.length < 2 ? 'Chờ ít nhất một người bạn…' : onlinePlayers.some((player) => !player.ready) ? 'Chờ mọi người sẵn sàng…' : 'Khai hội'}</button>}
             </div>}
             {roomError && <p className="mt-4 rounded-xl bg-[#7c2421]/50 px-4 py-3 text-sm text-[#ffd3c2]">{roomError}</p>}
           </section>
