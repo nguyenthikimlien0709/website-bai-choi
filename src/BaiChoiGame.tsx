@@ -356,7 +356,7 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
             <div className="grid gap-5 lg:grid-cols-[1fr_1.25fr]">
               <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
                 <p className="mb-4 text-center text-sm text-white/70">{message}</p>
-                <div className={`mx-auto flex items-center justify-center overflow-hidden rounded-2xl border-4 border-[#f29963]/50 bg-[#063f42] p-2 shadow-xl ${currentCard ? 'w-fit max-w-full' : 'aspect-[3/4] w-full max-w-[240px]'}`}>
+                <div className={`mx-auto flex items-center justify-center overflow-hidden rounded-2xl bg-[#063f42] p-2 shadow-xl ${currentCard ? 'w-fit max-w-full' : 'aspect-[3/4] w-full max-w-[240px]'}`}>
                   {currentCard ? <img src={currentCard.image} alt={currentCard.name} className="h-auto max-h-[56vh] w-auto max-w-full rounded-xl object-contain" /> : <div className="grid h-full place-items-center text-center text-white/40">Chờ Anh Hiệu<br />rút thẻ</div>}
                 </div>
                 <div className="mt-5 grid grid-cols-2 gap-3">
