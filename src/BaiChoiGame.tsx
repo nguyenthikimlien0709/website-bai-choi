@@ -175,14 +175,31 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     const baseRealtimeUrl = configuredRealtimeUrl || `${protocol}//${window.location.host}/bai-choi-ws`
     const realtimeUrl = new URL(baseRealtimeUrl)
+
+    // Mã phòng do server tạo có dạng CHOI-123456.
+    // Người chơi có thể nhập "123456" hoặc đầy đủ "CHOI-123456".
+    const normalizedRoomCode =
+      action === 'joinRoom'
+        ? (joinCode.toUpperCase().startsWith('CHOI-')
+            ? joinCode.toUpperCase()
+            : `CHOI-${joinCode}`)
+        : ''
+
     realtimeUrl.searchParams.set('action', action)
     realtimeUrl.searchParams.set('name', playerName)
-    if (action === 'joinRoom') realtimeUrl.searchParams.set('roomId', joinCode)
+    if (action === 'joinRoom') realtimeUrl.searchParams.set('roomId', normalizedRoomCode)
+
     const socket = new WebSocket(realtimeUrl.toString())
     socketRef.current = socket
     socket.onopen = () => {
       setSocketStatus('connected')
-      if (!configuredRealtimeUrl) socket.send(JSON.stringify({ type: action, name: playerName, roomId: joinCode }))
+      if (!configuredRealtimeUrl) {
+        socket.send(JSON.stringify({
+          type: action,
+          name: playerName,
+          roomId: normalizedRoomCode,
+        }))
+      }
     }
     socket.onerror = () => { setRoomError(isLocalHost ? 'Không thể kết nối máy chủ phòng. Hãy khởi động lại npm run dev.' : 'Máy chủ phòng online đang không phản hồi.'); setSocketStatus('idle') }
     socket.onclose = () => setSocketStatus('idle')
@@ -372,8 +389,27 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
               </div>
               <div className="rounded-2xl border border-white/15 bg-black/10 p-5">
                 <h3 className="font-bold">Vào hội bằng mã</h3>
-                <input inputMode="numeric" value={joinCode} onChange={(event) => setJoinCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="286194" className="mt-4 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-center font-bold tracking-widest outline-none" />
-                <button onClick={() => { void unlockAudio(); connectRoom('joinRoom') }} disabled={!/^\d{6}$/.test(joinCode) || socketStatus === 'connecting'} className="mt-3 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:cursor-not-allowed disabled:opacity-35">Vào hội</button>
+                <input
+                  value={joinCode}
+                  onChange={(event) => {
+                    const value = event.target.value
+                      .toUpperCase()
+                      .replace(/\s/g, '')
+                      .replace(/[^A-Z0-9-]/g, '')
+                      .slice(0, 11)
+                    setJoinCode(value)
+                  }}
+                  placeholder="CHOI-286194 hoặc 286194"
+                  autoCapitalize="characters"
+                  className="mt-4 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-center font-bold tracking-widest outline-none"
+                />
+                <button
+                  onClick={() => { void unlockAudio(); connectRoom('joinRoom') }}
+                  disabled={!/^(CHOI-)?\d{6}$/i.test(joinCode) || socketStatus === 'connecting'}
+                  className="mt-3 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  Vào hội
+                </button>
               </div>
             </div> : <div className="mt-7">
               <div className="rounded-2xl border border-[#f29963]/40 bg-black/10 p-5 text-center"><p className="text-xs uppercase tracking-[.2em] text-white/55">Mã hội của bạn</p><div className="mt-2 text-3xl font-black tracking-[.2em] text-[#f29963]">{roomCode}</div><button onClick={() => void copyRoomCode()} className="mt-3 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white">{roomCodeCopied ? 'Đã sao chép ✓' : 'Sao chép mã'}</button></div>
