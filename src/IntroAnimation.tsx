@@ -557,7 +557,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
 
   useEffect(() => {
     const loop = (now: number) => {
-      const dt = prevMsRef.current ? now - prevMsRef.current : 16
+      const dt = prevMsRef.current ? Math.min(now - prevMsRef.current, 32) : 16
       prevMsRef.current = now
       const currentPhase = phaseRef.current
       const needsFrame = currentPhase === 'choi-appear'
@@ -571,9 +571,9 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
       if (currentPhase === 'cards-line') {
         lineFormTRef.current += dt
       }
-      // React renders the whole intro tree on every tick. A stable 40 FPS looks
-      // smooth while leaving enough main-thread/GPU time for image compositing.
-      const frameInterval = 25
+      // Keep the card orbit fluid on desktop. Mobile stays at 40 FPS to avoid
+      // overloading lower-power GPUs while preserving a steady cadence.
+      const frameInterval = window.innerWidth < 768 ? 25 : 16
       if (needsFrame && now - lastPaintMsRef.current >= frameInterval) {
         lastPaintMsRef.current = now
         setFrame(f => f + 1)
