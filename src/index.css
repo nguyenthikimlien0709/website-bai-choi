@@ -389,10 +389,29 @@ a {
 }
 
 .site-background-enter {
-  animation:
-    site-background-arrival 1.5s cubic-bezier(0.22, 1, 0.36, 1) both,
-    site-background-breathe 16s ease-in-out 1.5s infinite alternate;
+  animation: site-background-arrival 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: transform, opacity;
+}
+
+/* Skip layout and paint work for long landing-page sections until they are
+   close to the viewport. This is especially noticeable on mobile devices. */
+.web-entered section:not(#home) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
+@media (max-width: 768px), (prefers-reduced-motion: reduce) {
+  .home-hero-composite,
+  .home-hero-stage::after,
+  .intro-float-slow img,
+  .gold-shimmer,
+  .wave-bar {
+    animation: none !important;
+  }
+
+  nav {
+    backdrop-filter: none !important;
+  }
 }
 
 .site-content-enter {

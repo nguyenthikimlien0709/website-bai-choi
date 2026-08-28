@@ -333,7 +333,7 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[300] overflow-y-auto bg-[#052f32]/95 text-white backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Trò chơi Bài Chòi">
+    <div className="fixed inset-0 z-[300] overflow-y-auto bg-[#052f32]/[0.98] text-white" role="dialog" aria-modal="true" aria-label="Trò chơi Bài Chòi">
       <div className="pointer-events-none fixed inset-0 opacity-20" style={{ backgroundImage: 'url(/assets/Background-toan.jpg)', backgroundSize: 'cover' }} />
       <button onClick={leaveGame} className="fixed right-4 top-4 z-20 grid h-11 w-11 place-items-center rounded-full border border-white/25 bg-black/20 text-xl hover:bg-white/10" aria-label="Đóng trò chơi">×</button>
       <main className="relative mx-auto flex min-h-full w-full max-w-6xl items-center justify-center px-4 py-20">

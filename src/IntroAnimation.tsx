@@ -571,8 +571,10 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
       if (currentPhase === 'cards-line') {
         lineFormTRef.current += dt
       }
-      const frameInterval = window.innerWidth < 640 ? 25 : 0
-      if (needsFrame && (frameInterval === 0 || now - lastPaintMsRef.current >= frameInterval)) {
+      // React renders the whole intro tree on every tick. A stable 40 FPS looks
+      // smooth while leaving enough main-thread/GPU time for image compositing.
+      const frameInterval = 25
+      if (needsFrame && now - lastPaintMsRef.current >= frameInterval) {
         lastPaintMsRef.current = now
         setFrame(f => f + 1)
       }
@@ -1211,13 +1213,9 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
               : `translate(-50%, -50%) translate3d(${sceneCardX}px, ${sceneCardY}px, 0) scale(${sceneCardScale}) rotateZ(${cardRot}deg)`,
             opacity: cardOpacity,
             zIndex: lineOn ? 150 + item.index : item.zIdx,
-            filter: compactIntro
-              ? lineOn
-                ? 'drop-shadow(0 7px 10px rgba(0,0,0,0.42))'
-                : 'drop-shadow(0 6px 10px rgba(0,0,0,0.46))'
-              : lineOn
-                ? `drop-shadow(0 16px 30px rgba(0,0,0,0.62)) drop-shadow(0 0 ${7 + beatPulse * 24}px rgba(216,176,105,${0.14 + beatPulse * 0.36}))`
-                : `drop-shadow(0 ${15 * item.pose.scale}px ${25 * item.pose.scale}px rgba(0,0,0,0.7)) drop-shadow(0 0 ${4 + beatPulse * 12}px rgba(216,176,105,${beatPulse * 0.24}))`,
+            filter: lineOn
+              ? 'drop-shadow(0 10px 16px rgba(0,0,0,0.5))'
+              : 'drop-shadow(0 7px 12px rgba(0,0,0,0.48))',
             pointerEvents: 'none',
             transition,
             transitionDelay: curtainOn ? `${Math.abs(item.index - 4.5) * 28}ms` : '0ms',
