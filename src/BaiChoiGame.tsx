@@ -60,13 +60,14 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
   const [roomError, setRoomError] = useState('')
   const [roomCodeCopied, setRoomCodeCopied] = useState(false)
   const [socketStatus, setSocketStatus] = useState<'idle' | 'connecting' | 'connected'>('idle')
-  const [drawnCard, setDrawnCard] = useState<Card | null>(null)
+  const [revealedCard, setRevealedCard] = useState<Card | null>(null)
+  const [isCalling, setIsCalling] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const socketRef = useRef<WebSocket | null>(null)
   const playerIdRef = useRef('')
   const drawnCardRef = useRef<Card | null>(null)
 
-  const currentCard = onlineMode ? drawnCard : drawIndex >= 0 ? deck[drawIndex] : null
+  const currentCard = revealedCard
   const canClaim = Boolean(currentCard && hand.some((card) => card.id === currentCard.id) && !claimed.includes(currentCard.id))
   const players = useMemo(() => onlineMode ? onlinePlayers.map((player) => player.name) : [playerName, ...BOT_NAMES], [onlineMode, onlinePlayers, playerName])
 
@@ -133,14 +134,32 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
 
   const playCall = async (card: Card) => {
     stopAudio(false)
+    setRevealedCard(null)
+    setIsCalling(true)
     setMessage('Lắng nghe Chị Hiệu hô…')
+
     const audio = audioRef.current || new Audio()
     audio.src = card.sound
     audio.preload = 'auto'
     audio.volume = 1
     audioRef.current = audio
-    audio.onended = () => setMessage(`Quân ${card.name}! Nếu có thẻ, hãy gõ mõ.`)
-    try { await audio.play() } catch { setMessage(`Quân ${card.name}! Chạm GÕ MÕ nếu bạn có thẻ. Trình duyệt đang chặn âm thanh.`) }
+
+    await new Promise<void>((resolve) => {
+      const revealCard = () => {
+        setRevealedCard(card)
+        setIsCalling(false)
+        setMessage(`Quân ${card.name}! Nếu có thẻ, hãy gõ mõ.`)
+        resolve()
+      }
+
+      audio.onended = revealCard
+      audio.play().catch(() => {
+        setRevealedCard(card)
+        setIsCalling(false)
+        setMessage(`Quân ${card.name}! Chạm GÕ MÕ nếu bạn có thẻ. Trình duyệt đang chặn âm thanh.`)
+        resolve()
+      })
+    })
   }
 
   const connectRoom = (action: 'createRoom' | 'joinRoom') => {
@@ -176,11 +195,11 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
       }
       if (data.type === 'roomState') { setHostId(data.hostId); setOnlinePlayers(data.players) }
       if (data.type === 'gameStarted') {
-        setHostId(data.hostId); setOnlinePlayers(data.players); setHand(data.hand.map((id: string) => CARDS.find((card) => card.id === id)).filter(Boolean)); setClaimed([]); setDrawnCard(null); setDrawIndex(-1); setWinner(''); setMessage('Hội đã khai. Chủ hội sẽ rút quân đầu tiên!'); setScreen('playing')
+        setHostId(data.hostId); setOnlinePlayers(data.players); setHand(data.hand.map((id: string) => CARDS.find((card) => card.id === id)).filter(Boolean)); setClaimed([]); setRevealedCard(null); setIsCalling(false); setDrawIndex(-1); setWinner(''); setMessage('Hội đã khai. Chủ hội sẽ rút quân đầu tiên!'); setScreen('playing')
       }
       if (data.type === 'cardDrawn') {
         const card = CARDS.find((item) => item.id === data.cardId)
-        if (card) { drawnCardRef.current = card; setDrawnCard(card); setDrawIndex(data.drawIndex); void playCall(card) }
+        if (card) { drawnCardRef.current = card; setRevealedCard(null); setDrawIndex(data.drawIndex); void playCall(card) }
       }
       if (data.type === 'flagsUpdated') {
         setOnlinePlayers((previous) => previous.map((player) => player.id === data.playerId ? { ...player, flags: data.flags } : player))
@@ -213,6 +232,8 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
     setHand(shuffle(CARDS).slice(0, 3))
     setDrawIndex(-1)
     setClaimed([])
+    setRevealedCard(null)
+    setIsCalling(false)
     setBotFlags([0, 0, 0, 0])
     setWinner('')
     setMessage('Hội đã đủ chòi. Mời bạn nghe câu hô đầu tiên!')
@@ -220,11 +241,12 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
   }
 
   const drawNext = async () => {
+    if (winner || isCalling) return
     if (onlineMode) {
       socketRef.current?.send(JSON.stringify({ type: 'draw' }))
       return
     }
-    if (drawIndex >= deck.length - 1 || winner) return
+    if (drawIndex >= deck.length - 1) return
     const nextIndex = drawIndex + 1
     const card = deck[nextIndex]
     setDrawIndex(nextIndex)
@@ -371,13 +393,13 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
             </header>
             <div className="grid gap-5 lg:grid-cols-[1fr_1.25fr]">
               <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
-                <p className="mb-4 text-center text-sm text-white/70">{message}</p>
+              <p className="mb-4 text-center text-sm text-white/70">{message}</p>
                 <div className={`mx-auto flex items-center justify-center overflow-hidden rounded-2xl bg-[#063f42] p-2 shadow-xl ${currentCard ? 'w-fit max-w-full' : 'aspect-[3/4] w-full max-w-[240px]'}`}>
-                  {currentCard ? <img src={currentCard.image} alt={currentCard.name} className="h-auto max-h-[56vh] w-auto max-w-full rounded-xl object-contain" /> : <div className="grid h-full place-items-center text-center text-white/40">Chờ Chị Hiệu<br />rút thẻ</div>}
+                  {currentCard ? <img src={currentCard.image} alt={currentCard.name} className="h-auto max-h-[56vh] w-auto max-w-full rounded-xl object-contain" /> : <div className="grid h-full place-items-center text-center text-white/40">{isCalling ? <>Đang nghe câu hô…<br />Hát xong mới mở thẻ</> : <>Chờ Chị Hiệu<br />rút thẻ</>}</div>}
                 </div>
                 <div className="mt-5 grid grid-cols-2 gap-3">
-                  <button onClick={drawNext} disabled={Boolean(winner) || (onlineMode ? playerId !== hostId : drawIndex >= deck.length - 1)} className="rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:opacity-40">{onlineMode && playerId !== hostId ? 'Chờ chủ hội' : drawIndex < 0 ? 'Bắt đầu hô' : 'Hô con tiếp'}</button>
-                  <button onClick={claimCard} disabled={!currentCard || Boolean(winner)} className={`rounded-xl px-4 py-3 font-black transition ${canClaim ? 'animate-pulse bg-[#c44837] text-white' : 'bg-white/10 text-white/45'}`}>GÕ MÕ!</button>
+                  <button onClick={drawNext} disabled={Boolean(winner) || isCalling || (onlineMode ? playerId !== hostId : drawIndex >= deck.length - 1)} className="rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:opacity-40">{isCalling ? 'Đang hô…' : onlineMode && playerId !== hostId ? 'Chờ chủ hội' : drawIndex < 0 ? 'Bắt đầu hô' : 'Hô con tiếp'}</button>
+                  <button onClick={claimCard} disabled={isCalling || !currentCard || Boolean(winner)} className={`rounded-xl px-4 py-3 font-black transition ${canClaim ? 'animate-pulse bg-[#c44837] text-white' : 'bg-white/10 text-white/45'}`}>GÕ MÕ!</button>
                 </div>
               </div>
               <div className="space-y-5">

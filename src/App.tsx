@@ -106,7 +106,7 @@ const content = {
         { name: 'Ngũ Trượt', symbol: '五', meaning: 'Chuyển động linh hoạt tượng trưng cho khả năng ứng biến và tinh thần vượt qua thử thách.' },
         { name: 'Lục Xơ', symbol: '六', meaning: 'Khung dệt và sợi tơ tôn vinh đôi tay khéo léo của người thợ cùng những nghề thủ công truyền thống.' },
         { name: 'Thất Nhọn', symbol: '七', meaning: 'Hình khối sắc nhọn tượng trưng cho sự tỉnh táo, quyết đoán và nguồn năng lượng mạnh mẽ.' },
-        { name: 'Bát Bồng', symbol: '八', meaning: 'Hình ảnh bồng bế gợi tình thân, sự chở che và hơi ấm của gia đình.' },
+        { name: 'Bát Bồng', symbol: '八', meaning: 'Bát Bồng tượng trưng cho sự khéo léo, uyển chuyển và duyên dáng. Hình ảnh người phụ nữ nâng bát trong điệu múa gợi nên không khí hội hè dân gian và vẻ đẹp mềm mại của văn hóa Bài Chòi.' },
         { name: 'Cửu Thầy', symbol: '九', meaning: 'Bút nghiên và người thầy tượng trưng cho tri thức, đạo học và sự truyền dạy qua nhiều thế hệ.' },
         { name: 'Thái Tử', symbol: '王', meaning: 'Hình tượng thái tử biểu trưng cho phẩm chất cao quý, trách nhiệm và khát vọng hướng tới tương lai.' },
       ],
