@@ -748,3 +748,1671 @@ a {
     animation: none;
   }
 }
+/* ===================================================== */
+/* BÀI CHÒI - KHU VỰC RÚT QUÂN */
+/* ===================================================== */
+
+.bai-choi-draw-stage {
+  position: relative;
+
+  width: 100%;
+  min-height: 470px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  border-radius: 28px;
+
+  background:
+    radial-gradient(
+      circle at 50% 53%,
+      rgba(255, 218, 96, 0.10),
+      transparent 33%
+    ),
+    radial-gradient(
+      circle at 50% 90%,
+      rgba(249, 180, 60, 0.13),
+      transparent 37%
+    ),
+    linear-gradient(
+      180deg,
+      #063f42 0%,
+      #053638 100%
+    );
+
+  perspective: 1200px;
+}
+
+
+/* ===================================================== */
+/* ÁNH SÁNG PHÍA SAU */
+/* ===================================================== */
+
+.draw-stage-light {
+  position: absolute;
+
+  left: 50%;
+  top: 53%;
+
+  width: 320px;
+  height: 430px;
+
+  transform:
+    translate(-50%, -50%)
+    scale(0.75);
+
+  border-radius: 50%;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(255, 235, 138, 0.62) 0%,
+      rgba(255, 189, 65, 0.25) 33%,
+      rgba(255, 157, 57, 0.08) 55%,
+      transparent 73%
+    );
+
+  filter: blur(24px);
+
+  transition:
+    opacity .5s ease,
+    transform .5s ease;
+}
+
+
+.draw-stage-light-active {
+  opacity: 1;
+
+  transform:
+    translate(-50%, -50%)
+    scale(1);
+
+  animation:
+    drawLightPulse 1.7s ease-in-out infinite;
+}
+
+
+@keyframes drawLightPulse {
+
+  0%,
+  100% {
+    opacity: .55;
+
+    transform:
+      translate(-50%, -50%)
+      scale(.90);
+  }
+
+  50% {
+    opacity: 1;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1.10);
+  }
+
+}
+
+
+/* ===================================================== */
+/* TIA SÁNG */
+/* ===================================================== */
+
+.draw-rays {
+  position: absolute;
+
+  left: 50%;
+  top: 56%;
+
+  width: 520px;
+  height: 520px;
+
+  transform:
+    translate(-50%, -50%);
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  background:
+
+    conic-gradient(
+      from 0deg,
+
+      transparent 0deg,
+      rgba(255,235,156,.14) 6deg,
+      transparent 11deg,
+
+      transparent 38deg,
+      rgba(255,215,108,.11) 44deg,
+      transparent 50deg,
+
+      transparent 83deg,
+      rgba(255,242,174,.16) 88deg,
+      transparent 95deg,
+
+      transparent 130deg,
+      rgba(255,219,116,.12) 136deg,
+      transparent 142deg,
+
+      transparent 177deg,
+      rgba(255,238,160,.14) 183deg,
+      transparent 191deg,
+
+      transparent 225deg,
+      rgba(255,213,102,.13) 231deg,
+      transparent 239deg,
+
+      transparent 275deg,
+      rgba(255,238,160,.12) 282deg,
+      transparent 290deg,
+
+      transparent 327deg,
+      rgba(255,221,120,.13) 333deg,
+      transparent 340deg
+    );
+
+  filter: blur(2px);
+}
+
+
+.draw-rays-active {
+  opacity: 1;
+
+  animation:
+    drawRaysRotate 13s linear infinite;
+}
+
+
+@keyframes drawRaysRotate {
+
+  from {
+    transform:
+      translate(-50%, -50%)
+      rotate(0deg);
+  }
+
+  to {
+    transform:
+      translate(-50%, -50%)
+      rotate(360deg);
+  }
+
+}
+
+
+/* ===================================================== */
+/* VÒNG MA THUẬT */
+/* ===================================================== */
+
+
+
+
+
+
+
+
+
+
+
+
+@keyframes magicSpin {
+
+  from {
+    transform:
+      translate(-50%, -50%)
+      rotate(0deg);
+  }
+
+  to {
+    transform:
+      translate(-50%, -50%)
+      rotate(360deg);
+  }
+
+}
+
+
+@keyframes magicSpinReverse {
+
+  from {
+    transform:
+      translate(-50%, -50%)
+      rotate(360deg);
+  }
+
+  to {
+    transform:
+      translate(-50%, -50%)
+      rotate(0deg);
+  }
+
+}
+
+
+@keyframes magicPulse {
+
+  0%,
+  100% {
+    opacity: .45;
+    scale: .92;
+  }
+
+  50% {
+    opacity: 1;
+    scale: 1.08;
+  }
+
+}
+
+
+@keyframes magicStarPulse {
+
+  0%,
+  100% {
+    transform:
+      translate(-50%, -50%)
+      scale(.85);
+
+    opacity: .6;
+  }
+
+  50% {
+    transform:
+      translate(-50%, -50%)
+      scale(1.25);
+
+    opacity: 1;
+  }
+
+}
+
+
+/* ===================================================== */
+/* KHUNG LÁ BÀI */
+/* ===================================================== */
+
+.draw-card-wrapper {
+  position: relative;
+
+  z-index: 10;
+
+  width: 210px;
+
+  aspect-ratio: 3 / 4;
+
+  transform-style: preserve-3d;
+
+  transition:
+    transform .5s ease;
+}
+
+
+/* Đang hô => lá bài bay lên xuống */
+
+.draw-card-calling {
+
+  animation:
+    callingCardFloat 1.25s
+    ease-in-out infinite;
+
+}
+
+
+@keyframes callingCardFloat {
+
+  0%,
+  100% {
+
+    transform:
+      translateY(3px)
+      scale(.98);
+
+  }
+
+  50% {
+
+    transform:
+      translateY(-14px)
+      scale(1.035);
+
+  }
+
+}
+
+
+/* ===================================================== */
+/* FLIP 3D */
+/* ===================================================== */
+
+.draw-card-inner {
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  transition:
+    transform 1s
+    cubic-bezier(.22,.88,.32,1.15);
+
+  transform-style: preserve-3d;
+}
+
+
+.draw-card-flipped {
+
+  transform:
+    rotateY(180deg);
+
+}
+
+
+.draw-card-face {
+
+   position: absolute;
+  inset: 0;
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+}
+
+
+.draw-card-face img {
+
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  user-select: none;
+  pointer-events: none;
+
+}
+
+
+.draw-card-back {
+
+  transform:
+    rotateY(0deg);
+
+}
+
+
+.draw-card-front {
+
+  transform:
+    rotateY(180deg);
+
+}
+
+
+/* ===================================================== */
+/* VIỀN NĂNG LƯỢNG */
+/* ===================================================== */
+
+
+
+
+@keyframes energyBorderPulse {
+
+  0%,
+  100% {
+
+    opacity: .5;
+
+  }
+
+  50% {
+
+    opacity: 1;
+
+    box-shadow:
+
+      inset
+      0 0 9px
+      rgba(255,245,185,.9),
+
+      0 0 9px
+      rgba(255,235,141,1),
+
+      0 0 26px
+      rgba(255,185,55,.85),
+
+      0 0 47px
+      rgba(255,142,34,.4);
+
+  }
+
+}
+
+
+/* ===================================================== */
+/* SAO NHỎ XUNG QUANH */
+/* ===================================================== */
+
+.card-spark {
+
+  position: absolute;
+
+  color: #fff6ba;
+
+  font-size: 17px;
+
+  text-shadow:
+
+    0 0 6px #fff,
+
+    0 0 11px
+    #ffd15c;
+
+  pointer-events: none;
+
+  animation:
+    cardSpark
+    1.3s
+    ease-in-out
+    infinite;
+
+}
+
+
+.spark-1 {
+
+  left: -6px;
+  top: 14%;
+
+}
+
+
+.spark-2 {
+
+  right: 3px;
+  top: 8%;
+
+  animation-delay: .35s;
+
+}
+
+
+.spark-3 {
+
+  right: -5px;
+  bottom: 22%;
+
+  animation-delay: .7s;
+
+}
+
+
+.spark-4 {
+
+  left: 9px;
+  bottom: 8%;
+
+  animation-delay: 1s;
+
+}
+
+
+@keyframes cardSpark {
+
+  0%,
+  100% {
+
+    opacity: 0;
+
+    transform:
+      scale(.5)
+      rotate(0deg);
+
+  }
+
+  50% {
+
+    opacity: 1;
+
+    transform:
+      scale(1.35)
+      rotate(90deg);
+
+  }
+
+}
+
+
+/* ===================================================== */
+/* TRẠNG THÁI */
+/* ===================================================== */
+
+.draw-status {
+
+  position: absolute;
+
+  z-index: 20;
+
+  bottom: 6px;
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  width: 90%;
+
+  min-height: 28px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  letter-spacing: .04em;
+
+  color:
+    rgba(255,255,255,.7);
+
+  text-align: center;
+
+}
+
+
+.draw-status-dot {
+
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #ffd470;
+
+  box-shadow:
+    0 0 9px
+    #ffd470;
+
+  animation:
+    statusDotPulse
+    .8s
+    ease-in-out
+    infinite;
+
+}
+
+
+@keyframes statusDotPulse {
+
+  0%,
+  100% {
+
+    opacity: .35;
+
+    transform:
+      scale(.7);
+
+  }
+
+  50% {
+
+    opacity: 1;
+
+    transform:
+      scale(1.3);
+
+  }
+
+}
+
+
+.draw-card-name {
+
+  color: #ffe58b;
+
+  font-size: 15px;
+
+  text-shadow:
+
+    0 0 7px
+    rgba(255,213,95,.65);
+
+}
+
+
+/* ===================================================== */
+/* CHƯA RÚT BÀI */
+/* ===================================================== */
+
+.draw-waiting {
+
+  position: relative;
+
+  z-index: 5;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color:
+    rgba(255,255,255,.33);
+
+  font-weight: 700;
+
+  text-align: center;
+
+}
+
+
+.draw-waiting-symbol {
+
+  margin-bottom: 12px;
+
+  font-size: 42px;
+
+  color:
+    rgba(255,222,116,.34);
+
+}
+/* ===================================================== */
+/* KHU VỰC RÚT QUÂN */
+/* ===================================================== */
+
+.bai-choi-draw-stage {
+  position: relative;
+
+  width: 100%;
+  min-height: 470px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  border-radius: 28px;
+
+  background: #063f42;
+
+  perspective: 1200px;
+}
+
+
+/* ===================================================== */
+/* ẢNH NỀN MA THUẬT */
+/* ===================================================== */
+
+.draw-magic-background {
+  position: absolute;
+  z-index: 3;
+
+  left: 50%;
+  bottom: 20px;
+
+  width: 220px;
+
+  transform: translateX(-50%);
+
+  opacity: .9;
+
+  pointer-events: none;
+  user-select: none;
+
+  mix-blend-mode: screen;
+
+  /* thêm 2 dòng này */
+  border-radius: 50%;
+  mask-image: radial-gradient(
+    ellipse at center,
+    black 35%,
+    transparent 72%
+  );
+
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    black 35%,
+    transparent 72%
+  );
+}
+
+
+.draw-magic-background-active {
+  opacity: 1;
+
+  transform:
+    translateX(-50%)
+    scale(1);
+
+  filter:
+    brightness(1.25)
+    saturate(1.4)
+    drop-shadow(
+      0 0 18px
+      rgba(255, 218, 105, .45)
+    );
+
+  animation:
+    magicBackgroundPulse
+    1.8s ease-in-out infinite;
+}
+
+
+@keyframes magicBackgroundPulse {
+
+  0%,
+  100% {
+    opacity: .72;
+
+    transform:
+      translateX(-50%)
+      scale(.96);
+  }
+
+  50% {
+    opacity: 1;
+
+    transform:
+      translateX(-50%)
+      scale(1.04);
+  }
+
+}
+
+
+/* ===================================================== */
+/* ÁNH SÁNG PHÍA SAU LÁ BÀI */
+/* ===================================================== */
+
+.draw-stage-light {
+  position: absolute;
+
+  left: 50%;
+  top: 45%;
+
+  width: 260px;
+  height: 360px;
+
+  transform:
+    translate(-50%, -50%)
+    scale(.75);
+
+  border-radius: 50%;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(255, 239, 165, .55) 0%,
+      rgba(255, 192, 65, .2) 35%,
+      rgba(255, 157, 45, .05) 60%,
+      transparent 75%
+    );
+
+  filter: blur(28px);
+
+  transition:
+    opacity .4s ease,
+    transform .4s ease;
+}
+
+
+.draw-stage-light-active {
+  opacity: 1;
+
+  animation:
+    drawLightPulse
+    1.5s ease-in-out infinite;
+}
+
+
+@keyframes drawLightPulse {
+
+  0%,
+  100% {
+    opacity: .45;
+
+    transform:
+      translate(-50%, -50%)
+      scale(.9);
+  }
+
+  50% {
+    opacity: 1;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1.1);
+  }
+
+}
+
+
+/* ===================================================== */
+/* LÁ BÀI */
+/* ===================================================== */
+
+.draw-card-wrapper {
+  position: relative;
+
+  z-index: 10;
+
+  width: 150px;
+
+  aspect-ratio: 3 / 4;
+
+  transform-style: preserve-3d;
+}
+
+
+/* Khi đang hô thì lá bài bay nhẹ lên xuống */
+
+.draw-card-calling {
+  animation:
+    callingCardFloat
+    1.2s ease-in-out infinite;
+}
+
+
+@keyframes callingCardFloat {
+
+  0%,
+  100% {
+    transform:
+      translateY(4px)
+      scale(.98);
+  }
+
+  50% {
+    transform:
+      translateY(-13px)
+      scale(1.035);
+  }
+
+}
+
+
+/* ===================================================== */
+/* LẬT BÀI 3D */
+/* ===================================================== */
+
+.draw-card-inner {
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  transform-style: preserve-3d;
+
+  transition:
+    transform .9s
+    cubic-bezier(.22,.88,.32,1.15);
+}
+
+
+.draw-card-flipped {
+  transform:
+    rotateY(180deg);
+}
+
+
+.draw-card-face {
+  position: absolute;
+
+  inset: 0;
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  /* QUAN TRỌNG:
+     không border
+     không background
+     không box-shadow
+     không khung */
+}
+
+
+.draw-card-face img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  user-select: none;
+  pointer-events: none;
+}
+
+
+.draw-card-back {
+  transform:
+    rotateY(0deg);
+}
+
+
+.draw-card-front {
+  transform:
+    rotateY(180deg);
+}
+
+
+/* ===================================================== */
+/* SAO NHỎ */
+/* ===================================================== */
+
+.card-spark {
+  position: absolute;
+
+  z-index: 5;
+
+  color: #fff4b0;
+
+  font-size: 16px;
+
+  text-shadow:
+    0 0 6px #fff,
+    0 0 12px #ffd15c,
+    0 0 22px #ff9e32;
+
+  pointer-events: none;
+
+  animation:
+    cardSpark
+    1.25s ease-in-out infinite;
+}
+
+
+.spark-1 {
+  left: -13px;
+  top: 12%;
+}
+
+
+.spark-2 {
+  right: -10px;
+  top: 6%;
+
+  animation-delay: .3s;
+}
+
+
+.spark-3 {
+  right: -14px;
+  bottom: 18%;
+
+  animation-delay: .65s;
+}
+
+
+.spark-4 {
+  left: -8px;
+  bottom: 8%;
+
+  animation-delay: .95s;
+}
+
+
+@keyframes cardSpark {
+
+  0%,
+  100% {
+    opacity: 0;
+
+    transform:
+      scale(.45)
+      rotate(0deg);
+  }
+
+  50% {
+    opacity: 1;
+
+    transform:
+      scale(1.25)
+      rotate(90deg);
+  }
+
+}
+
+
+/* ===================================================== */
+/* DÒNG TÊN QUÂN */
+/* ===================================================== */
+
+.draw-status {
+  position: absolute;
+
+  z-index: 20;
+
+  bottom: 7px;
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  width: 95%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  text-align: center;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  color:
+    rgba(255,255,255,.7);
+}
+
+
+.draw-card-name {
+  color: #ffe594;
+
+  font-size: 16px;
+
+  font-weight: 900;
+
+  text-shadow:
+    0 0 8px rgba(255,215,100,.75);
+}
+
+
+.draw-status-dot {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #ffd470;
+
+  box-shadow:
+    0 0 10px #ffd470;
+
+  animation:
+    statusDotPulse
+    .8s ease-in-out infinite;
+}
+
+
+@keyframes statusDotPulse {
+
+  0%,
+  100% {
+    opacity: .35;
+
+    transform:
+      scale(.7);
+  }
+
+  50% {
+    opacity: 1;
+
+    transform:
+      scale(1.3);
+  }
+
+}
+
+
+/* ===================================================== */
+/* CHƯA RÚT QUÂN */
+/* ===================================================== */
+
+.draw-waiting {
+  position: relative;
+
+  z-index: 5;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  color:
+    rgba(255,255,255,.32);
+
+  font-weight: 700;
+
+  text-align: center;
+}
+
+
+.draw-waiting-symbol {
+  margin-bottom: 10px;
+
+  font-size: 40px;
+
+  color:
+    rgba(255,220,110,.35);
+}
+
+.game-action-btn {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+
+  display: grid;
+  place-items: center;
+
+  padding-top: 4px;
+  color: #000;
+}
+
+.game-action-btn-call {
+  background: #e69756;
+}
+
+.game-action-btn-claim {
+  background: rgba(255,255,255,.12);
+}
+
+.game-action-btn-claim-active {
+  background: #c44837;
+  animation: pulseClaimBtn 1s ease-in-out infinite;
+}
+
+.game-action-btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.game-action-icon {
+  width: 80px;
+  height: 80px;
+
+  object-fit: contain;
+
+  pointer-events: none;
+  user-select: none;
+}
+.game-action-icon-call {
+  width: 90px;
+  height: 90px;
+}
+
+@keyframes pulseClaimBtn {
+  0%, 100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+
+
+.game-action-btn {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 94px;
+  padding: 0;
+
+  border: 0;
+  outline: none;
+
+  background: transparent;
+
+  transition:
+    transform .2s ease,
+    opacity .2s ease,
+    filter .2s ease;
+}
+
+.game-action-btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.game-action-btn-frame {
+  background-image: url('/assets/khung2.png');
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+}
+
+
+
+.game-action-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.game-action-btn:disabled {
+  opacity: .45;
+
+  cursor: not-allowed;
+}
+
+.game-action-btn-frame-active {
+  color: #173a3a;
+
+  filter:
+    brightness(1.08)
+    drop-shadow(
+      0 0 8px
+      rgba(255, 215, 100, .35)
+    );
+}
+
+
+
+
+/* ======================================== */
+/* GÕ MÕ NHẤP NHÔ KHI NGƯỜI CHƠI TRÚNG */
+/* ======================================== */
+
+.game-action-btn-hit {
+  z-index: 20;
+
+  animation:
+    goMoHitBounce .7s ease-in-out infinite,
+    goMoHitGlow 1s ease-in-out infinite;
+
+  filter:
+    brightness(1.12)
+    drop-shadow(0 0 7px rgba(255, 230, 120, .8))
+    drop-shadow(0 0 18px rgba(255, 190, 50, .65))
+    drop-shadow(0 0 32px rgba(255, 160, 30, .35));
+}
+
+
+/* NHẤP NHÔ */
+
+@keyframes goMoHitBounce {
+
+  0%,
+  100% {
+    transform:
+      translateY(0)
+      scale(1);
+  }
+
+  50% {
+    transform:
+      translateY(-8px)
+      scale(1.06);
+  }
+}
+
+
+/* ÁNH SÁNG NHẤP NHÁY */
+
+@keyframes goMoHitGlow {
+
+  0%,
+  100% {
+    filter:
+      brightness(1)
+      drop-shadow(0 0 5px rgba(255, 230, 120, .45))
+      drop-shadow(0 0 12px rgba(255, 190, 50, .35));
+  }
+
+  50% {
+    filter:
+      brightness(1.22)
+      drop-shadow(0 0 10px rgba(255, 240, 150, 1))
+      drop-shadow(0 0 24px rgba(255, 195, 50, .85))
+      drop-shadow(0 0 42px rgba(255, 145, 25, .55));
+  }
+}
+
+
+
+
+/* ======================================= */
+/* LÁ BÀI TRONG CHÒI */
+/* ======================================= */
+
+.hand-card {
+  position: relative;
+
+  overflow: visible;
+
+  border: 2px solid rgba(255,255,255,.2);
+  border-radius: 14px;
+
+  background: #063f42;
+
+  transform-origin: center bottom;
+
+  transition:
+    border-color .25s ease,
+    opacity .25s ease,
+    filter .25s ease;
+}
+
+
+.hand-card-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  aspect-ratio: 3 / 4;
+
+  padding: 4px;
+
+  overflow: hidden;
+}
+
+
+.hand-card-image img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  pointer-events: none;
+  user-select: none;
+}
+
+
+.hand-card-name {
+  margin: 0;
+
+  padding: 8px 4px;
+
+  background: rgba(0,0,0,.25);
+
+  text-align: center;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+
+/* ======================================= */
+/* QUÂN VỪA TRÚNG */
+/* ======================================= */
+
+.hand-card-hit {
+  z-index: 20;
+
+  border-color: #ffe47d;
+
+  filter:
+    brightness(1.16)
+    saturate(1.12);
+
+  box-shadow:
+    0 0 7px rgba(255,235,140,.9),
+    0 0 18px rgba(255,204,75,.65),
+    0 0 35px rgba(255,166,35,.35);
+
+  animation:
+    handCardHitBounce .72s ease-in-out infinite;
+}
+
+
+@keyframes handCardHitBounce {
+  0%,
+  100% {
+    transform:
+      translateY(0)
+      scale(1);
+  }
+
+  50% {
+    transform:
+      translateY(-13px)
+      scale(1.055);
+  }
+}
+
+
+/* ======================================= */
+/* ĐỐM SÁNG BÁO TRÚNG */
+/* ======================================= */
+
+.hit-spark {
+  position: absolute;
+
+  z-index: 30;
+
+  color: #fff2a4;
+
+  font-size: 20px;
+
+  pointer-events: none;
+
+  text-shadow:
+    0 0 5px white,
+    0 0 10px #ffd866,
+    0 0 18px #ffa630;
+
+  animation:
+    hitSpark .9s ease-in-out infinite;
+}
+
+
+.hit-spark-1 {
+  left: -9px;
+  top: 12%;
+}
+
+
+.hit-spark-2 {
+  right: -9px;
+  top: 18%;
+
+  animation-delay: .4s;
+}
+
+
+@keyframes hitSpark {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(.4) rotate(0deg);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.4) rotate(90deg);
+  }
+}
+
+
+/* ======================================= */
+/* QUÂN ĐÃ GÕ MÕ / ĐÃ NHẬN CỜ */
+/* ======================================= */
+
+.hand-card-claimed {
+  opacity: .45;
+
+  border-color: #f29963;
+
+  filter: saturate(.65);
+}
+
+
+/* ===================================================== */
+/* MOBILE RESPONSIVE - BÀI CHÒI */
+/* ===================================================== */
+
+@media (max-width: 640px) {
+
+  /* ================================== */
+  /* KHU VỰC RÚT / HÔ QUÂN */
+  /* ================================== */
+
+  .bai-choi-draw-stage {
+    min-height: 390px;
+    border-radius: 20px;
+  }
+
+
+  /* Cụm nhiều lá phía sau */
+  .summon-card-stack {
+    width: 100%;
+    max-width: 350px;
+    height: 285px;
+  }
+
+
+  /* Lá chính */
+  .draw-card-wrapper {
+    width: 145px;
+  }
+
+
+  /* Các lá phía sau */
+  .stack-card {
+    width: 115px;
+  }
+
+
+  .stack-card-left-2 {
+    left: 3%;
+  }
+
+  .stack-card-left-1 {
+    left: 17%;
+  }
+
+  .stack-card-right-1 {
+    right: 17%;
+  }
+
+  .stack-card-right-2 {
+    right: 3%;
+  }
+
+
+  /* Vòng phép */
+  .draw-magic-background {
+    width: 165px;
+    max-width: 55%;
+    bottom: 20px;
+  }
+
+
+  /* ================================== */
+  /* TÊN QUÂN ĐANG HÔ */
+  /* ================================== */
+
+  .draw-status {
+    bottom: 4px;
+    font-size: 11px;
+  }
+
+  .draw-card-name {
+    font-size: 13px;
+  }
+
+
+  /* ================================== */
+  /* BA LÁ CỦA NGƯỜI CHƠI */
+  /* ================================== */
+
+  .hand-card {
+    border-radius: 10px;
+  }
+
+  .hand-card-image {
+    padding: 2px;
+  }
+
+  .hand-card-name {
+    padding: 5px 2px;
+    font-size: 10px;
+    line-height: 1.1;
+  }
+
+
+  /* Khi trúng không phóng quá lớn trên mobile */
+  @keyframes handCardHitBounce {
+    0%,
+    100% {
+      transform:
+        translateY(0)
+        scale(1);
+    }
+
+    50% {
+      transform:
+        translateY(-7px)
+        scale(1.035);
+    }
+  }
+
+
+  /* ================================== */
+  /* HAI NÚT HÔ / GÕ MÕ */
+  /* ================================== */
+
+  .game-action-btn {
+    min-height: 72px;
+
+    padding: 0 8px;
+
+    font-size: 17px;
+    line-height: 1;
+
+    background-size: contain;
+  }
+
+
+  /* Nút Gõ Mõ khi trúng */
+  @keyframes goMoHitBounce {
+    0%,
+    100% {
+      transform:
+        translateY(0)
+        scale(1);
+    }
+
+    50% {
+      transform:
+        translateY(-5px)
+        scale(1.04);
+    }
+  }
+
+
+  /* ================================== */
+  /* HIỆU ỨNG SAO */
+  /* ================================== */
+
+  .card-spark,
+  .hit-spark {
+    font-size: 13px;
+  }
+
+
+  /* ================================== */
+  /* ÁNH SÁNG */
+  /* ================================== */
+
+  .draw-stage-light {
+    width: 190px;
+    height: 280px;
+  }
+
+}

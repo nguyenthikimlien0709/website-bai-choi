@@ -417,7 +417,21 @@ useEffect(() => {
               />
 
               {/* Khung nhập tên căn chỉnh chính giữa video */}
-              <div className="absolute left-[30%] top-[80%] -translate-x-1/2 -translate-y-1/2 z-10 w-[500px] sm:w-[570px]">
+              <div className="
+  absolute
+  left-1/2
+  top-[78%]
+  z-10
+  w-[92vw]
+  max-w-[500px]
+  -translate-x-1/2
+  -translate-y-1/2
+
+  sm:left-[30%]
+  sm:top-[80%]
+  sm:w-[570px]
+  sm:max-w-none
+">
                 <div className="relative w-full flex flex-col items-center justify-center">
                   
                   {/* Dùng mix-blend-mode để tự động hòa trộn, loại bỏ phần nền đen/trắng của ảnh */}
@@ -609,20 +623,184 @@ useEffect(() => {
             <div className="grid gap-5 lg:grid-cols-[1fr_1.25fr]">
               <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
               <p className="mb-4 text-center text-sm text-white/70">{message}</p>
-                <div className={`mx-auto flex items-center justify-center overflow-hidden rounded-2xl bg-[#063f42] p-2 shadow-xl ${currentCard ? 'w-fit max-w-full' : 'aspect-[3/4] w-full max-w-[240px]'}`}>
-                  {currentCard ? <img src={currentCard.image} alt={currentCard.name} className="h-auto max-h-[56vh] w-auto max-w-full rounded-xl object-contain" /> : <div className="grid h-full place-items-center text-center text-white/40">{isCalling ? <>Đang nghe câu hô…<br />Hát xong mới mở thẻ</> : <>Chờ Chị Hiệu<br />rút thẻ</>}</div>}
-                </div>
-                <div className="mt-5 grid grid-cols-2 gap-3">
-                  <button onClick={drawNext} disabled={Boolean(winner) || isCalling || (onlineMode ? playerId !== hostId : drawIndex >= deck.length - 1)} className="rounded-xl border-2 border-transparent bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#ffd0a4] hover:bg-[#ffad68] hover:text-[#0b4548] hover:shadow-[0_8px_22px_rgba(230,151,86,0.35)] active:translate-y-0 disabled:cursor-not-allowed disabled:border-transparent disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:bg-[#e69756] disabled:hover:shadow-none">{isCalling ? 'Đang hô…' : onlineMode && playerId !== hostId ? 'Chờ chủ hội' : drawIndex < 0 ? 'Bắt đầu hô' : 'Hô con tiếp'}</button>
-                  <button onClick={claimCard} disabled={isCalling || !currentCard || Boolean(winner)} className={`rounded-xl border-2 border-transparent px-4 py-3 font-black transition-all duration-200 disabled:cursor-not-allowed ${canClaim ? 'animate-pulse bg-[#c44837] text-white hover:-translate-y-0.5 hover:border-[#ffb098] hover:bg-[#e85a43] hover:shadow-[0_8px_22px_rgba(196,72,55,0.38)] active:translate-y-0' : 'bg-white/10 text-white/45 disabled:hover:bg-white/10'}`}>GÕ MÕ!</button>
-                </div>
+                <div className="bai-choi-draw-stage">
+
+  {/* NỀN / VÒNG MA THUẬT */}
+  <img
+    src="/assets/nen2game.jpg"
+    alt=""
+    className={`
+      draw-magic-background
+      ${isCalling ? 'draw-magic-background-active' : ''}
+    `}
+    draggable={false}
+  />
+
+  {/* ÁNH SÁNG PHÍA SAU LÁ BÀI */}
+  <div
+    className={`
+      draw-stage-light
+      ${isCalling ? 'draw-stage-light-active' : ''}
+    `}
+  />
+
+  {/* LÁ BÀI */}
+  {(isCalling || currentCard) ? (
+    <div
+      className={`
+        draw-card-wrapper
+        ${isCalling ? 'draw-card-calling' : ''}
+      `}
+    >
+      <div
+        className={`
+          draw-card-inner
+          ${currentCard ? 'draw-card-flipped' : ''}
+        `}
+      >
+
+        {/* MẶT SAU */}
+        <div className="draw-card-face draw-card-back">
+          <img
+            src="/assets/phiasau.png"
+            alt="Mặt sau quân Bài Chòi"
+            draggable={false}
+          />
+
+          {isCalling && (
+            <>
+              <span className="card-spark spark-1">✦</span>
+              <span className="card-spark spark-2">✦</span>
+              <span className="card-spark spark-3">✦</span>
+              <span className="card-spark spark-4">✦</span>
+            </>
+          )}
+        </div>
+
+        {/* MẶT TRƯỚC */}
+        <div className="draw-card-face draw-card-front">
+          {currentCard && (
+            <img
+              src={currentCard.image}
+              alt={currentCard.name}
+              draggable={false}
+            />
+          )}
+        </div>
+
+      </div>
+    </div>
+  ) : (
+    <div className="draw-waiting">
+      <div className="draw-waiting-symbol">✦</div>
+
+      <p>
+        Chờ Chị Hiệu
+        <br />
+        rút thẻ
+      </p>
+    </div>
+  )}
+
+  <div className="draw-status">
+    {isCalling ? (
+      <>
+        <span className="draw-status-dot" />
+        <span>Chị Hiệu đang hô...</span>
+      </>
+    ) : currentCard ? (
+      <span className="draw-card-name">
+        QUÂN {currentCard.name.toUpperCase()}
+      </span>
+    ) : (
+      <span>Chờ bắt đầu hội</span>
+    )}
+  </div>
+
+</div>
+               <div className="mt-5 grid grid-cols-2 gap-3">
+
+  {/* NÚT HÔ */}
+  <button
+    onClick={drawNext}
+    disabled={
+      Boolean(winner) ||
+      isCalling ||
+      (onlineMode ? playerId !== hostId : drawIndex >= deck.length - 1)
+    }
+    className="game-action-btn game-action-btn-frame"
+  >
+    {isCalling
+      ? 'Đang hô…'
+      : onlineMode && playerId !== hostId
+      ? 'Chờ chủ hội'
+      : drawIndex < 0
+      ? 'Bắt đầu hô'
+      : 'Hô tiếp'}
+  </button>
+
+
+  {/* NÚT GÕ MÕ */}
+  <button
+  onClick={claimCard}
+  disabled={isCalling || !currentCard || Boolean(winner)}
+  className={`
+    game-action-btn
+    game-action-btn-frame
+    ${canClaim && !isCalling ? 'game-action-btn-hit' : ''}
+  `}
+>
+  GÕ MÕ
+</button>
+
+</div>
               </div>
               <div className="space-y-5">
                 <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
                   <p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#f29963]">Ba thẻ trong chòi của bạn</p>
                   <div className="grid grid-cols-3 gap-3">
-                    {hand.map((card) => <div key={card.id} className={`overflow-hidden rounded-xl border-2 bg-[#063f42] transition ${claimed.includes(card.id) ? 'border-[#f29963] opacity-45' : 'border-white/20'}`}><div className="flex aspect-[3/4] items-center justify-center p-1"><img src={card.image} alt={card.name} className="max-h-full max-w-full object-contain" /></div><p className="bg-black/25 px-1 py-2 text-center text-[10px] font-bold sm:text-sm">{claimed.includes(card.id) ? '⚑ ' : ''}{card.name}</p></div>)}
-                  </div>
+  {hand.map((card) => {
+    const isClaimed = claimed.includes(card.id)
+
+    // Chỉ sáng + nhấp nhô SAU KHI hò xong
+    // và quân vừa hô trùng với lá này
+    const isHit =
+      !isCalling &&
+      currentCard?.id === card.id &&
+      !isClaimed
+
+    return (
+      <div
+        key={card.id}
+        className={`
+          hand-card
+          ${isHit ? 'hand-card-hit' : ''}
+          ${isClaimed ? 'hand-card-claimed' : ''}
+        `}
+      >
+        <div className="hand-card-image">
+          <img
+            src={card.image}
+            alt={card.name}
+            draggable={false}
+          />
+        </div>
+
+        <p className="hand-card-name">
+          {isClaimed ? '⚑ ' : ''}
+          {card.name}
+        </p>
+
+        {isHit && (
+          <>
+            <span className="hit-spark hit-spark-1">✦</span>
+            <span className="hit-spark hit-spark-2">✦</span>
+          </>
+        )}
+      </div>
+    )
+  })}
+</div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                   {players.map((player, index) => <div key={`${player}-${index}`} className={`rounded-2xl border p-3 text-center ${(onlineMode ? onlinePlayers[index]?.id === playerId : index === 0) ? 'border-[#f29963] bg-[#c44837]/25' : 'border-white/15 bg-[#0b5558]/80'}`}><div className="mx-auto mb-2 grid h-9 w-9 place-items-center rounded-full bg-white/10">{onlineMode ? '☺' : index === 0 ? '☺' : '⚙'}</div><p className="truncate text-xs font-bold">{player}</p><p className="mt-1 text-[11px] text-[#f29963]">⚑ {onlineMode ? onlinePlayers[index]?.flags || 0 : index === 0 ? claimed.length : botFlags[index - 1]}/3</p></div>)}
