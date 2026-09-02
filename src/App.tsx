@@ -422,7 +422,7 @@ function ReferenceScreen({
   return (
     <section
       id={id}
-      className="relative flex min-h-[100svh] scroll-mt-20 items-center overflow-hidden px-4 pb-10 pt-24 sm:px-8 sm:pb-12 sm:pt-28 lg:px-12"
+      className="relative flex min-h-[100svh] scroll-mt-20 items-center overflow-x-clip px-4 pb-12 pt-24 sm:px-8 sm:pb-14 sm:pt-28 lg:px-12"
     >
       <div className="relative z-10 mx-auto w-full max-w-7xl">
         {children}

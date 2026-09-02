@@ -420,10 +420,10 @@ useEffect(() => {
               <div className="
   absolute
   left-1/2
-  top-[78%]
+  top-[68%]
   z-10
   w-[92vw]
-  max-w-[500px]
+  max-w-[440px]
   -translate-x-1/2
   -translate-y-1/2
 

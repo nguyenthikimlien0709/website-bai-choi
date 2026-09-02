@@ -1,33 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Bevan&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
 @import 'tailwindcss';
 
-@font-face {
-  font-family: 'Blode Starkly';
-  src:
-    local('Blode Starkly'),
-    local('Blode starkly'),
-    url('/assets/blode-starkly.woff2') format('woff2'),
-    url('/assets/blode-starkly.ttf') format('truetype');
-  font-display: swap;
-  font-style: normal;
-  font-weight: 400 900;
-}
 
 @font-face {
   font-family: 'HP DNS Gibsons One';
   src:
     local('HP DNS Gibsons One Regular'),
     local('HP DNS Gibsons One'),
+    url('/font/HP%20DNS%20Gibsons%20One.otf') format('opentype'),
     url('/font/HP DNS Gibsons One.otf') format('opentype');
   font-display: swap;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 100 900;
 }
 
 @theme {
-  --font-display: 'HP DNS Gibsons One', 'Bevan', 'Playfair Display', Georgia, serif;
-  --font-title: 'HP DNS Gibsons One', 'Bevan', 'Playfair Display', Georgia, serif;
-  --font-section: 'HP DNS Gibsons One', 'Bevan', 'Playfair Display', Georgia, serif;
+  --font-display: 'HP DNS Gibsons One', 'Playfair Display', 'Bevan', Georgia, serif;
+  --font-title: 'HP DNS Gibsons One', 'Playfair Display', 'Bevan', Georgia, serif;
+  --font-section: 'HP DNS Gibsons One', 'Playfair Display', 'Bevan', Georgia, serif;
   --font-body: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
 
   --color-cream: #ffffff;
@@ -65,18 +55,20 @@ body {
 }
 
 h1,
-h2 {
+h2,
+h3 {
   font-family: var(--font-display);
+  overflow-wrap: break-word;
 }
 
 h1 {
-  font-size: clamp(6rem, 13vw, 14rem) !important;
-  line-height: 0.88;
+  font-size: clamp(2.25rem, 6vw, 5.5rem);
+  line-height: 1.05;
 }
 
 h2 {
-  font-size: clamp(4.25rem, 8.5vw, 8.5rem) !important;
-  line-height: 0.92;
+  font-size: clamp(1.5rem, 4vw, 3.5rem);
+  line-height: 1.15;
 }
 
 #root {
@@ -552,8 +544,8 @@ a {
 }
 
 .mode-screen-title {
-  font-size: clamp(2.4rem, 5vw, 4.6rem) !important;
-  line-height: 0.95;
+  font-size: clamp(1.4rem, 5vw, 3.2rem);
+  line-height: 1.1;
 }
 
 .mode-card-float {
