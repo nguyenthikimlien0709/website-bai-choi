@@ -850,129 +850,968 @@ function Rules({ c }: { c: typeof content.VIE }) {
   )
 }
 
-// ─── Characters ───────────────────────────────────────────────────────────────
+// // ─── Characters ───────────────────────────────────────────────────────────────
+// function Characters({ c }: { c: typeof content.VIE }) {
+//   const [flippedCards, setFlippedCards] = useState<Set<number>>(() => new Set())
+//   const cardRows = [CARD_ASSETS.slice(0, 3), CARD_ASSETS.slice(3, 6), CARD_ASSETS.slice(6, 10)]
+//   const isVietnamese = c === content.VIE
+
+//   const toggleCard = (cardIndex: number) => {
+//     setFlippedCards((current) => {
+//       const next = new Set(current)
+//       if (next.has(cardIndex)) next.delete(cardIndex)
+//       else next.add(cardIndex)
+//       return next
+//     })
+//   }
+
+//   return (
+//     <section id="characters" className="scroll-mt-24 px-4 py-20 sm:px-8 lg:px-12 lg:py-28">
+//       <div className="mx-auto max-w-7xl">
+//         {/* Header */}
+//         <div data-reveal="up" className="text-center mb-10 lg:mb-12">
+//           <div className="inline-flex items-center gap-2 mb-4">
+//             <LotusOrnament size={20} />
+//             <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: '#006368' }}>{c.characters.sub}</span>
+//             <LotusOrnament size={20} />
+//           </div>
+//           <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl"
+//             style={{ fontFamily: 'var(--font-section)', color: '#006368' }}>
+//             {c.characters.title}
+//           </h2>
+//           <DragonDivider />
+//         </div>
+
+//         {/* Ba hàng thẻ: 3 – 3 – 4 */}
+//         <div className="space-y-6 lg:space-y-8">
+//           {cardRows.map((row, rowIndex) => (
+//             <div
+//               key={rowIndex}
+//               data-reveal="up"
+//               data-reveal-delay={rowIndex}
+//               className={`mx-auto grid max-w-5xl grid-cols-2 gap-3 sm:gap-4 lg:gap-6 ${
+//                 rowIndex < 2 ? 'md:grid-cols-3' : 'md:grid-cols-4'
+//               }`}
+//             >
+//               {row.map((card) => {
+//                 const cardIndex = CARD_ASSETS.findIndex((item) => item.src === card.src)
+//                 const cardInfo = c.characters.cards[cardIndex]
+//                 const isFlipped = flippedCards.has(cardIndex)
+
+//                 return (
+//                   <button
+//                     type="button"
+//                     key={card.src}
+//                     className="group min-w-0 rounded-xl bg-white/95 p-1.5 text-left transition-all duration-300 hover:-translate-y-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#F29963]/45 sm:rounded-2xl sm:p-2"
+//                     style={{
+//                       border: '1.5px solid rgba(0,99,104,0.3)',
+//                       boxShadow: '0 10px 26px rgba(0,42,45,0.14)',
+//                     }}
+//                     onClick={() => toggleCard(cardIndex)}
+//                     aria-pressed={isFlipped}
+//                     aria-label={`${isVietnamese ? 'Lật thẻ' : 'Flip card'} ${cardInfo.name}`}
+//                   >
+//                     <div
+//                       className="card-flip-scene relative w-full rounded-xl"
+//                       style={{ aspectRatio: '1 / 2', background: '#FFFDEB' }}
+//                     >
+//                       <div className={`card-flip-inner ${isFlipped ? 'is-flipped' : ''}`}>
+//                         <div className="card-flip-face card-flip-front overflow-hidden rounded-xl">
+//                           <img
+//                             src={card.src}
+//                             alt={card.alt}
+//                             loading="lazy"
+//                             className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.025]"
+//                           />
+//                           <span
+//                             className="absolute inset-x-2 bottom-2 rounded-full px-2 py-1.5 text-center text-[8px] font-bold uppercase tracking-[0.08em] sm:inset-x-3 sm:bottom-3 sm:text-[10px]"
+//                             style={{ background: 'rgba(0,65,70,0.82)', color: '#FFF8D8', backdropFilter: 'blur(5px)' }}
+//                           >
+//                             {isVietnamese ? 'Chạm để xem ý nghĩa' : 'Tap to see the meaning'}
+//                           </span>
+//                         </div>
+
+//                         <div className="card-flip-face card-flip-back flex flex-col items-center justify-center overflow-hidden rounded-xl px-3 py-4 text-center sm:px-5 sm:py-6">
+//                           <div className="absolute inset-x-5 top-5 h-px bg-gradient-to-r from-transparent via-[#E2BC5B] to-transparent" />
+//                           <span className="text-3xl font-black text-[#E2BC5B] sm:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
+//                             {cardInfo.symbol}
+//                           </span>
+//                           <span className="mt-2 text-[8px] font-bold uppercase tracking-[0.16em] text-[#E2BC5B] sm:text-[10px]">
+//                             {isVietnamese ? 'Ý nghĩa lá bài' : 'Card meaning'}
+//                           </span>
+//                           <h3 className="mt-2 text-base font-bold leading-tight text-white sm:mt-3 sm:text-2xl" style={{ fontFamily: 'var(--font-display)' }}>
+//                             {cardInfo.name}
+//                           </h3>
+//                           <div className="my-3 h-px w-10 bg-[#E2BC5B]/75 sm:my-5 sm:w-14" />
+//                           <p className="text-[10px] leading-4 text-white/85 sm:text-sm sm:leading-6">
+//                             {cardInfo.meaning}
+//                           </p>
+//                           <span className="absolute inset-x-2 bottom-3 text-[8px] font-semibold uppercase tracking-[0.1em] text-white/55 sm:text-[9px]">
+//                             {isVietnamese ? 'Chạm để xem mặt trước' : 'Tap to see the front'}
+//                           </span>
+//                         </div>
+//                       </div>
+//                     </div>
+//                     <div
+//                       className="px-1 pb-2 pt-3 text-center text-[10px] font-semibold uppercase tracking-[0.1em] sm:px-2 sm:text-xs sm:tracking-[0.14em]"
+//                       style={{ color: 'rgba(0,99,104,0.68)' }}
+//                     >
+//                       {String(cardIndex + 1).padStart(2, '0')} · {cardInfo.name}
+//                     </div>
+//                   </button>
+//                 )
+//               })}
+//             </div>
+//           ))}
+//         </div>
+
+//         <p className="text-center text-xs mt-6 opacity-60" style={{ color: '#006368', fontFamily: 'var(--font-body)', fontStyle: 'italic' }}>
+//           Bộ 10 thẻ bài Chòi
+//         </p>
+//       </div>
+//     </section>
+//   )
+// }
+
+
+
 function Characters({ c }: { c: typeof content.VIE }) {
-  const [flippedCards, setFlippedCards] = useState<Set<number>>(() => new Set())
-  const cardRows = [CARD_ASSETS.slice(0, 3), CARD_ASSETS.slice(3, 6), CARD_ASSETS.slice(6, 10)]
   const isVietnamese = c === content.VIE
 
-  const toggleCard = (cardIndex: number) => {
-    setFlippedCards((current) => {
-      const next = new Set(current)
-      if (next.has(cardIndex)) next.delete(cardIndex)
-      else next.add(cardIndex)
+  /* =====================================================
+     CHIA BỘ BÀI THÀNH 3 PHÔ
+     PHÔ 01 = lá 1 → 10
+     PHÔ 02 = lá 11 → 20
+     PHÔ 03 = lá 21 → 30
+
+     Hiện tại mới có 10 lá nên chỉ PHÔ 01 xuất hiện.
+     Sau này thêm CARD_ASSETS thì PHÔ mới tự hiện.
+  ===================================================== */
+
+  const phoGroups = [
+    {
+      id: 'pho-01',
+      title: isVietnamese ? 'PHÔ 01' : 'SUIT 01',
+      cards: CARD_ASSETS.slice(0, 10),
+      startIndex: 0,
+    },
+    {
+      id: 'pho-02',
+      title: isVietnamese ? 'PHÔ 02' : 'SUIT 02',
+      cards: CARD_ASSETS.slice(10, 20),
+      startIndex: 10,
+    },
+    {
+      id: 'pho-03',
+      title: isVietnamese ? 'PHÔ 03' : 'SUIT 03',
+      cards: CARD_ASSETS.slice(20, 30),
+      startIndex: 20,
+    },
+  ].filter((pho) => pho.cards.length > 0)
+
+
+  /* Mỗi phô nhớ đang đứng ở lá thứ mấy */
+  const [activeCards, setActiveCards] = useState<number[]>([0, 0, 0])
+
+  /* Các lá đang lật mặt sau */
+  const [flippedCards, setFlippedCards] =
+    useState<Set<number>>(() => new Set())
+
+
+  const changeCard = (
+    phoIndex: number,
+    direction: number,
+    totalCards: number
+  ) => {
+    setActiveCards((current) => {
+      const next = [...current]
+
+      next[phoIndex] =
+        (next[phoIndex] + direction + totalCards) % totalCards
+
       return next
     })
   }
 
+
+  const toggleCard = (cardIndex: number) => {
+    setFlippedCards((current) => {
+      const next = new Set(current)
+
+      if (next.has(cardIndex)) {
+        next.delete(cardIndex)
+      } else {
+        next.add(cardIndex)
+      }
+
+      return next
+    })
+  }
+
+
   return (
-    <section id="characters" className="scroll-mt-24 px-4 py-20 sm:px-8 lg:px-12 lg:py-28">
+    <section
+      id="characters"
+      className="
+        scroll-mt-24
+        px-4
+        py-20
+
+        sm:px-8
+
+        lg:px-12
+        lg:py-28
+      "
+    >
       <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div data-reveal="up" className="text-center mb-10 lg:mb-12">
-          <div className="inline-flex items-center gap-2 mb-4">
+
+        {/* ================================================= */}
+        {/* TIÊU ĐỀ */}
+        {/* ================================================= */}
+
+        <div
+          data-reveal="up"
+          className="mb-12 text-center lg:mb-16"
+        >
+
+          <div className="mb-4 inline-flex items-center gap-2">
+
             <LotusOrnament size={20} />
-            <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: '#006368' }}>{c.characters.sub}</span>
+
+            <span
+              className="
+                text-xs
+                font-semibold
+                uppercase
+                tracking-widest
+              "
+              style={{ color: '#006368' }}
+            >
+              {c.characters.sub}
+            </span>
+
             <LotusOrnament size={20} />
+
           </div>
-          <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl"
-            style={{ fontFamily: 'var(--font-section)', color: '#006368' }}>
+
+
+          <h2
+            className="
+              mb-4
+              text-3xl
+              font-bold
+
+              sm:text-4xl
+              lg:text-5xl
+            "
+            style={{
+              fontFamily: 'var(--font-section)',
+              color: '#006368',
+            }}
+          >
             {c.characters.title}
           </h2>
+
+
           <DragonDivider />
+
         </div>
 
-        {/* Ba hàng thẻ: 3 – 3 – 4 */}
-        <div className="space-y-6 lg:space-y-8">
-          {cardRows.map((row, rowIndex) => (
-            <div
-              key={rowIndex}
-              data-reveal="up"
-              data-reveal-delay={rowIndex}
-              className={`mx-auto grid max-w-5xl grid-cols-2 gap-3 sm:gap-4 lg:gap-6 ${
-                rowIndex < 2 ? 'md:grid-cols-3' : 'md:grid-cols-4'
-              }`}
-            >
-              {row.map((card) => {
-                const cardIndex = CARD_ASSETS.findIndex((item) => item.src === card.src)
-                const cardInfo = c.characters.cards[cardIndex]
-                const isFlipped = flippedCards.has(cardIndex)
 
-                return (
+        {/* ================================================= */}
+        {/* CÁC PHÔ */}
+        {/* ================================================= */}
+
+        <div className="space-y-20 lg:space-y-28">
+
+          {phoGroups.map((pho, phoIndex) => {
+
+            const activeIndex =
+              activeCards[phoIndex] ?? 0
+
+            const card =
+              pho.cards[activeIndex]
+
+            if (!card) return null
+
+
+            /*
+              cardIndex là index thực trong toàn bộ CARD_ASSETS.
+
+              PHÔ 1:
+              0 → 9
+
+              PHÔ 2:
+              10 → 19
+
+              PHÔ 3:
+              20 → 29
+            */
+            const cardIndex =
+              pho.startIndex + activeIndex
+
+
+            /*
+              Hiện tại content.characters.cards mới có 10 phần tử.
+
+              Khi thêm 20 lá sau bạn cũng thêm description tương ứng.
+            */
+            const cardInfo =
+              c.characters.cards[cardIndex]
+
+
+            const isFlipped =
+              flippedCards.has(cardIndex)
+
+
+            return (
+              <div
+                key={pho.id}
+                data-reveal="up"
+                className="pho-section"
+              >
+
+                {/* =========================== */}
+                {/* TÊN PHÔ */}
+                {/* =========================== */}
+
+                <div className="mb-7 text-center sm:mb-9">
+
+                  <span
+                    className="
+                      inline-flex
+                      items-center
+                      gap-3
+
+                      text-sm
+                      font-black
+                      uppercase
+                      tracking-[0.32em]
+
+                      sm:text-base
+                    "
+                    style={{
+                      color: '#006368',
+                      fontFamily: 'var(--font-display)',
+                    }}
+                  >
+                    <span
+                      className="h-px w-10 sm:w-20"
+                      style={{
+                        background:
+                          'linear-gradient(90deg, transparent, #006368)',
+                      }}
+                    />
+
+                    {pho.title}
+
+                    <span
+                      className="h-px w-10 sm:w-20"
+                      style={{
+                        background:
+                          'linear-gradient(90deg, #006368, transparent)',
+                      }}
+                    />
+                  </span>
+
+                </div>
+
+
+                {/* =========================== */}
+                {/* CAROUSEL */}
+                {/* =========================== */}
+
+                <div
+                  className="
+                    relative
+                    mx-auto
+
+                    flex
+                    max-w-4xl
+                    items-center
+                    justify-center
+
+                    gap-3
+
+                    sm:gap-8
+                    lg:gap-14
+                  "
+                >
+
+                  {/* ========================= */}
+                  {/* MŨI TÊN TRÁI */}
+                  {/* ========================= */}
+
                   <button
                     type="button"
-                    key={card.src}
-                    className="group min-w-0 rounded-xl bg-white/95 p-1.5 text-left transition-all duration-300 hover:-translate-y-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#F29963]/45 sm:rounded-2xl sm:p-2"
-                    style={{
-                      border: '1.5px solid rgba(0,99,104,0.3)',
-                      boxShadow: '0 10px 26px rgba(0,42,45,0.14)',
-                    }}
-                    onClick={() => toggleCard(cardIndex)}
-                    aria-pressed={isFlipped}
-                    aria-label={`${isVietnamese ? 'Lật thẻ' : 'Flip card'} ${cardInfo.name}`}
+                    onClick={() =>
+                      changeCard(
+                        phoIndex,
+                        -1,
+                        pho.cards.length
+                      )
+                    }
+                    className="
+                      pho-arrow
+
+                      flex
+                      h-12
+                      w-12
+                      shrink-0
+
+                      items-center
+                      justify-center
+
+                      rounded-full
+
+                      text-3xl
+                      font-light
+
+                      transition
+                      duration-300
+
+                      hover:-translate-x-1
+                      hover:scale-110
+
+                      active:scale-95
+
+                      sm:h-16
+                      sm:w-16
+                      sm:text-5xl
+                    "
+                    aria-label={
+                      isVietnamese
+                        ? 'Lá trước'
+                        : 'Previous card'
+                    }
                   >
-                    <div
-                      className="card-flip-scene relative w-full rounded-xl"
-                      style={{ aspectRatio: '1 / 2', background: '#FFFDEB' }}
+                    ‹
+                  </button>
+
+
+                  {/* ========================= */}
+                  {/* LÁ BÀI CHÍNH */}
+                  {/* ========================= */}
+
+                  <div
+                    className="
+                      relative
+
+                      w-[55vw]
+                      max-w-[290px]
+
+                      sm:w-[260px]
+                      lg:w-[300px]
+                    "
+                  >
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        toggleCard(cardIndex)
+                      }
+                      className="
+                        group
+                        block
+                        w-full
+
+                        rounded-2xl
+
+                        bg-white/95
+
+                        p-2
+
+                        text-left
+
+                        transition
+                        duration-300
+
+                        hover:-translate-y-2
+
+                        focus-visible:outline-none
+                        focus-visible:ring-4
+                        focus-visible:ring-[#F29963]/45
+                      "
+                      style={{
+                        border:
+                          '1.5px solid rgba(0,99,104,0.3)',
+
+                        boxShadow:
+                          '0 18px 42px rgba(0,42,45,0.18)',
+                      }}
                     >
-                      <div className={`card-flip-inner ${isFlipped ? 'is-flipped' : ''}`}>
-                        <div className="card-flip-face card-flip-front overflow-hidden rounded-xl">
-                          <img
-                            src={card.src}
-                            alt={card.alt}
-                            loading="lazy"
-                            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.025]"
-                          />
-                          <span
-                            className="absolute inset-x-2 bottom-2 rounded-full px-2 py-1.5 text-center text-[8px] font-bold uppercase tracking-[0.08em] sm:inset-x-3 sm:bottom-3 sm:text-[10px]"
-                            style={{ background: 'rgba(0,65,70,0.82)', color: '#FFF8D8', backdropFilter: 'blur(5px)' }}
+
+                      {/* ===================== */}
+                      {/* FLIP CARD */}
+                      {/* ===================== */}
+
+                      <div
+                        className="
+                          card-flip-scene
+                          relative
+                          w-full
+                          rounded-xl
+                        "
+                        style={{
+                          aspectRatio: '1 / 2',
+                          background: '#FFFDEB',
+                        }}
+                      >
+
+                        <div
+                          className={`
+                            card-flip-inner
+                            ${
+                              isFlipped
+                                ? 'is-flipped'
+                                : ''
+                            }
+                          `}
+                        >
+
+                          {/* MẶT TRƯỚC */}
+
+                          <div
+                            className="
+                              card-flip-face
+                              card-flip-front
+
+                              overflow-hidden
+                              rounded-xl
+                            "
                           >
-                            {isVietnamese ? 'Chạm để xem ý nghĩa' : 'Tap to see the meaning'}
-                          </span>
+
+                            <img
+                              src={card.src}
+                              alt={card.alt}
+                              loading="lazy"
+                              className="
+                                h-full
+                                w-full
+
+                                object-contain
+
+                                transition-transform
+                                duration-500
+
+                                group-hover:scale-[1.025]
+                              "
+                            />
+
+
+                            <span
+                              className="
+                                absolute
+
+                                inset-x-3
+                                bottom-3
+
+                                rounded-full
+
+                                px-2
+                                py-1.5
+
+                                text-center
+
+                                text-[9px]
+                                font-bold
+                                uppercase
+                                tracking-[0.08em]
+
+                                sm:text-[10px]
+                              "
+                              style={{
+                                background:
+                                  'rgba(0,65,70,0.82)',
+
+                                color: '#FFF8D8',
+
+                                backdropFilter:
+                                  'blur(5px)',
+                              }}
+                            >
+                              {isVietnamese
+                                ? 'Chạm để xem ý nghĩa'
+                                : 'Tap to see the meaning'}
+                            </span>
+
+                          </div>
+
+
+                          {/* ===================== */}
+                          {/* MẶT SAU */}
+                          {/* ===================== */}
+
+                          <div
+                            className="
+                              card-flip-face
+                              card-flip-back
+
+                              flex
+                              flex-col
+
+                              items-center
+                              justify-center
+
+                              overflow-hidden
+
+                              rounded-xl
+
+                              px-4
+                              py-5
+
+                              text-center
+                            "
+                          >
+
+                            {cardInfo ? (
+                              <>
+
+                                <div
+                                  className="
+                                    absolute
+
+                                    inset-x-5
+                                    top-5
+
+                                    h-px
+
+                                    bg-gradient-to-r
+                                    from-transparent
+                                    via-[#E2BC5B]
+                                    to-transparent
+                                  "
+                                />
+
+
+                                <span
+                                  className="
+                                    text-4xl
+                                    font-black
+                                    text-[#E2BC5B]
+
+                                    sm:text-5xl
+                                  "
+                                  style={{
+                                    fontFamily:
+                                      'var(--font-display)',
+                                  }}
+                                >
+                                  {cardInfo.symbol}
+                                </span>
+
+
+                                <span
+                                  className="
+                                    mt-2
+
+                                    text-[9px]
+                                    font-bold
+                                    uppercase
+
+                                    tracking-[0.16em]
+
+                                    text-[#E2BC5B]
+                                  "
+                                >
+                                  {isVietnamese
+                                    ? 'Ý nghĩa lá bài'
+                                    : 'Card meaning'}
+                                </span>
+
+
+                                <h3
+                                  className="
+                                    mt-3
+
+                                    text-xl
+                                    font-bold
+                                    leading-tight
+
+                                    text-white
+
+                                    sm:text-2xl
+                                  "
+                                  style={{
+                                    fontFamily:
+                                      'var(--font-display)',
+                                  }}
+                                >
+                                  {cardInfo.name}
+                                </h3>
+
+
+                                <div
+                                  className="
+                                    my-4
+                                    h-px
+                                    w-12
+                                    bg-[#E2BC5B]/75
+                                  "
+                                />
+
+
+                                <p
+                                  className="
+                                    text-xs
+                                    leading-5
+                                    text-white/85
+
+                                    sm:text-sm
+                                    sm:leading-6
+                                  "
+                                >
+                                  {cardInfo.meaning}
+                                </p>
+
+                              </>
+                            ) : (
+
+                              <p className="text-sm text-white/70">
+                                {isVietnamese
+                                  ? 'Nội dung lá bài đang được cập nhật.'
+                                  : 'Card information is being updated.'}
+                              </p>
+
+                            )}
+
+
+                            <span
+                              className="
+                                absolute
+
+                                inset-x-2
+                                bottom-3
+
+                                text-[8px]
+                                font-semibold
+                                uppercase
+
+                                tracking-[0.1em]
+
+                                text-white/55
+                              "
+                            >
+                              {isVietnamese
+                                ? 'Chạm để xem mặt trước'
+                                : 'Tap to see the front'}
+                            </span>
+
+                          </div>
+
                         </div>
 
-                        <div className="card-flip-face card-flip-back flex flex-col items-center justify-center overflow-hidden rounded-xl px-3 py-4 text-center sm:px-5 sm:py-6">
-                          <div className="absolute inset-x-5 top-5 h-px bg-gradient-to-r from-transparent via-[#E2BC5B] to-transparent" />
-                          <span className="text-3xl font-black text-[#E2BC5B] sm:text-5xl" style={{ fontFamily: 'var(--font-display)' }}>
-                            {cardInfo.symbol}
-                          </span>
-                          <span className="mt-2 text-[8px] font-bold uppercase tracking-[0.16em] text-[#E2BC5B] sm:text-[10px]">
-                            {isVietnamese ? 'Ý nghĩa lá bài' : 'Card meaning'}
-                          </span>
-                          <h3 className="mt-2 text-base font-bold leading-tight text-white sm:mt-3 sm:text-2xl" style={{ fontFamily: 'var(--font-display)' }}>
-                            {cardInfo.name}
-                          </h3>
-                          <div className="my-3 h-px w-10 bg-[#E2BC5B]/75 sm:my-5 sm:w-14" />
-                          <p className="text-[10px] leading-4 text-white/85 sm:text-sm sm:leading-6">
-                            {cardInfo.meaning}
-                          </p>
-                          <span className="absolute inset-x-2 bottom-3 text-[8px] font-semibold uppercase tracking-[0.1em] text-white/55 sm:text-[9px]">
-                            {isVietnamese ? 'Chạm để xem mặt trước' : 'Tap to see the front'}
-                          </span>
-                        </div>
                       </div>
+
+                    </button>
+
+
+                    {/* ========================= */}
+                    {/* TÊN + SỐ LÁ */}
+                    {/* ========================= */}
+
+                    <div className="mt-4 text-center">
+
+                      <p
+                        className="
+                          text-xs
+                          font-semibold
+                          uppercase
+                          tracking-[0.14em]
+
+                          sm:text-sm
+                        "
+                        style={{
+                          color:
+                            'rgba(0,99,104,0.7)',
+                        }}
+                      >
+                        {String(cardIndex + 1).padStart(
+                          2,
+                          '0'
+                        )}
+
+                        {' · '}
+
+                        {cardInfo?.name ?? card.alt}
+                      </p>
+
+
+                      <p
+                        className="
+                          mt-1
+                          text-[10px]
+                          font-bold
+                          tracking-[0.2em]
+
+                          sm:text-xs
+                        "
+                        style={{
+                          color:
+                            'rgba(0,99,104,0.45)',
+                        }}
+                      >
+                        {String(activeIndex + 1).padStart(
+                          2,
+                          '0'
+                        )}
+
+                        {' / '}
+
+                        {String(
+                          pho.cards.length
+                        ).padStart(2, '0')}
+                      </p>
+
                     </div>
-                    <div
-                      className="px-1 pb-2 pt-3 text-center text-[10px] font-semibold uppercase tracking-[0.1em] sm:px-2 sm:text-xs sm:tracking-[0.14em]"
-                      style={{ color: 'rgba(0,99,104,0.68)' }}
-                    >
-                      {String(cardIndex + 1).padStart(2, '0')} · {cardInfo.name}
-                    </div>
+
+                  </div>
+
+
+                  {/* ========================= */}
+                  {/* MŨI TÊN PHẢI */}
+                  {/* ========================= */}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      changeCard(
+                        phoIndex,
+                        1,
+                        pho.cards.length
+                      )
+                    }
+                    className="
+                      pho-arrow
+
+                      flex
+                      h-12
+                      w-12
+                      shrink-0
+
+                      items-center
+                      justify-center
+
+                      rounded-full
+
+                      text-3xl
+                      font-light
+
+                      transition
+                      duration-300
+
+                      hover:translate-x-1
+                      hover:scale-110
+
+                      active:scale-95
+
+                      sm:h-16
+                      sm:w-16
+                      sm:text-5xl
+                    "
+                    aria-label={
+                      isVietnamese
+                        ? 'Lá tiếp theo'
+                        : 'Next card'
+                    }
+                  >
+                    ›
                   </button>
-                )
-              })}
-            </div>
-          ))}
+
+                </div>
+
+
+                {/* =========================== */}
+                {/* CHẤM CHỌN LÁ */}
+                {/* =========================== */}
+
+                <div
+                  className="
+                    mt-7
+
+                    flex
+                    flex-wrap
+
+                    items-center
+                    justify-center
+
+                    gap-2
+                  "
+                >
+
+                  {pho.cards.map((_, index) => (
+
+                    <button
+                      type="button"
+                      key={index}
+                      onClick={() => {
+                        setActiveCards((current) => {
+                          const next = [...current]
+
+                          next[phoIndex] = index
+
+                          return next
+                        })
+                      }}
+                      aria-label={`Card ${index + 1}`}
+                      className="
+                        h-2
+                        rounded-full
+
+                        transition-all
+                        duration-300
+                      "
+                      style={{
+                        width:
+                          index === activeIndex
+                            ? 28
+                            : 8,
+
+                        background:
+                          index === activeIndex
+                            ? '#C44837'
+                            : 'rgba(0,99,104,0.25)',
+                      }}
+                    />
+
+                  ))}
+
+                </div>
+
+
+              </div>
+            )
+          })}
+
         </div>
 
-        <p className="text-center text-xs mt-6 opacity-60" style={{ color: '#006368', fontFamily: 'var(--font-body)', fontStyle: 'italic' }}>
-          Bộ 10 thẻ bài Chòi
+
+        {/* ================================================= */}
+        {/* CHÚ THÍCH */}
+        {/* ================================================= */}
+
+        <p
+          className="
+            mt-12
+            text-center
+            text-xs
+            italic
+            opacity-60
+          "
+          style={{
+            color: '#006368',
+            fontFamily: 'var(--font-body)',
+          }}
+        >
+          {isVietnamese
+            ? `${CARD_ASSETS.length} thẻ bài hiện có`
+            : `${CARD_ASSETS.length} cards currently available`}
         </p>
+
       </div>
     </section>
   )
 }
-
 // ─── Publications ─────────────────────────────────────────────────────────────
 function Publications({ c }: { c: typeof content.VIE }) {
   const [selectedImage, setSelectedImage] = useState<{ groupIndex: number; imageIndex: number } | null>(null)
