@@ -520,7 +520,7 @@ useEffect(() => {
         className="
           absolute
           left-1/2
-          top-[27%]
+          top-[29%]
           w-full
           -translate-x-1/2
           text-center
@@ -545,7 +545,7 @@ useEffect(() => {
         className="
           absolute
           left-1/2
-          top-[50%]
+          top-[48%]
           w-[58%]
           -translate-x-1/2
           -translate-y-1/2
@@ -609,7 +609,7 @@ useEffect(() => {
           animate-bounce-scale
 
           absolute
-          bottom-[13%]
+          bottom-[25%]
           left-1/2
           -translate-x-1/2
 
