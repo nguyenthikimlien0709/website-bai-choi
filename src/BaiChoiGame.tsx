@@ -365,13 +365,17 @@ useEffect(() => {
   return (
     <div className="fixed inset-0 z-[300] overflow-y-auto bg-[#052f32]/[0.98] text-white" role="dialog" aria-modal="true" aria-label="Trò chơi Bài Chòi">
       <div className="pointer-events-none fixed inset-0 opacity-20" style={{ backgroundImage: 'url(/assets/Background-toan.jpg)', backgroundSize: 'cover' }} />
-      <button onClick={leaveGame} className="fixed right-4 top-4 z-[70] grid h-12 w-12 place-items-center rounded-full border-2 border-white/70 bg-[#075f63]/80 text-3xl font-light leading-none text-white shadow-xl backdrop-blur-sm transition hover:scale-105 hover:bg-[#c44837]" aria-label="Đóng trò chơi">×</button>
-      <main className="relative mx-auto flex min-h-full w-full max-w-6xl items-center justify-center px-4 py-20">
-        {screen === 'name' && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-            {/* Khung chứa tổng thể video */}
-            <div className="fixed inset-0 overflow-hidden">
-              
+      <button onClick={leaveGame} className="fixed right-3 top-3 sm:right-5 sm:top-5 z-[80] grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-full border-2 border-white/70 bg-[#075f63]/80 text-2xl sm:text-3xl font-light leading-none text-white shadow-xl backdrop-blur-sm transition hover:scale-105 hover:bg-[#c44837]" aria-label="Đóng trò chơi">×</button>
+      <main className="relative mx-auto flex min-h-full w-full max-w-6xl items-center justify-center px-2 sm:px-4 py-16 sm:py-20">
+        {screen === 'name' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#052f32] overflow-hidden">
+            {/* Nền đệm gradient màu tương đồng video */}
+            <div className="absolute inset-0 bg-[#052f32] pointer-events-none">
+              <div className="absolute inset-0 opacity-40 bg-[radial-gradient(ellipse_at_center,#408a8c_0%,#052f32_100%)]" />
+            </div>
+
+            {/* Sân khấu 16:9 chuẩn như trên laptop, hiển thị trọn vẹn 100% video và các nhân vật */}
+            <div className="relative w-full max-w-[1400px] aspect-[16/9] max-h-[100dvh] flex items-center justify-center overflow-hidden sm:rounded-2xl shadow-2xl">
               <video
                 ref={(node) => {
                   if (!node) return
@@ -412,144 +416,131 @@ useEffect(() => {
                 autoPlay
                 muted
                 playsInline
-                     className="absolute inset-0 w-full h-full object-cover"
+                className="w-full h-full object-cover"
                 src="/sound/video-daugame.mp4"
               />
 
-              {/* Khung nhập tên căn chỉnh chính giữa video */}
+              {/* Khung nhập tên đặt chính xác góc dưới bên trái của video như trên laptop */}
               <div className="
-  absolute
-  left-1/2
-  top-[68%]
-  z-10
-  w-[92vw]
-  max-w-[440px]
-  -translate-x-1/2
-  -translate-y-1/2
-
-  sm:left-[30%]
-  sm:top-[80%]
-  sm:w-[570px]
-  sm:max-w-none
-">
+                absolute
+                left-[5%]
+                bottom-[4%]
+                z-10
+                w-[52%]
+                max-w-[540px]
+                sm:left-[10%]
+                sm:bottom-[6%]
+                sm:w-[46%]
+              ">
                 <div className="relative w-full flex flex-col items-center justify-center">
-                  
-                  {/* Dùng mix-blend-mode để tự động hòa trộn, loại bỏ phần nền đen/trắng của ảnh */}
-                  <img 
-                    src="/assets/khung(1).png" 
-                    alt="Khung nhập tên" 
-                    className="w-full h-auto object-contain drop-shadow-2xl mix-blend-screen" 
+                  <img
+                    src="/assets/khung(1).png"
+                    alt="Khung nhập tên"
+                    className="w-full h-auto object-contain drop-shadow-2xl mix-blend-screen"
                   />
-                  
-                  {/* Vùng nhập tên và nút bấm đè khớp vào lòng khung */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center px-12 pt-4">
-                    
+                  <div className="absolute inset-0 flex flex-col items-center justify-between py-[9%] px-[12%] text-center">
                     {/* Tiêu đề */}
-                    <span className="mb-2 text-lg font-extrabold text-[#2d4a3e] sm:text-xl" style={{ fontFamily: 'var(--font-body)' }}>Nhập tên</span>
+                    <span
+                      className="text-[10px] min-[380px]:text-xs sm:text-lg font-black text-[#2d4a3e]"
+                      style={{ fontFamily: 'var(--font-body)' }}
+                    >
+                      Nhập tên
+                    </span>
 
                     {/* Ô nhập tên */}
-                    <div className="w-full max-w-[240px] my-1">
-                      <input 
-                        autoFocus 
-                        value={nameInput} 
-                        onChange={(event) => setNameInput(event.target.value)} 
-                        onKeyDown={(event) => event.key === 'Enter' && submitName()} 
-                        maxLength={20} 
-                        placeholder="Nhập tên của bạn" 
-                        className="w-full border-b-2 border-dotted border-[#2d4a3e]/60 bg-transparent pb-1 text-center text-lg font-semibold text-[#2d4a3e] outline-none placeholder:text-[#2d4a3e]/50 sm:text-2xl" 
+                    <div className="w-full max-w-[150px] min-[380px]:max-w-[200px] sm:max-w-[270px]">
+                      <input
+                        autoFocus
+                        value={nameInput}
+                        onChange={(event) => setNameInput(event.target.value)}
+                        onKeyDown={(event) => event.key === 'Enter' && submitName()}
+                        maxLength={20}
+                        placeholder="Nhập tên của bạn"
+                        className="w-full border-b border-dotted border-[#2d4a3e]/60 bg-transparent pb-0.5 text-center text-[10px] min-[380px]:text-xs sm:text-xl font-semibold text-[#2d4a3e] outline-none placeholder:text-[#2d4a3e]/50"
                         style={{ fontFamily: 'var(--font-body)' }}
                       />
                     </div>
 
-                    {error && <p className="text-[10px] text-red-600 my-0.5">{error}</p>}
+                    {error && <p className="text-[8px] sm:text-xs font-bold text-red-600">{error}</p>}
 
-                  {/* Nút Vào hội có hiệu ứng nhấp nhô phóng to thu nhỏ */}
-                    <div className="mt-4">
-                     <button
-  onClick={submitName}
-  className="
-    animate-bounce-scale
-    flex
-    items-center
-    justify-center
-    w-32
-    h-12
-    rounded-full
-    bg-[#2d4a3e]
-    text-white
-    font-extrabold
-    text-xl
-    shadow-xl
-    active:scale-95
-  "
-  style={{ fontFamily: 'var(--font-body)' }}
->
-    Vào hội
-</button>
-                    </div>
-
+                    {/* Nút Vào hội */}
+                    <button
+                      onClick={submitName}
+                      className="animate-bounce-scale flex h-6 min-[380px]:h-8 sm:h-11 items-center justify-center rounded-full bg-[#2d4a3e] px-4 min-[380px]:px-6 sm:px-8 text-[9px] min-[380px]:text-xs sm:text-lg font-extrabold text-white shadow-xl active:scale-95 transition"
+                      style={{ fontFamily: 'var(--font-body)' }}
+                    >
+                      Vào hội
+                    </button>
                   </div>
                 </div>
               </div>
+            </div>
 
+            {/* Gợi ý xoay ngang màn hình khi ở chiều dọc trên điện thoại */}
+            <div className="landscape:hidden sm:hidden absolute top-4 left-1/2 -translate-x-1/2 z-30 px-3 py-1 rounded-full bg-black/60 border border-white/20 text-[11px] text-white/85 backdrop-blur-sm pointer-events-none flex items-center gap-1.5 shadow-md whitespace-nowrap">
+              <span className="text-sm">🔄</span>
+              <span>Xoay ngang để xem toàn cảnh như laptop</span>
             </div>
           </div>
-      
-        
-        )}
+        )}
 
         {screen === 'mode' && (
-          <section className="fixed inset-0 z-10 overflow-hidden bg-[#087b7f] text-center text-white">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,rgba(125,242,224,.34),transparent_40%),linear-gradient(180deg,#075f68_0%,#087f82_55%,#043f49_100%)]" />
-            <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(circle,rgba(255,245,176,.9)_1px,transparent_1.5px)] [background-size:42px_42px]" />
+          <section className="fixed inset-0 z-10 overflow-y-auto overflow-x-hidden bg-[#087b7f] text-center text-white">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,rgba(125,242,224,.34),transparent_40%),linear-gradient(180deg,#075f68_0%,#087f82_55%,#043f49_100%)] pointer-events-none" />
+            <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(circle,rgba(255,245,176,.9)_1px,transparent_1.5px)] [background-size:42px_42px] pointer-events-none" />
 
-            <div className="relative z-10 flex h-full min-h-[540px] flex-col items-center px-4 pb-5 pt-10 sm:pb-8 sm:pt-14">
-              <p className="text-xs font-bold uppercase tracking-[.28em] text-[#ffda86] sm:text-sm">Xin chào, {playerName}</p>
-              <h2 className="mode-screen-title mt-1 font-black" style={{ fontFamily: 'var(--font-display)' }}>CHỌN CHẾ ĐỘ CHƠI</h2>
-              <p className="mt-1 text-xs font-semibold text-white/70 sm:text-sm">Chọn một cách vào hội để bắt đầu</p>
+            <div className="relative z-10 flex min-h-[100dvh] flex-col justify-between items-center px-4 pt-14 pb-8 sm:pt-14 sm:pb-8">
+              {/* Tiêu đề chọn chế độ */}
+              <div className="w-full max-w-xl">
+                <p className="text-xs font-bold uppercase tracking-[.25em] text-[#ffda86] sm:text-sm">Xin chào, {playerName}</p>
+                <h2 className="mode-screen-title mt-1 font-black" style={{ fontFamily: 'var(--font-display)' }}>CHỌN CHẾ ĐỘ CHƠI</h2>
+                <p className="mt-1 text-xs font-semibold text-white/75 sm:text-sm">Chọn một cách vào hội để bắt đầu</p>
+              </div>
 
-              <div className="relative mt-1 min-h-0 w-full max-w-[820px] flex-1">
-                <div className="absolute left-1/2 top-[51%] h-[42%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#fff1a6]/45 blur-3xl" />
-                <div className="mode-stage-beam absolute bottom-[14%] left-1/2 h-[62%] w-[62%] -translate-x-1/2 bg-[radial-gradient(ellipse_at_bottom,rgba(255,249,190,.92),rgba(255,208,107,.25)_35%,transparent_70%)] blur-xl" />
+              {/* 5 quân bài xòe quạt ở trung tâm */}
+              <div className="relative my-auto min-h-[220px] w-full max-w-[820px] flex-1 flex items-center justify-center py-4">
+                <div className="absolute left-1/2 top-1/2 h-[48%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#fff1a6]/40 blur-3xl pointer-events-none" />
+                <div className="mode-stage-beam absolute bottom-[10%] left-1/2 h-[65%] w-[65%] -translate-x-1/2 bg-[radial-gradient(ellipse_at_bottom,rgba(255,249,190,.92),rgba(255,208,107,.25)_35%,transparent_70%)] blur-xl pointer-events-none" />
 
-                <div className="mode-spin-ring pointer-events-none absolute bottom-[-5%] left-1/2 h-[92%] w-[min(140vw,1280px)] -translate-x-1/2" role="img" aria-label="Vòng xoay Bài Chòi" />
+                <div className="mode-spin-ring pointer-events-none absolute bottom-[-5%] left-1/2 h-[95%] w-[min(140vw,1280px)] -translate-x-1/2" role="img" aria-label="Vòng xoay Bài Chòi" />
 
-                <div className="absolute bottom-[31%] left-1/2 h-[66%] w-[min(92vw,700px)] -translate-x-1/2">
+                <div className="relative h-[220px] sm:h-[280px] w-[min(94vw,720px)] mx-auto">
                   {CARDS.slice(0, 5).map((card, index) => {
                     const cardPositions = [
-                      'left-[7%] top-[19%] z-[1] -rotate-[17deg]',
-                      'left-[25%] top-[33%] z-[3] -rotate-[8deg]',
-                      'left-1/2 top-[3%] z-[5] -translate-x-1/2 rotate-[5deg]',
-                      'right-[24%] top-[31%] z-[4] rotate-[10deg]',
-                      'right-[6%] top-[12%] z-[2] rotate-[18deg]',
+                      'left-[4%] top-[18%] z-[1] -rotate-[16deg]',
+                      'left-[23%] top-[30%] z-[3] -rotate-[8deg]',
+                      'left-1/2 top-[4%] z-[5] -translate-x-1/2 rotate-[3deg]',
+                      'right-[22%] top-[29%] z-[4] rotate-[9deg]',
+                      'right-[4%] top-[14%] z-[2] rotate-[17deg]',
                     ]
                     return (
-                      <div key={card.id} className={`mode-card-float absolute w-[23%] max-w-[150px] ${cardPositions[index]}`} style={{ animationDelay: `${index * 0.14}s` }}>
-                        <div className="mode-card-glow overflow-hidden rounded-[10px] border-2 border-[#fff0a4] bg-white p-1">
+                      <div key={card.id} className={`mode-card-float absolute w-[21%] max-w-[135px] ${cardPositions[index]}`} style={{ animationDelay: `${index * 0.14}s` }}>
+                        <div className="mode-card-glow overflow-hidden rounded-[10px] border-2 border-[#fff0a4] bg-white p-1 shadow-lg">
                           <img src={card.image} alt={card.name} className="aspect-[3/4] h-auto w-full rounded-md object-cover" />
                         </div>
-                        <span className="mt-1 block rounded-full bg-[#075f63]/90 px-1 py-1 text-[11px] font-normal text-white shadow sm:text-base" style={{ fontFamily: 'var(--font-display)' }}>{card.name}</span>
+                        <span className="mt-1 block rounded-full bg-[#075f63]/90 px-1.5 py-0.5 text-[9px] min-[380px]:text-[11px] font-semibold text-white shadow truncate sm:text-base" style={{ fontFamily: 'var(--font-display)' }}>{card.name}</span>
                       </div>
                     )
                   })}
                 </div>
               </div>
 
+              {/* 2 nút chọn chế độ */}
               <div className="relative z-20 grid w-full max-w-[680px] grid-cols-2 gap-3 sm:gap-5">
                 <button
                   onClick={() => { setCountdown(8); setScreen('matchmaking') }}
-                  className="mode-choice-button group rounded-[1.4rem] border-2 border-[#f6d274] bg-[#fff9df]/95 px-3 py-3 text-[#075f63] shadow-[0_10px_28px_rgba(0,99,104,.22)] sm:px-6 sm:py-4"
+                  className="mode-choice-button group rounded-[1.2rem] sm:rounded-[1.4rem] border-2 border-[#f6d274] bg-[#fff9df]/95 px-3 py-3 text-[#075f63] shadow-[0_10px_28px_rgba(0,99,104,.22)] sm:px-6 sm:py-4 transition active:scale-95"
                 >
                   <span className="block text-[10px] font-bold uppercase tracking-[.18em] text-[#bd6648]">Chế độ 01</span>
-                  <strong className="mt-1 block text-base sm:text-xl">Chơi ngay</strong>
+                  <strong className="mt-0.5 block text-sm sm:text-xl font-black">Chơi ngay</strong>
                   <span className="mt-1 hidden text-xs text-[#075f63]/65 sm:block">Ghép hội nhanh với các chòi máy</span>
                 </button>
                 <button
                   onClick={() => setScreen('friend')}
-                  className="mode-choice-button group rounded-[1.4rem] border-2 border-[#85d4ce] bg-[#eafff9]/95 px-3 py-3 text-[#075f63] shadow-[0_10px_28px_rgba(0,99,104,.22)] sm:px-6 sm:py-4"
+                  className="mode-choice-button group rounded-[1.2rem] sm:rounded-[1.4rem] border-2 border-[#85d4ce] bg-[#eafff9]/95 px-3 py-3 text-[#075f63] shadow-[0_10px_28px_rgba(0,99,104,.22)] sm:px-6 sm:py-4 transition active:scale-95"
                 >
                   <span className="block text-[10px] font-bold uppercase tracking-[.18em] text-[#b85a3f]">Chế độ 02</span>
-                  <strong className="mt-1 block text-base sm:text-xl">Mở hội cùng bạn</strong>
+                  <strong className="mt-0.5 block text-sm sm:text-xl font-black">Mở hội cùng bạn</strong>
                   <span className="mt-1 hidden text-xs text-[#075f63]/65 sm:block">Tạo mã hoặc tham gia phòng bạn bè</span>
                 </button>
               </div>
