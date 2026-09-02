@@ -472,49 +472,181 @@ useEffect(() => {
 />
 
               {/* Khung nhập tên: Tự động tương thích màn hình dọc điện thoại & màn hình ngang laptop */}
-              <div className="absolute inset-x-0 mx-auto bottom-[6%] z-10 w-[88vw] max-w-[390px] sm:inset-auto sm:left-[8%] sm:bottom-[8%] sm:w-[42%] sm:max-w-[540px]">
-                <div className="relative w-full flex flex-col items-center justify-center">
-                  <img
-                    src="/assets/khung(1).png"
-                    alt="Khung nhập tên"
-                    className="w-full h-auto object-contain drop-shadow-2xl mix-blend-screen"
-                  />
-                  <div className="absolute inset-0 flex flex-col items-center justify-between py-[9%] px-[12%] text-center">
-                    {/* Tiêu đề */}
-                    <span
-                      className="text-xs sm:text-lg font-black text-[#2d4a3e]"
-                      style={{ fontFamily: 'var(--font-body)' }}
-                    >
-                      Nhập tên
-                    </span>
+              <div
+  className="
+    absolute
+    left-1/2
+    top-1/2
+    z-10
+    w-[92vw]
+    max-w-[420px]
+    -translate-x-1/2
+    -translate-y-1/2
 
-                    {/* Ô nhập tên */}
-                    <div className="w-full max-w-[170px] sm:max-w-[270px]">
-                      <input
-                        autoFocus
-                        value={nameInput}
-                        onChange={(event) => setNameInput(event.target.value)}
-                        onKeyDown={(event) => event.key === 'Enter' && submitName()}
-                        maxLength={20}
-                        placeholder="Nhập tên của bạn"
-                        className="w-full border-b border-dotted border-[#2d4a3e]/60 bg-transparent pb-0.5 text-center text-xs sm:text-xl font-semibold text-[#2d4a3e] outline-none placeholder:text-[#2d4a3e]/50"
-                        style={{ fontFamily: 'var(--font-body)' }}
-                      />
-                    </div>
+    sm:left-[8%]
+    sm:top-auto
+    sm:bottom-[8%]
+    sm:w-[42%]
+    sm:max-w-[540px]
+    sm:translate-x-0
+    sm:translate-y-0
+  "
+>
+  <div className="relative w-full">
 
-                    {error && <p className="text-[9px] sm:text-xs font-bold text-red-600">{error}</p>}
+    {/* ẢNH KHUNG */}
+    <img
+      src="/assets/khung(1).png"
+      alt="Khung nhập tên"
+      className="
+        block
+        h-auto
+        w-full
+        object-contain
+        drop-shadow-2xl
+        mix-blend-screen
+      "
+    />
 
-                    {/* Nút Vào hội */}
-                    <button
-                      onClick={submitName}
-                      className="animate-bounce-scale flex h-7 sm:h-11 items-center justify-center rounded-full bg-[#2d4a3e] px-6 sm:px-8 text-xs sm:text-lg font-extrabold text-white shadow-xl active:scale-95 transition"
-                      style={{ fontFamily: 'var(--font-body)' }}
-                    >
-                      Vào hội
-                    </button>
-                  </div>
-                </div>
-              </div>
+
+    {/* ============================== */}
+    {/* NỘI DUNG NẰM TRONG KHUNG */}
+    {/* ============================== */}
+
+    <div className="absolute inset-0">
+
+      {/* NHẬP TÊN */}
+      <div
+        className="
+          absolute
+          left-1/2
+          top-[27%]
+          w-full
+          -translate-x-1/2
+          text-center
+        "
+      >
+        <span
+          className="
+            text-sm
+            font-black
+            text-[#2d4a3e]
+            sm:text-lg
+          "
+          style={{ fontFamily: 'var(--font-body)' }}
+        >
+          Nhập tên
+        </span>
+      </div>
+
+
+      {/* Ô NHẬP */}
+      <div
+        className="
+          absolute
+          left-1/2
+          top-[50%]
+          w-[58%]
+          -translate-x-1/2
+          -translate-y-1/2
+        "
+      >
+        <input
+          autoFocus
+          value={nameInput}
+          onChange={(event) => setNameInput(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') submitName()
+          }}
+          maxLength={20}
+          placeholder="Nhập tên của bạn"
+          className="
+            w-full
+            border-b
+            border-dotted
+            border-[#2d4a3e]/60
+            bg-transparent
+            pb-1
+            text-center
+            text-base
+            font-semibold
+            text-[#2d4a3e]
+            outline-none
+            placeholder:text-[#2d4a3e]/55
+
+            sm:text-xl
+          "
+          style={{ fontFamily: 'var(--font-body)' }}
+        />
+      </div>
+
+
+      {/* LỖI */}
+      {error && (
+        <p
+          className="
+            absolute
+            left-1/2
+            top-[61%]
+            w-[75%]
+            -translate-x-1/2
+            text-center
+            text-[9px]
+            font-bold
+            text-red-600
+            sm:text-xs
+          "
+        >
+          {error}
+        </p>
+      )}
+
+
+      {/* NÚT VÀO HỘI */}
+      <button
+        onClick={submitName}
+        className="
+          animate-bounce-scale
+
+          absolute
+          bottom-[13%]
+          left-1/2
+          -translate-x-1/2
+
+          flex
+          h-10
+          min-w-[125px]
+          items-center
+          justify-center
+
+          rounded-full
+          bg-[#2d4a3e]
+
+          px-7
+
+          text-base
+          font-extrabold
+          leading-none
+          text-white
+
+          shadow-xl
+
+          transition
+          active:scale-95
+
+          sm:h-11
+          sm:min-w-[155px]
+          sm:px-8
+          sm:text-lg
+        "
+        style={{ fontFamily: 'var(--font-body)' }}
+      >
+        Vào hội
+      </button>
+
+    </div>
+  </div>
+</div>
             </div>
           </div>
         )}
