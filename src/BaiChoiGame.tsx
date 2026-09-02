@@ -125,6 +125,17 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
     }
   }
 
+  useEffect(() => {
+    const origOverflow = document.body.style.overflow
+    const origTouchAction = document.body.style.touchAction
+    document.body.style.overflow = 'hidden'
+    document.body.style.touchAction = 'none'
+    return () => {
+      document.body.style.overflow = origOverflow
+      document.body.style.touchAction = origTouchAction
+    }
+  }, [])
+
   useEffect(() => () => {
     stopAudio()
     socketRef.current?.close()
@@ -363,10 +374,10 @@ useEffect(() => {
   }
 
   return (
-    <div className="fixed inset-0 z-[300] overflow-y-auto bg-[#052f32]/[0.98] text-white" role="dialog" aria-modal="true" aria-label="Trò chơi Bài Chòi">
-      <div className="pointer-events-none fixed inset-0 opacity-20" style={{ backgroundImage: 'url(/assets/Background-toan.jpg)', backgroundSize: 'cover' }} />
+    <div className="fixed inset-0 z-[300] overflow-hidden touch-none select-none bg-[#052f32] text-white h-[100dvh] w-full" role="dialog" aria-modal="true" aria-label="Trò chơi Bài Chòi">
+      <div className="pointer-events-none fixed inset-0 opacity-20" style={{ backgroundImage: 'url(/assets/Background-toan.jpg)', backgroundSize: 'cover' }} />
       <button onClick={leaveGame} className="fixed right-3 top-3 sm:right-5 sm:top-5 z-[80] grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-full border-2 border-white/70 bg-[#075f63]/80 text-2xl sm:text-3xl font-light leading-none text-white shadow-xl backdrop-blur-sm transition hover:scale-105 hover:bg-[#c44837]" aria-label="Đóng trò chơi">×</button>
-      <main className="relative mx-auto flex min-h-full w-full max-w-6xl items-center justify-center px-2 sm:px-4 py-16 sm:py-20">
+      <main className="relative mx-auto flex h-full w-full max-w-6xl items-center justify-center p-0 overflow-hidden">
         {screen === 'name' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#052f32] overflow-hidden">
             {/* Nền đệm gradient màu tương đồng video */}
