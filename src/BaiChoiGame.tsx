@@ -125,6 +125,21 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
     }
   }
 
+  const [isMobilePortrait, setIsMobilePortrait] = useState(false)
+
+  useEffect(() => {
+    const checkOrientation = () => {
+      setIsMobilePortrait(window.innerWidth < 768 && window.innerHeight > window.innerWidth)
+    }
+    checkOrientation()
+    window.addEventListener('resize', checkOrientation)
+    window.addEventListener('orientationchange', checkOrientation)
+    return () => {
+      window.removeEventListener('resize', checkOrientation)
+      window.removeEventListener('orientationchange', checkOrientation)
+    }
+  }, [])
+
   useEffect(() => {
     const origOverflow = document.body.style.overflow
     const origTouchAction = document.body.style.touchAction
@@ -380,14 +395,10 @@ useEffect(() => {
       <main className="relative mx-auto flex h-full w-full max-w-6xl items-center justify-center p-0 overflow-hidden">
         {screen === 'name' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#052f32] overflow-hidden">
-            {/* Nền đệm gradient màu tương đồng video */}
-            <div className="absolute inset-0 bg-[#052f32] pointer-events-none">
-              <div className="absolute inset-0 opacity-40 bg-[radial-gradient(ellipse_at_center,#408a8c_0%,#052f32_100%)]" />
-            </div>
-
-            {/* Sân khấu 16:9 chuẩn như trên laptop, hiển thị trọn vẹn 100% video và các nhân vật */}
-            <div className="relative w-full max-w-[1400px] aspect-[16/9] max-h-[100dvh] flex items-center justify-center overflow-hidden sm:rounded-2xl shadow-2xl">
+            {/* Background video & stage */}
+            <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
               <video
+                key={isMobilePortrait ? 'mobile-video' : 'desktop-video'}
                 ref={(node) => {
                   if (!node) return
                   node.muted = true
@@ -428,21 +439,17 @@ useEffect(() => {
                 muted
                 playsInline
                 className="w-full h-full object-cover"
-                src="/sound/video-daugame.mp4"
+                src={isMobilePortrait ? '/sound/video-daugame-dienthoai.mp4' : '/sound/video-daugame.mp4'}
               />
 
-              {/* Khung nhập tên đặt chính xác góc dưới bên trái của video như trên laptop */}
-              <div className="
-                absolute
-                left-[5%]
-                bottom-[4%]
-                z-10
-                w-[52%]
-                max-w-[540px]
-                sm:left-[10%]
-                sm:bottom-[6%]
-                sm:w-[46%]
-              ">
+              {/* Khung nhập tên: Tự động điều chỉnh theo thiết bị */}
+              <div
+                className={
+                  isMobilePortrait
+                    ? 'absolute left-1/2 bottom-[7%] z-10 w-[88vw] max-w-[420px] -translate-x-1/2'
+                    : 'absolute left-[8%] bottom-[8%] z-10 w-[42%] max-w-[540px]'
+                }
+              >
                 <div className="relative w-full flex flex-col items-center justify-center">
                   <img
                     src="/assets/khung(1).png"
@@ -452,14 +459,14 @@ useEffect(() => {
                   <div className="absolute inset-0 flex flex-col items-center justify-between py-[9%] px-[12%] text-center">
                     {/* Tiêu đề */}
                     <span
-                      className="text-[10px] min-[380px]:text-xs sm:text-lg font-black text-[#2d4a3e]"
+                      className="text-xs sm:text-lg font-black text-[#2d4a3e]"
                       style={{ fontFamily: 'var(--font-body)' }}
                     >
                       Nhập tên
                     </span>
 
                     {/* Ô nhập tên */}
-                    <div className="w-full max-w-[150px] min-[380px]:max-w-[200px] sm:max-w-[270px]">
+                    <div className="w-full max-w-[180px] sm:max-w-[270px]">
                       <input
                         autoFocus
                         value={nameInput}
@@ -467,17 +474,17 @@ useEffect(() => {
                         onKeyDown={(event) => event.key === 'Enter' && submitName()}
                         maxLength={20}
                         placeholder="Nhập tên của bạn"
-                        className="w-full border-b border-dotted border-[#2d4a3e]/60 bg-transparent pb-0.5 text-center text-[10px] min-[380px]:text-xs sm:text-xl font-semibold text-[#2d4a3e] outline-none placeholder:text-[#2d4a3e]/50"
+                        className="w-full border-b border-dotted border-[#2d4a3e]/60 bg-transparent pb-0.5 text-center text-xs sm:text-xl font-semibold text-[#2d4a3e] outline-none placeholder:text-[#2d4a3e]/50"
                         style={{ fontFamily: 'var(--font-body)' }}
                       />
                     </div>
 
-                    {error && <p className="text-[8px] sm:text-xs font-bold text-red-600">{error}</p>}
+                    {error && <p className="text-[9px] sm:text-xs font-bold text-red-600">{error}</p>}
 
                     {/* Nút Vào hội */}
                     <button
                       onClick={submitName}
-                      className="animate-bounce-scale flex h-6 min-[380px]:h-8 sm:h-11 items-center justify-center rounded-full bg-[#2d4a3e] px-4 min-[380px]:px-6 sm:px-8 text-[9px] min-[380px]:text-xs sm:text-lg font-extrabold text-white shadow-xl active:scale-95 transition"
+                      className="animate-bounce-scale flex h-7 sm:h-11 items-center justify-center rounded-full bg-[#2d4a3e] px-6 sm:px-8 text-xs sm:text-lg font-extrabold text-white shadow-xl active:scale-95 transition"
                       style={{ fontFamily: 'var(--font-body)' }}
                     >
                       Vào hội
@@ -485,12 +492,6 @@ useEffect(() => {
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Gợi ý xoay ngang màn hình khi ở chiều dọc trên điện thoại */}
-            <div className="landscape:hidden sm:hidden absolute top-4 left-1/2 -translate-x-1/2 z-30 px-3 py-1 rounded-full bg-black/60 border border-white/20 text-[11px] text-white/85 backdrop-blur-sm pointer-events-none flex items-center gap-1.5 shadow-md whitespace-nowrap">
-              <span className="text-sm">🔄</span>
-              <span>Xoay ngang để xem toàn cảnh như laptop</span>
             </div>
           </div>
         )}
