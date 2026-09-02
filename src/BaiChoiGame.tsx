@@ -398,11 +398,20 @@ useEffect(() => {
             {/* Background video & stage */}
             <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
               <video
-                key={isMobilePortrait ? 'mobile-video' : 'desktop-video'}
+                key={isMobilePortrait ? 'mobile-video-v2' : 'desktop-video-v2'}
                 ref={(node) => {
                   if (!node) return
                   node.muted = true
                   node.playsInline = true
+                  node.setAttribute('muted', '')
+                  node.setAttribute('playsinline', '')
+
+                  const playPromise = node.play()
+                  if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                      // Fallback for iOS low power mode
+                    })
+                  }
 
                   let isReversing = false
                   let animFrameId: number
@@ -438,16 +447,18 @@ useEffect(() => {
                 autoPlay
                 muted
                 playsInline
+                loop
+                preload="auto"
                 className="w-full h-full object-cover"
                 src={isMobilePortrait ? '/sound/video-daugame-dienthoai.mp4' : '/sound/video-daugame.mp4'}
               />
 
-              {/* Khung nhập tên: Tự động điều chỉnh theo thiết bị */}
+              {/* Khung nhập tên: Căn giữa bằng inset-x-0 mx-auto trên điện thoại và ở góc trái trên laptop */}
               <div
                 className={
                   isMobilePortrait
-                    ? 'absolute left-1/2 bottom-[7%] z-10 w-[88vw] max-w-[420px] -translate-x-1/2'
-                    : 'absolute left-[8%] bottom-[8%] z-10 w-[42%] max-w-[540px]'
+                    ? 'absolute inset-x-0 bottom-[6%] mx-auto z-10 w-[88vw] max-w-[390px]'
+                    : 'absolute left-[6%] sm:left-[8%] bottom-[6%] sm:bottom-[8%] z-10 w-[42%] max-w-[540px]'
                 }
               >
                 <div className="relative w-full flex flex-col items-center justify-center">
@@ -466,7 +477,7 @@ useEffect(() => {
                     </span>
 
                     {/* Ô nhập tên */}
-                    <div className="w-full max-w-[180px] sm:max-w-[270px]">
+                    <div className="w-full max-w-[170px] sm:max-w-[270px]">
                       <input
                         autoFocus
                         value={nameInput}
