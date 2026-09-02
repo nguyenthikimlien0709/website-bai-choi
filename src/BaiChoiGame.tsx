@@ -397,70 +397,46 @@ useEffect(() => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#052f32] overflow-hidden">
             {/* Background video & stage */}
             <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+              {/* Video 16:9 dành riêng cho Laptop / Desktop / Màn hình ngang */}
               <video
-                key={isMobilePortrait ? 'mobile-video-v2' : 'desktop-video-v2'}
                 ref={(node) => {
                   if (!node) return
                   node.muted = true
                   node.playsInline = true
                   node.setAttribute('muted', '')
                   node.setAttribute('playsinline', '')
-
-                  const playPromise = node.play()
-                  if (playPromise !== undefined) {
-                    playPromise.catch(() => {
-                      // Fallback for iOS low power mode
-                    })
-                  }
-
-                  let isReversing = false
-                  let animFrameId: number
-
-                  const animate = () => {
-                    if (!node) return
-
-                    if (!isReversing) {
-                      if (node.duration && node.currentTime >= node.duration - 0.15) {
-                        isReversing = true
-                      }
-                      animFrameId = requestAnimationFrame(animate)
-                    } else {
-                      if (node.currentTime <= 0.15) {
-                        isReversing = false
-                        animFrameId = requestAnimationFrame(animate)
-                      } else {
-                        node.currentTime = Math.max(0, node.currentTime - 0.08)
-                        animFrameId = requestAnimationFrame(animate)
-                      }
-                    }
-                  }
-
-                  node.onplay = () => {
-                    cancelAnimationFrame(animFrameId)
-                    animFrameId = requestAnimationFrame(animate)
-                  }
-
-                  node.onpause = () => {
-                    cancelAnimationFrame(animFrameId)
-                  }
+                  node.play().catch(() => {})
                 }}
                 autoPlay
                 muted
                 playsInline
                 loop
                 preload="auto"
-                className="w-full h-full object-cover"
-                src={isMobilePortrait ? '/sound/video-daugame-dienthoai.mp4' : '/sound/video-daugame.mp4'}
+                className="hidden landscape:block sm:block w-full h-full object-cover"
+                src="/sound/video-daugame.mp4"
               />
 
-              {/* Khung nhập tên: Căn giữa bằng inset-x-0 mx-auto trên điện thoại và ở góc trái trên laptop */}
-              <div
-                className={
-                  isMobilePortrait
-                    ? 'absolute inset-x-0 bottom-[6%] mx-auto z-10 w-[88vw] max-w-[390px]'
-                    : 'absolute left-[6%] sm:left-[8%] bottom-[6%] sm:bottom-[8%] z-10 w-[42%] max-w-[540px]'
-                }
-              >
+              {/* Video 9:16 đứng dành riêng cho Điện thoại / Màn hình dọc */}
+              <video
+                ref={(node) => {
+                  if (!node) return
+                  node.muted = true
+                  node.playsInline = true
+                  node.setAttribute('muted', '')
+                  node.setAttribute('playsinline', '')
+                  node.play().catch(() => {})
+                }}
+                autoPlay
+                muted
+                playsInline
+                loop
+                preload="auto"
+                className="block landscape:hidden sm:hidden w-full h-full object-cover"
+                src="/sound/video-daugame-dienthoai.mp4"
+              />
+
+              {/* Khung nhập tên: Tự động tương thích màn hình dọc điện thoại & màn hình ngang laptop */}
+              <div className="absolute inset-x-0 mx-auto bottom-[6%] z-10 w-[88vw] max-w-[390px] sm:inset-auto sm:left-[8%] sm:bottom-[8%] sm:w-[42%] sm:max-w-[540px]">
                 <div className="relative w-full flex flex-col items-center justify-center">
                   <img
                     src="/assets/khung(1).png"
