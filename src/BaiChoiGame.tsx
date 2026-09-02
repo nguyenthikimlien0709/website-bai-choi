@@ -151,16 +151,24 @@ const introVideoSrc = isMobilePortrait
     }
   }, [])
 
-  useEffect(() => {
-    const origOverflow = document.body.style.overflow
-    const origTouchAction = document.body.style.touchAction
+useEffect(() => {
+  const origOverflow = document.body.style.overflow
+  const origTouchAction = document.body.style.touchAction
+
+  if (screen === 'playing') {
+    // Màn chơi sẽ tự scroll ở container game
+    document.body.style.overflow = 'hidden'
+    document.body.style.touchAction = 'pan-y'
+  } else {
     document.body.style.overflow = 'hidden'
     document.body.style.touchAction = 'none'
-    return () => {
-      document.body.style.overflow = origOverflow
-      document.body.style.touchAction = origTouchAction
-    }
-  }, [])
+  }
+
+  return () => {
+    document.body.style.overflow = origOverflow
+    document.body.style.touchAction = origTouchAction
+  }
+}, [screen])
 
   useEffect(() => () => {
     stopAudio()
@@ -400,11 +408,45 @@ useEffect(() => {
   }
 
   return (
-    <div className="fixed inset-0 z-[300] overflow-hidden touch-none select-none bg-[#052f32] text-white h-[100dvh] w-full" role="dialog" aria-modal="true" aria-label="Trò chơi Bài Chòi">
+  <div
+  className={`
+    fixed inset-0 z-[300]
+    select-none
+    bg-[#052f32]
+    text-white
+    h-[100dvh]
+    w-full
+
+    ${
+      screen === 'playing'
+        ? 'overflow-y-auto overflow-x-hidden touch-pan-y overscroll-y-contain'
+        : 'overflow-hidden touch-none'
+    }
+  `}
+  role="dialog"
+  aria-modal="true"
+  aria-label="Trò chơi Bài Chòi"
+>
       <div className="pointer-events-none fixed inset-0 opacity-20" style={{ backgroundImage: 'url(/assets/Background-toan.jpg)', backgroundSize: 'cover' }} />
       <button onClick={leaveGame} className="fixed right-3 top-3 sm:right-5 sm:top-5 z-[80] grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-full border-2 border-white/70 bg-[#075f63]/80 text-2xl sm:text-3xl font-light leading-none text-white shadow-xl backdrop-blur-sm transition hover:scale-105 hover:bg-[#c44837]" aria-label="Đóng trò chơi">×</button>
-      <main className="relative mx-auto flex h-full w-full max-w-6xl items-center justify-center p-0 overflow-hidden">
-        {screen === 'name' && (
+     <main
+  className={`
+    relative
+    mx-auto
+    flex
+    w-full
+    max-w-6xl
+    justify-center
+    p-0
+
+    ${
+      screen === 'playing'
+        ? 'min-h-full h-auto items-start overflow-visible py-6'
+        : 'h-full items-center overflow-hidden'
+    }
+  `}
+>
+  {screen === 'name' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#052f32] overflow-hidden">
             {/* Background video & stage */}
             <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
@@ -649,6 +691,7 @@ useEffect(() => {
 </div>
             </div>
           </div>
+          
         )}
 
         {screen === 'mode' && (
@@ -1186,8 +1229,8 @@ sm:max-w-[160px]
           </>
         )}
 
-        {screen === 'playing' && (
-          <section className="w-full">
+      {screen === 'playing' && (
+  <section className="w-full px-3 pb-16 sm:px-4 sm:pb-12">
             <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div><p className="text-xs uppercase tracking-[.2em] text-[#f29963]">Hội Bài Chòi • 5 chòi</p><h2 className="text-2xl font-black">Ván đang diễn ra</h2></div>
               <div className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm">Cờ của bạn: <strong className="text-[#f29963]">{claimed.length}/3</strong></div>
