@@ -125,7 +125,18 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
     }
   }
 
-  const [isMobilePortrait, setIsMobilePortrait] = useState(false)
+const [isMobilePortrait, setIsMobilePortrait] = useState(() => {
+  if (typeof window === 'undefined') return false
+
+  return (
+    window.innerWidth < 768 &&
+    window.innerHeight > window.innerWidth
+  )
+})
+
+const introVideoSrc = isMobilePortrait
+  ? '/sound/video-daugame-dienthoai.mp4'
+  : '/sound/video-daugame.mp4'
 
   useEffect(() => {
     const checkOrientation = () => {
@@ -417,23 +428,48 @@ useEffect(() => {
               />
 
               {/* Video 9:16 đứng dành riêng cho Điện thoại / Màn hình dọc */}
-              <video
-                ref={(node) => {
-                  if (!node) return
-                  node.muted = true
-                  node.playsInline = true
-                  node.setAttribute('muted', '')
-                  node.setAttribute('playsinline', '')
-                  node.play().catch(() => {})
-                }}
-                autoPlay
-                muted
-                playsInline
-                loop
-                preload="auto"
-                className="block landscape:hidden sm:hidden w-full h-full object-cover"
-                src="/sound/video-daugame-dienthoai.mp4"
-              />
+             <video
+  key={introVideoSrc}
+
+  ref={(node) => {
+    if (!node) return
+
+    node.muted = true
+    node.defaultMuted = true
+    node.playsInline = true
+
+    node.setAttribute('muted', '')
+    node.setAttribute('playsinline', '')
+
+    node.play().catch((error) => {
+      console.error('Không phát được video:', introVideoSrc, error)
+    })
+  }}
+
+  autoPlay
+  muted
+  playsInline
+  loop
+  preload="auto"
+
+  src={introVideoSrc}
+
+  className="
+    absolute
+    inset-0
+    h-full
+    w-full
+    object-cover
+  "
+
+  onError={(event) => {
+    console.error(
+      'VIDEO LOAD ERROR:',
+      introVideoSrc,
+      event.currentTarget.error
+    )
+  }}
+/>
 
               {/* Khung nhập tên: Tự động tương thích màn hình dọc điện thoại & màn hình ngang laptop */}
               <div className="absolute inset-x-0 mx-auto bottom-[6%] z-10 w-[88vw] max-w-[390px] sm:inset-auto sm:left-[8%] sm:bottom-[8%] sm:w-[42%] sm:max-w-[540px]">
