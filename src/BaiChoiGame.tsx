@@ -297,7 +297,7 @@ useEffect(() => {
   const submitName = () => {
     const nextName = cleanName(nameInput)
     if (nextName.length < 2) {
-      setError('Tên cần có từ 2 đến 16 ký tự.')
+      setError('')
       return
     }
     if (/^(máy|anh hiệu|chị hiệu)$/i.test(nextName)) {
@@ -408,7 +408,7 @@ useEffect(() => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#052f32] overflow-hidden">
             {/* Background video & stage */}
             <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-              {/* Video 16:9 dành riêng cho Laptop / Desktop / Màn hình ngang */}
+              {/* Video 16:9 dành riêng cho Laptop / Desktop / Màn hình ngang
               <video
                 ref={(node) => {
                   if (!node) return
@@ -425,7 +425,7 @@ useEffect(() => {
                 preload="auto"
                 className="hidden landscape:block sm:block w-full h-full object-cover"
                 src="/sound/video-daugame.mp4"
-              />
+              /> */}
 
               {/* Video 9:16 đứng dành riêng cho Điện thoại / Màn hình dọc */}
              <video
@@ -652,68 +652,482 @@ useEffect(() => {
         )}
 
         {screen === 'mode' && (
-          <section className="fixed inset-0 z-10 overflow-y-auto overflow-x-hidden bg-[#087b7f] text-center text-white">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,rgba(125,242,224,.34),transparent_40%),linear-gradient(180deg,#075f68_0%,#087f82_55%,#043f49_100%)] pointer-events-none" />
-            <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(circle,rgba(255,245,176,.9)_1px,transparent_1.5px)] [background-size:42px_42px] pointer-events-none" />
+  <section className="fixed inset-0 z-10 overflow-hidden bg-[#087b7f] text-center text-white">
 
-            <div className="relative z-10 flex min-h-[100dvh] flex-col justify-between items-center px-4 pt-14 pb-8 sm:pt-14 sm:pb-8">
-              {/* Tiêu đề chọn chế độ */}
-              <div className="w-full max-w-xl">
-                <p className="text-xs font-bold uppercase tracking-[.25em] text-[#ffda86] sm:text-sm">Xin chào, {playerName}</p>
-                <h2 className="mode-screen-title mt-1 font-black" style={{ fontFamily: 'var(--font-display)' }}>CHỌN CHẾ ĐỘ CHƠI</h2>
-                <p className="mt-1 text-xs font-semibold text-white/75 sm:text-sm">Chọn một cách vào hội để bắt đầu</p>
-              </div>
+    {/* NỀN */}
+    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,rgba(125,242,224,.34),transparent_40%),linear-gradient(180deg,#075f68_0%,#087f82_55%,#043f49_100%)]" />
 
-              {/* 5 quân bài xòe quạt ở trung tâm */}
-              <div className="relative my-auto min-h-[220px] w-full max-w-[820px] flex-1 flex items-center justify-center py-4">
-                <div className="absolute left-1/2 top-1/2 h-[48%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#fff1a6]/40 blur-3xl pointer-events-none" />
-                <div className="mode-stage-beam absolute bottom-[10%] left-1/2 h-[65%] w-[65%] -translate-x-1/2 bg-[radial-gradient(ellipse_at_bottom,rgba(255,249,190,.92),rgba(255,208,107,.25)_35%,transparent_70%)] blur-xl pointer-events-none" />
+    <div className="pointer-events-none absolute inset-0 opacity-25 [background-image:radial-gradient(circle,rgba(255,245,176,.9)_1px,transparent_1.5px)] [background-size:42px_42px]" />
 
-                <div className="mode-spin-ring pointer-events-none absolute bottom-[-5%] left-1/2 h-[95%] w-[min(140vw,1280px)] -translate-x-1/2" role="img" aria-label="Vòng xoay Bài Chòi" />
 
-                <div className="relative h-[220px] sm:h-[280px] w-[min(94vw,720px)] mx-auto">
-                  {CARDS.slice(0, 5).map((card, index) => {
-                    const cardPositions = [
-                      'left-[4%] top-[18%] z-[1] -rotate-[16deg]',
-                      'left-[23%] top-[30%] z-[3] -rotate-[8deg]',
-                      'left-1/2 top-[4%] z-[5] -translate-x-1/2 rotate-[3deg]',
-                      'right-[22%] top-[29%] z-[4] rotate-[9deg]',
-                      'right-[4%] top-[14%] z-[2] rotate-[17deg]',
-                    ]
-                    return (
-                      <div key={card.id} className={`mode-card-float absolute w-[21%] max-w-[135px] ${cardPositions[index]}`} style={{ animationDelay: `${index * 0.14}s` }}>
-                        <div className="mode-card-glow overflow-hidden rounded-[10px] border-2 border-[#fff0a4] bg-white p-1 shadow-lg">
-                          <img src={card.image} alt={card.name} className="aspect-[3/4] h-auto w-full rounded-md object-cover" />
-                        </div>
-                        <span className="mt-1 block rounded-full bg-[#075f63]/90 px-1.5 py-0.5 text-[9px] min-[380px]:text-[11px] font-semibold text-white shadow truncate sm:text-base" style={{ fontFamily: 'var(--font-display)' }}>{card.name}</span>
-                      </div>
-                    )
-                  })}
+    {/* TOÀN BỘ GIAO DIỆN */}
+    <div
+      className="
+        relative z-10
+        flex h-[100dvh]
+        flex-col
+        items-center
+
+        px-3
+        pb-4
+        pt-10
+
+        sm:min-h-[100dvh]
+        sm:h-auto
+        sm:px-4
+        sm:pb-8
+        sm:pt-14
+      "
+    >
+
+      {/* ========================= */}
+      {/* TIÊU ĐỀ */}
+      {/* ========================= */}
+
+      <div className="w-full max-w-xl shrink-0">
+
+        <p className="
+          text-[10px]
+          font-bold
+          uppercase
+          tracking-[.25em]
+          text-[#ffda86]
+
+          sm:text-sm
+        ">
+          Xin chào, {playerName}
+        </p>
+
+        <h2
+          className="
+            mode-screen-title
+            mt-1
+            font-black
+          "
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          CHỌN CHẾ ĐỘ CHƠI
+        </h2>
+
+        <p className="
+          mt-1
+          text-[11px]
+          font-semibold
+          text-white/75
+
+          sm:text-sm
+        ">
+          Chọn một cách vào hội để bắt đầu
+        </p>
+
+      </div>
+
+
+      {/* ========================= */}
+      {/* KHU 5 LÁ BÀI */}
+      {/* ========================= */}
+
+      <div
+        className="
+          relative
+
+          mt-2
+          mb-2
+
+          flex
+          h-[44dvh]
+          min-h-[320px]
+          max-h-[410px]
+
+          w-full
+          max-w-[820px]
+
+          shrink-0
+
+          items-center
+          justify-center
+
+          sm:my-auto
+          sm:h-auto
+          sm:min-h-[220px]
+          sm:max-h-none
+          sm:flex-1
+          sm:py-4
+        "
+      >
+
+        {/* Ánh sáng sau bài */}
+        <div
+          className="
+            pointer-events-none
+            absolute
+
+            left-1/2
+            top-1/2
+
+            h-[50%]
+            w-[92%]
+
+            -translate-x-1/2
+            -translate-y-1/2
+
+            rounded-full
+
+            bg-[#fff1a6]/35
+            blur-3xl
+
+            sm:h-[48%]
+            sm:w-[78%]
+          "
+        />
+
+
+        {/* Luồng sáng */}
+        <div
+          className="
+            mode-stage-beam
+            pointer-events-none
+            absolute
+
+            bottom-[10%]
+            left-1/2
+
+            h-[58%]
+            w-[90%]
+
+            -translate-x-1/2
+
+            bg-[radial-gradient(ellipse_at_bottom,rgba(255,249,190,.92),rgba(255,208,107,.25)_35%,transparent_70%)]
+            blur-xl
+
+            sm:h-[65%]
+            sm:w-[65%]
+          "
+        />
+
+
+        {/* Vòng xoay */}
+        <div
+          className="
+            mode-spin-ring
+            pointer-events-none
+            absolute
+
+            bottom-[2%]
+            left-1/2
+
+            h-[68%]
+            w-[105vw]
+
+            -translate-x-1/2
+
+            sm:bottom-[-5%]
+            sm:h-[95%]
+            sm:w-[min(140vw,1280px)]
+          "
+          role="img"
+          aria-label="Vòng xoay Bài Chòi"
+        />
+
+
+        {/* ========================= */}
+        {/* 5 QUÂN BÀI */}
+        {/* ========================= */}
+
+        <div
+          className="
+            relative
+            mx-auto
+
+            h-[250px]
+            w-[min(96vw,720px)]
+
+            sm:h-[280px]
+            sm:w-[min(94vw,720px)]
+          "
+        >
+
+          {CARDS.slice(0, 5).map((card, index) => {
+
+            const cardPositions = [
+            'left-[8%] top-[14%] sm:top-[4%] z-[1] -rotate-[14deg]',
+  'left-[24%] top-[24%] sm:top-[14%] z-[3] -rotate-[7deg]',
+  'left-1/2 top-[-2%] sm:top-[-12%] z-[5] -translate-x-1/2 rotate-[2deg]',
+  'right-[24%] top-[23%] sm:top-[13%] z-[4] rotate-[7deg]',
+  'right-[8%] top-[12%] sm:top-[2%] z-[2] rotate-[14deg]',
+            ]
+
+            return (
+              <div
+                key={card.id}
+                className={`
+                  mode-card-float
+                  absolute
+
+                  w-[30%]
+max-w-[130px]
+
+sm:w-[19%]
+sm:max-w-[160px]
+
+                  ${cardPositions[index]}
+                `}
+                style={{
+                  animationDelay: `${index * 0.14}s`
+                }}
+              >
+
+                <div
+                  className="
+                    mode-card-glow
+
+                    overflow-hidden
+
+                    rounded-[8px]
+                    border-2
+                    border-[#fff0a4]
+
+                    bg-white
+                    p-[2px]
+
+                    shadow-lg
+
+                    sm:rounded-[10px]
+                    sm:p-1
+                  "
+                >
+                  <img
+                    src={card.image}
+                    alt={card.name}
+                    className="
+                      aspect-[3/4]
+                      h-auto
+                      w-full
+                      rounded-md
+                      object-cover
+                    "
+                  />
                 </div>
-              </div>
 
-              {/* 2 nút chọn chế độ */}
-              <div className="relative z-20 grid w-full max-w-[680px] grid-cols-2 gap-3 sm:gap-5">
-                <button
-                  onClick={() => { setCountdown(8); setScreen('matchmaking') }}
-                  className="mode-choice-button group rounded-[1.2rem] sm:rounded-[1.4rem] border-2 border-[#f6d274] bg-[#fff9df]/95 px-3 py-3 text-[#075f63] shadow-[0_10px_28px_rgba(0,99,104,.22)] sm:px-6 sm:py-4 transition active:scale-95"
+
+                {/* TÊN QUÂN */}
+                <span
+                  className="
+                    mt-1
+                    block
+
+                    truncate
+                    rounded-full
+
+                    bg-[#075f63]/90
+
+                    px-1
+                    py-[2px]
+
+                    text-[8px]
+                    font-semibold
+                    text-white
+
+                    shadow
+
+                    sm:px-1.5
+                    sm:py-0.5
+                    sm:text-base
+                  "
+                  style={{
+                    fontFamily: 'var(--font-display)'
+                  }}
                 >
-                  <span className="block text-[10px] font-bold uppercase tracking-[.18em] text-[#bd6648]">Chế độ 01</span>
-                  <strong className="mt-0.5 block text-sm sm:text-xl font-black">Chơi ngay</strong>
-                  <span className="mt-1 hidden text-xs text-[#075f63]/65 sm:block">Ghép hội nhanh với các chòi máy</span>
-                </button>
-                <button
-                  onClick={() => setScreen('friend')}
-                  className="mode-choice-button group rounded-[1.2rem] sm:rounded-[1.4rem] border-2 border-[#85d4ce] bg-[#eafff9]/95 px-3 py-3 text-[#075f63] shadow-[0_10px_28px_rgba(0,99,104,.22)] sm:px-6 sm:py-4 transition active:scale-95"
-                >
-                  <span className="block text-[10px] font-bold uppercase tracking-[.18em] text-[#b85a3f]">Chế độ 02</span>
-                  <strong className="mt-0.5 block text-sm sm:text-xl font-black">Mở hội cùng bạn</strong>
-                  <span className="mt-1 hidden text-xs text-[#075f63]/65 sm:block">Tạo mã hoặc tham gia phòng bạn bè</span>
-                </button>
+                  {card.name}
+                </span>
+
               </div>
-            </div>
-          </section>
-        )}
+            )
+          })}
+
+        </div>
+
+      </div>
+
+
+      {/* ========================= */}
+      {/* 2 NÚT CHẾ ĐỘ */}
+      {/* ========================= */}
+
+      <div
+        className="
+          relative z-20
+
+          grid
+          w-full
+          max-w-[680px]
+          shrink-0
+          grid-cols-2
+
+          gap-2
+
+          sm:gap-5
+        "
+      >
+
+        {/* CHƠI NGAY */}
+        <button
+          onClick={() => {
+            setCountdown(8)
+            setScreen('matchmaking')
+          }}
+          className="
+            mode-choice-button
+            group
+
+            min-h-[72px]
+
+            rounded-[1.1rem]
+            border-2
+            border-[#f6d274]
+
+            bg-[#fff9df]/95
+
+            px-2
+            py-2
+
+            text-[#075f63]
+
+            shadow-[0_10px_28px_rgba(0,99,104,.22)]
+
+            transition
+            active:scale-95
+
+            sm:min-h-0
+            sm:rounded-[1.4rem]
+            sm:px-6
+            sm:py-4
+          "
+        >
+
+          <span className="
+            block
+            text-[8px]
+            font-bold
+            uppercase
+            tracking-[.15em]
+            text-[#bd6648]
+
+            sm:text-[10px]
+            sm:tracking-[.18em]
+          ">
+            CHẾ ĐỘ 01
+          </span>
+
+          <strong className="
+            mt-0.5
+            block
+
+            text-[14px]
+            font-black
+
+            sm:text-xl
+          ">
+            Chơi ngay
+          </strong>
+
+          <span className="
+            mt-1
+            block
+
+            text-[8px]
+            leading-tight
+
+            text-[#075f63]/65
+
+            sm:text-xs
+          ">
+            Ghép hội nhanh với các chòi máy
+          </span>
+
+        </button>
+
+
+        {/* MỞ HỘI CÙNG BẠN */}
+        <button
+          onClick={() => setScreen('friend')}
+          className="
+            mode-choice-button
+            group
+
+            min-h-[72px]
+
+            rounded-[1.1rem]
+            border-2
+            border-[#85d4ce]
+
+            bg-[#eafff9]/95
+
+            px-2
+            py-2
+
+            text-[#075f63]
+
+            shadow-[0_10px_28px_rgba(0,99,104,.22)]
+
+            transition
+            active:scale-95
+
+            sm:min-h-0
+            sm:rounded-[1.4rem]
+            sm:px-6
+            sm:py-4
+          "
+        >
+
+          <span className="
+            block
+            text-[8px]
+            font-bold
+            uppercase
+            tracking-[.15em]
+            text-[#b85a3f]
+
+            sm:text-[10px]
+            sm:tracking-[.18em]
+          ">
+            CHẾ ĐỘ 02
+          </span>
+
+          <strong className="
+            mt-0.5
+            block
+
+            text-[14px]
+            font-black
+
+            sm:text-xl
+          ">
+            Mở hội cùng bạn
+          </strong>
+
+          <span className="
+            mt-1
+            block
+
+            text-[8px]
+            leading-tight
+
+            text-[#075f63]/65
+
+            sm:text-xs
+          ">
+            Tạo mã hoặc tham gia phòng bạn bè
+          </span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+)}
 
         {screen === 'matchmaking' && (
           <section className="relative z-10 w-full max-w-xl text-center">
