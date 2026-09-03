@@ -1134,6 +1134,17 @@ function Characters({ c }: { c: typeof content.VIE }) {
 
             if (!card) return null
 
+            const prevIndex =
+  (activeIndex - 1 + pho.cards.length) %
+  pho.cards.length
+
+const nextIndex =
+  (activeIndex + 1) %
+  pho.cards.length
+
+const prevCard = pho.cards[prevIndex]
+const nextCard = pho.cards[nextIndex]
+
 
             /*
               cardIndex là index thực trong toàn bộ CARD_ASSETS.
@@ -1222,21 +1233,21 @@ function Characters({ c }: { c: typeof content.VIE }) {
                 {/* =========================== */}
 
                 <div
-                  className="
-                    relative
-                    mx-auto
+  className="
+    relative
+    mx-auto
 
-                    flex
-                    max-w-4xl
-                    items-center
-                    justify-center
+    flex
+    w-full
+    max-w-6xl
+    items-center
+    justify-center
 
-                    gap-3
-
-                    sm:gap-8
-                    lg:gap-14
-                  "
-                >
+    gap-1
+    sm:gap-3
+    lg:gap-5
+  "
+>
 
                   {/* ========================= */}
                   {/* MŨI TÊN TRÁI */}
@@ -1287,6 +1298,83 @@ function Characters({ c }: { c: typeof content.VIE }) {
                   >
                     ‹
                   </button>
+
+{/* ========================= */}
+{/* LÁ NHỎ BÊN TRÁI */}
+{/* ========================= */}
+
+<button
+  type="button"
+  onClick={() =>
+    changeCard(
+      phoIndex,
+      -1,
+      pho.cards.length
+    )
+  }
+  className="
+    relative
+    shrink-0
+
+    w-[18vw]
+    min-w-[68px]
+    max-w-[165px]
+
+    scale-[0.86]
+    opacity-60
+
+    transition-all
+    duration-300
+
+    hover:scale-[0.92]
+    hover:opacity-100
+  "
+  aria-label={
+    isVietnamese
+      ? 'Xem lá trước'
+      : 'View previous card'
+  }
+>
+  <div
+    className="
+      overflow-hidden
+      rounded-xl
+      bg-white/90
+      p-1.5
+    "
+    style={{
+      border:
+        '1.5px solid rgba(0,99,104,0.22)',
+      boxShadow:
+        '0 12px 28px rgba(0,42,45,0.12)',
+    }}
+  >
+    <div
+      className="
+        w-full
+        overflow-hidden
+        rounded-lg
+      "
+      style={{
+        aspectRatio: '1 / 2',
+        background: '#FFFDEB',
+      }}
+    >
+      <img
+        src={prevCard.src}
+        alt={prevCard.alt}
+        loading="lazy"
+        className="
+          h-full
+          w-full
+          object-contain
+        "
+      />
+    </div>
+  </div>
+</button>
+
+
 
 
                   {/* ========================= */}
@@ -1666,6 +1754,84 @@ function Characters({ c }: { c: typeof content.VIE }) {
                     </div>
 
                   </div>
+
+
+
+{/* ========================= */}
+{/* LÁ NHỎ BÊN PHẢI */}
+{/* ========================= */}
+
+<button
+  type="button"
+  onClick={() =>
+    changeCard(
+      phoIndex,
+      1,
+      pho.cards.length
+    )
+  }
+  className="
+    relative
+    shrink-0
+
+    w-[18vw]
+    min-w-[68px]
+    max-w-[165px]
+
+    scale-[0.86]
+    opacity-60
+
+    transition-all
+    duration-300
+
+    hover:scale-[0.92]
+    hover:opacity-100
+  "
+  aria-label={
+    isVietnamese
+      ? 'Xem lá tiếp theo'
+      : 'View next card'
+  }
+>
+  <div
+    className="
+      overflow-hidden
+      rounded-xl
+      bg-white/90
+      p-1.5
+    "
+    style={{
+      border:
+        '1.5px solid rgba(0,99,104,0.22)',
+      boxShadow:
+        '0 12px 28px rgba(0,42,45,0.12)',
+    }}
+  >
+    <div
+      className="
+        w-full
+        overflow-hidden
+        rounded-lg
+      "
+      style={{
+        aspectRatio: '1 / 2',
+        background: '#FFFDEB',
+      }}
+    >
+      <img
+        src={nextCard.src}
+        alt={nextCard.alt}
+        loading="lazy"
+        className="
+          h-full
+          w-full
+          object-contain
+        "
+      />
+    </div>
+  </div>
+</button>
+
 
 
                   {/* ========================= */}

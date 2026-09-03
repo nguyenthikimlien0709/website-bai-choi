@@ -458,35 +458,91 @@ useEffect(() => {
     })
   }
 
-  const connectRoom = (action: 'createRoom' | 'joinRoom') => {
-    setRoomError('')
-    const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-    const configuredRealtimeUrl = import.meta.env.VITE_REALTIME_URL?.trim() || (isLocalHost ? '' : 'wss://bai-choi-realtime.lienntk-ce190812.workers.dev/bai-choi-ws')
-    if (!configuredRealtimeUrl && !isLocalHost) {
-      setRoomError('Phòng chơi online chưa được kết nối với máy chủ realtime trên bản public.')
-      return
-    }
-    setSocketStatus('connecting')
-    socketRef.current?.close()
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const baseRealtimeUrl = configuredRealtimeUrl || `${protocol}//${window.location.host}/bai-choi-ws`
-    const realtimeUrl = new URL(baseRealtimeUrl)
+const connectRoom = (action: 'createRoom' | 'joinRoom') => {
+  setRoomError('')
 
-    // Mã phòng do server tạo có dạng CHOI-123456.
-    // Người chơi có thể nhập "123456" hoặc đầy đủ "CHOI-123456".
-    const normalizedRoomCode =
-      action === 'joinRoom'
-        ? (joinCode.toUpperCase().startsWith('CHOI-')
-            ? joinCode.toUpperCase()
-            : `CHOI-${joinCode}`)
-        : ''
+  const isLocalHost =
+    ['localhost', '127.0.0.1'].includes(
+      window.location.hostname
+    )
 
-    realtimeUrl.searchParams.set('action', action)
-    realtimeUrl.searchParams.set('name', playerName)
-    if (action === 'joinRoom') realtimeUrl.searchParams.set('roomId', normalizedRoomCode)
+  const configuredRealtimeUrl =
+    import.meta.env.VITE_REALTIME_URL?.trim() ||
+    (
+      isLocalHost
+        ? ''
+        : 'wss://bai-choi-realtime.lienntk-ce190812.workers.dev/bai-choi-ws'
+    )
 
-    const socket = new WebSocket(realtimeUrl.toString())
-    socketRef.current = socket
+  if (!configuredRealtimeUrl && !isLocalHost) {
+    setRoomError(
+      'Phòng chơi online chưa được kết nối với máy chủ realtime trên bản public.'
+    )
+    return
+  }
+
+  // ==========================================
+  // MÃ HỘI CHỈ GỒM ĐÚNG 6 CHỮ SỐ
+  // ==========================================
+
+  const normalizedRoomCode =
+    action === 'joinRoom'
+      ? joinCode.replace(/\D/g, '').slice(0, 6)
+      : ''
+
+  // Nếu vào hội thì phải đủ đúng 6 số
+  if (
+    action === 'joinRoom' &&
+    !/^\d{6}$/.test(normalizedRoomCode)
+  ) {
+    setRoomError(
+      'Mã hội phải gồm đúng 6 chữ số.'
+    )
+    return
+  }
+
+  // Chỉ chuyển sang connecting sau khi mã hợp lệ
+  setSocketStatus('connecting')
+
+  socketRef.current?.close()
+
+  const protocol =
+    window.location.protocol === 'https:'
+      ? 'wss:'
+      : 'ws:'
+
+  const baseRealtimeUrl =
+    configuredRealtimeUrl ||
+    `${protocol}//${window.location.host}/bai-choi-ws`
+
+  const realtimeUrl =
+    new URL(baseRealtimeUrl)
+
+  realtimeUrl.searchParams.set(
+    'action',
+    action
+  )
+
+  realtimeUrl.searchParams.set(
+    'name',
+    playerName
+  )
+
+  if (action === 'joinRoom') {
+    realtimeUrl.searchParams.set(
+      'roomId',
+      normalizedRoomCode
+    )
+  }
+
+  const socket =
+    new WebSocket(
+      realtimeUrl.toString()
+    )
+
+  socketRef.current = socket
+
+
     socket.onopen = () => {
       setSocketStatus('connected')
       if (!configuredRealtimeUrl) {
@@ -1454,22 +1510,24 @@ sm:max-w-[160px]
               <div className="rounded-2xl border border-white/15 bg-black/10 p-5">
                 <h3 className="font-bold">Vào hội bằng mã</h3>
                 <input
-                  value={joinCode}
-                  onChange={(event) => {
-                    const value = event.target.value
-                      .toUpperCase()
-                      .replace(/\s/g, '')
-                      .replace(/[^A-Z0-9-]/g, '')
-                      .slice(0, 11)
-                    setJoinCode(value)
-                  }}
-                  placeholder="CHOI-286194 hoặc 286194"
-                  autoCapitalize="characters"
-                  className="mt-4 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-center font-bold tracking-widest outline-none"
-                />
+  value={joinCode}
+  onChange={(event) => {
+    const value = event.target.value
+      .replace(/\D/g, '')
+      .slice(0, 6)
+
+    setJoinCode(value)
+  }}
+  placeholder="286194"
+  inputMode="numeric"
+  maxLength={6}
+  className="mt-4 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-center font-bold tracking-widest outline-none"
+/>
                 <button
                   onClick={() => { void unlockAudio(); connectRoom('joinRoom') }}
-                  disabled={!/^(CHOI-)?\d{6}$/i.test(joinCode) || socketStatus === 'connecting'}
+
+
+                  disabled={!/^\d{6}$/.test(joinCode) || socketStatus === 'connecting'}
                   className="mt-3 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:cursor-not-allowed disabled:opacity-35"
                 >
                   Vào hội
