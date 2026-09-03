@@ -12,17 +12,237 @@ type Card = {
 }
 
 const CARDS: Card[] = [
-  { id: 'nhat-tro', name: 'Nhất Trò', image: '/assets/the1.jpg', sound: '/sound/Nhat-tro.mp3' },
-  { id: 'nhi-bi', name: 'Nhì Bí', image: '/assets/the2.jpg', sound: '/sound/Nhi-Bi.mp3' },
-  { id: 'tam-quan', name: 'Tam Quan', image: '/assets/the3.jpg', sound: '/sound/Tam-Quan.mp3' },
-  { id: 'tu-huong', name: 'Tứ Hương', image: '/assets/the4.jpg', sound: '/sound/Tu-Huong.mp3' },
-  { id: 'ngu-truot', name: 'Ngũ Trượt', image: '/assets/the5.jpg', sound: '/sound/Ngu-trot.mp3' },
-  { id: 'luc-xo', name: 'Lục Xơ', image: '/assets/the6.jpg', sound: '/sound/Luc-Xo.mp3' },
-  { id: 'that-nhon', name: 'Thất Nhọn', image: '/assets/the7.jpg', sound: '/sound/That-Nhon.mp3' },
-  { id: 'bat-bong', name: 'Bát Bồng', image: '/assets/the8.jpg', sound: '/sound/Bat-Bong.mp3' },
-  { id: 'cuu-thay', name: 'Cửu Thầy', image: '/assets/the9.jpg', sound: '/sound/Cuu-thay.mp3' },
-  { id: 'thai-tu', name: 'Thái Tử', image: '/assets/the10.jpg', sound: '/sound/Thai-tu.mp3' },
+
+  // =====================================================
+  // PHÔ 01 — LÁ 01 → 10
+  // =====================================================
+
+  {
+    id: 'nhat-tro',
+    name: 'Nhất Trò',
+    image: '/assets/the1.jpg',
+    sound: '/sound/Nhat-tro.mp3'
+  },
+
+  {
+    id: 'nhi-bi',
+    name: 'Nhì Bí',
+    image: '/assets/the2.jpg',
+    sound: '/sound/Nhi-Bi.mp3'
+  },
+
+  {
+    id: 'tam-quan',
+    name: 'Tam Quan',
+    image: '/assets/the3.jpg',
+    sound: '/sound/Tam-Quan.mp3'
+  },
+
+  {
+    id: 'tu-huong',
+    name: 'Tứ Hương',
+    image: '/assets/the4.jpg',
+    sound: '/sound/Tu-Huong.mp3'
+  },
+
+  {
+    id: 'ngu-truot',
+    name: 'Ngũ Trượt',
+    image: '/assets/the5.jpg',
+    sound: '/sound/Ngu-trot.mp3'
+  },
+
+  {
+    id: 'luc-xo',
+    name: 'Lục Xơ',
+    image: '/assets/the6.jpg',
+    sound: '/sound/Luc-Xo.mp3'
+  },
+
+  {
+    id: 'that-nhon',
+    name: 'Thất Nhọn',
+    image: '/assets/the7.jpg',
+    sound: '/sound/That-Nhon.mp3'
+  },
+
+  {
+    id: 'bat-bong',
+    name: 'Bát Bồng',
+    image: '/assets/the8.jpg',
+    sound: '/sound/Bat-Bong.mp3'
+  },
+
+  {
+    id: 'cuu-thay',
+    name: 'Cửu Thầy',
+    image: '/assets/the9.jpg',
+    sound: '/sound/Cuu-thay.mp3'
+  },
+
+  {
+    id: 'thai-tu',
+    name: 'Thái Tử',
+    image: '/assets/the10.jpg',
+    sound: '/sound/Thai-tu.mp3'
+  },
+
+
+  // =====================================================
+  // PHÔ 02 — LÁ 11 → 20
+  // =====================================================
+
+  // =====================================================
+// PHÔ 02 — LÁ 11 → 20
+// =====================================================
+
+{
+  id: 'nhat-noc',
+  name: 'Nhất Nọc',
+  image: '/assets/the11.jpg',
+  sound: '/sound/Nhat-Noc.mp3'
+},
+
+{
+  id: 'nhi-ngheo',
+  name: 'Nhì Nghèo',
+  image: '/assets/the12.jpg',
+  sound: '/sound/Nhi-Ngheo.mp3'
+},
+
+{
+  id: 'ba-ga',
+  name: 'Ba Gà',
+  image: '/assets/the13.jpg',
+  sound: '/sound/Ba-Ga.mp3'
+},
+
+{
+  id: 'tu-dong',
+  name: 'Tứ Dóng',
+  image: '/assets/the14.jpg',
+  sound: '/sound/Tu-Dong.mp3'
+},
+
+{
+  id: 'ngu-dum',
+  name: 'Ngũ Đụm',
+  image: '/assets/the15.jpg',
+  sound: '/sound/Ngu-Dum.mp3'
+},
+
+{
+  id: 'sau-hot',
+  name: 'Sáu Hột',
+  image: '/assets/the16.jpg',
+  sound: '/sound/Sau-Hot.mp3'
+},
+
+{
+  id: 'bay-thua',
+  name: 'Bảy Thưa',
+  image: '/assets/the17.jpg',
+  sound: '/sound/Bay-Thua.mp3'
+},
+
+{
+  id: 'tam-day',
+  name: 'Tám Dầy',
+  image: '/assets/the18.jpg',
+  sound: '/sound/Tam-Day.mp3'
+},
+
+{
+  id: 'chin-goi',
+  name: 'Chín Gối',
+  image: '/assets/the19.jpg',
+  sound: '/sound/Chin-Goi.mp3'
+},
+
+{
+  id: 'do-mo',
+  name: 'Đỏ Mỏ',
+  image: '/assets/the20.jpg',
+  sound: '/sound/Do-Mo.mp3'
+},
+
+
+// =====================================================
+// PHÔ 03 — LÁ 21 → 30
+// =====================================================
+
+{
+  id: 'bach-hue',
+  name: 'Bạch Huê',
+  image: '/assets/the21.jpg',
+  sound: '/sound/Bach-Hue.mp3'
+},
+
+{
+  id: 'banh-hai',
+  name: 'Bành Hai',
+  image: '/assets/the22.jpg',
+  sound: '/sound/Banh-Hai.mp3'
+},
+
+{
+  id: 'banh-ba',
+  name: 'Bành Ba',
+  image: '/assets/the23.jpg',
+  sound: '/sound/Banh-Ba.mp3'
+},
+
+{
+  id: 'dai-doi',
+  name: 'Dái Doi',
+  image: '/assets/the24.jpg',
+  sound: '/sound/Dai-Doi.mp3'
+},
+
+{
+  id: 'nam-run',
+  name: 'Năm Rún',
+  image: '/assets/the25.jpg',
+  sound: '/sound/Nam-Run.mp3'
+},
+
+{
+  id: 'sau-tien',
+  name: 'Sáu Tiền',
+  image: '/assets/the26.jpg',
+  sound: '/sound/Sau-Tien.mp3'
+},
+
+{
+  id: 'that-lieu',
+  name: 'Thất Liễu',
+  image: '/assets/the27.jpg',
+  sound: '/sound/That-Lieu.mp3'
+},
+
+{
+  id: 'tam-tien',
+  name: 'Tám Tiền',
+  image: '/assets/the28.jpg',
+  sound: '/sound/Tam-Tien.mp3'
+},
+
+{
+  id: 'chin-ghe',
+  name: 'Chín Ghe',
+  image: '/assets/the29.jpg',
+  sound: '/sound/Chin-Ghe.mp3'
+},
+
+{
+  id: 'ong-am',
+  name: 'Ông Âm',
+  image: '/assets/the30.jpg',
+  sound: '/sound/Ong-Am.mp3'
+},
 ]
+
+
 const showcaseCards = [...CARDS]
   .sort(() => Math.random() - 0.5)
   .slice(0, 5);
@@ -66,6 +286,7 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
   const [drawIndex, setDrawIndex] = useState(-1)
   const [claimed, setClaimed] = useState<string[]>([])
   const [botFlags, setBotFlags] = useState([0, 0, 0, 0])
+const [botHands, setBotHands] = useState<Card[][]>([])
   const [message, setMessage] = useState('Anh Hiệu đang chuẩn bị ống thẻ…')
   const [winner, setWinner] = useState('')
   const [onlineMode, setOnlineMode] = useState(false)
@@ -318,19 +539,46 @@ useEffect(() => {
   }
 
   const startGame = () => {
-    setOnlineMode(false)
-    const nextDeck = shuffle(CARDS)
-    setDeck(nextDeck)
-    setHand(shuffle(CARDS).slice(0, 3))
-    setDrawIndex(-1)
-    setClaimed([])
-    setRevealedCard(null)
-    setIsCalling(false)
-    setBotFlags([0, 0, 0, 0])
-    setWinner('')
-    setMessage('Hội đã đủ chòi. Mời bạn nghe câu hô đầu tiên!')
-    setScreen('playing')
-  }
+  setOnlineMode(false)
+
+  // Bộ 30 quân dùng để Anh/Chị Hiệu rút và hô
+  const nextDeck = shuffle(CARDS)
+
+  // Một bộ xáo riêng để chia bài cho các chòi
+  const dealDeck = shuffle(CARDS)
+
+  // Người chơi nhận 3 quân
+  const playerHand = dealDeck.slice(0, 3)
+
+  // 4 bot, mỗi bot nhận 3 quân riêng
+  const nextBotHands = BOT_NAMES.map((_, botIndex) => {
+    const start = 3 + botIndex * 3
+
+    return dealDeck.slice(start, start + 3)
+  })
+
+  setDeck(nextDeck)
+
+  setHand(playerHand)
+
+  // QUAN TRỌNG
+  setBotHands(nextBotHands)
+
+  setDrawIndex(-1)
+  setClaimed([])
+  setRevealedCard(null)
+  setIsCalling(false)
+
+  setBotFlags([0, 0, 0, 0])
+
+  setWinner('')
+
+  setMessage(
+    'Hội đã đủ chòi. Mời bạn nghe câu hô đầu tiên!'
+  )
+
+  setScreen('playing')
+}
 
   const drawNext = async () => {
     if (winner || isCalling) return
@@ -345,11 +593,20 @@ useEffect(() => {
     setMessage('Lắng nghe Anh Hiệu hô…')
     await playCall(card)
 
-    setBotFlags((previous) => previous.map((flags, index) => {
-      const botHasCard = ((CARDS.indexOf(card) + index * 2) % 5) < 2
-      return botHasCard && flags < 3 ? flags + 1 : flags
-    }))
-  }
+    setBotFlags((previous) =>
+  previous.map((flags, index) => {
+
+    const botHasCard =
+      botHands[index]?.some(
+        (botCard) => botCard.id === card.id
+      ) ?? false
+
+    return botHasCard && flags < 3
+      ? flags + 1
+      : flags
+  })
+)
+}
 
   useEffect(() => {
     if (screen !== 'playing' || winner) return
