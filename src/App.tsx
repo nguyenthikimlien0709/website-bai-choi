@@ -1487,41 +1487,7 @@ const nextCard = pho.cards[nextIndex]
                             />
 
 
-                            <span
-                              className="
-                                absolute
-
-                                inset-x-3
-                                bottom-3
-
-                                rounded-full
-
-                                px-2
-                                py-1.5
-
-                                text-center
-
-                                text-[9px]
-                                font-bold
-                                uppercase
-                                tracking-[0.08em]
-
-                                sm:text-[10px]
-                              "
-                              style={{
-                                background:
-                                  'rgba(0,65,70,0.82)',
-
-                                color: '#FFF8D8',
-
-                                backdropFilter:
-                                  'blur(5px)',
-                              }}
-                            >
-                              {isVietnamese
-                                ? 'Chạm để xem ý nghĩa'
-                                : 'Tap to see the meaning'}
-                            </span>
+                            
 
                           </div>
 
@@ -1692,6 +1658,42 @@ const nextCard = pho.cards[nextIndex]
                       </div>
 
                     </button>
+
+{/* NÚT NẰM DƯỚI LÁ BÀI */}
+
+<button
+  type="button"
+  onClick={() =>
+    toggleCard(cardIndex)
+  }
+  className="
+    mx-auto
+    mt-3
+    block
+    rounded-full
+    px-6
+    py-2
+    text-[10px]
+    font-bold
+    uppercase
+    tracking-[0.08em]
+    transition-all
+    duration-300
+    hover:scale-105
+    active:scale-95
+    sm:text-xs
+  "
+  style={{
+    background:
+      'rgba(0,65,70,0.88)',
+    color: '#FFF8D8',
+  }}
+>
+  {isVietnamese
+    ? 'Chạm để xem ý nghĩa'
+    : 'Tap to see the meaning'}
+</button>
+
 
 
                     {/* ========================= */}
