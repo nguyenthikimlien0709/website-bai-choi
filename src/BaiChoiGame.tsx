@@ -428,6 +428,33 @@ useEffect(() => {
     setScreen('mode')
   }
 
+
+const goBack = () => {
+  stopAudio()
+
+  // Màn nhập tên → quay về website
+  if (screen === 'name') {
+    leaveGame()
+    return
+  }
+
+  // Màn chọn chế độ → quay lại nhập tên
+  if (screen === 'mode') {
+    setScreen('name')
+    return
+  }
+
+  // Các màn còn lại → quay lại chọn chế độ
+  if (
+    screen === 'matchmaking' ||
+    screen === 'friend' ||
+    screen === 'playing' ||
+    screen === 'result'
+  ) {
+    backToMode()
+  }
+}
+
   const playCall = async (card: Card) => {
     stopAudio(false)
     setRevealedCard(null)
@@ -741,6 +768,52 @@ const connectRoom = (action: 'createRoom' | 'joinRoom') => {
   aria-label="Trò chơi Bài Chòi"
 >
       <div className="pointer-events-none fixed inset-0 opacity-20" style={{ backgroundImage: 'url(/assets/Background-toan.jpg)', backgroundSize: 'cover' }} />
+
+      <button
+  onClick={goBack}
+  className="
+    fixed
+    left-3
+    top-3
+    z-[80]
+
+    flex
+    h-10
+    items-center
+    justify-center
+    gap-1.5
+
+    rounded-full
+    border-2
+    border-white/70
+
+    bg-[#075f63]/80
+
+    px-3
+
+    text-sm
+    font-bold
+    text-white
+
+    shadow-xl
+    backdrop-blur-sm
+
+    transition
+
+    hover:scale-105
+    hover:bg-[#c44837]
+
+    sm:left-5
+    sm:top-5
+    sm:h-12
+    sm:px-4
+    sm:text-base
+  "
+  aria-label="Quay lại"
+>
+  <span className="text-xl leading-none">←</span>
+  <span>Quay lại</span>
+</button>
       <button onClick={leaveGame} className="fixed right-3 top-3 sm:right-5 sm:top-5 z-[80] grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-full border-2 border-white/70 bg-[#075f63]/80 text-2xl sm:text-3xl font-light leading-none text-white shadow-xl backdrop-blur-sm transition hover:scale-105 hover:bg-[#c44837]" aria-label="Đóng trò chơi">×</button>
      <main
   className={`
@@ -1499,7 +1572,7 @@ sm:max-w-[160px]
           <>
             <FlyingClouds />
             <section className="friend-light-frame relative z-10 w-full max-w-2xl overflow-hidden rounded-[2rem] p-7 sm:p-10">
-            <button onClick={backToMode} className="mb-6 text-sm text-white/65 hover:text-white">← Quay lại</button>
+            
             <h2 className="text-3xl font-black">Mở hội cùng bạn</h2>
             <p className="mt-3 text-white/65">Tạo mã rồi gửi cho bạn bè đang mở cùng địa chỉ website này.</p>
             {!roomCode ? <div className="mt-7 grid gap-4 sm:grid-cols-2">
