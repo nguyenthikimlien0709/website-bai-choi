@@ -114,31 +114,31 @@ const content = {
 
 
         // PHÔ 02 — LÁ 11 → 20
-{ name: 'Nhất Nọc', symbol: '', meaning: 'Ý nghĩa lá Nhất Nọc viết ở đây.' },
-{ name: 'Nhì Nghèo', symbol: '', meaning: 'Ý nghĩa lá Nhì Nghèo viết ở đây.' },
-{ name: 'Ba Gà', symbol: '', meaning: 'Ý nghĩa lá Ba Gà viết ở đây.' },
-{ name: 'Tứ Dóng', symbol: '', meaning: 'Ý nghĩa lá Tứ Dóng viết ở đây.' },
-{ name: 'Ngũ Đụm', symbol: '', meaning: 'Ý nghĩa lá Ngũ Đụm viết ở đây.' },
-{ name: 'Sáu Hột', symbol: '', meaning: 'Ý nghĩa lá Sáu Hột viết ở đây.' },
-{ name: 'Bảy Thưa', symbol: '', meaning: 'Ý nghĩa lá Bảy Thưa viết ở đây.' },
-{ name: 'Tám Dầy', symbol: '', meaning: 'Ý nghĩa lá Tám Dầy viết ở đây.' },
-{ name: 'Chín Gối', symbol: '', meaning: 'Ý nghĩa lá Chín Gối viết ở đây.' },
-{ name: 'Đỏ Mỏ', symbol: '', meaning: 'Ý nghĩa lá Đỏ Mỏ viết ở đây.' },
+{ name: 'Nhất Nọc', symbol: '', meaning: 'Gốc rễ & Cột trụ – Tượng trưng cho điểm tựa chắc chắn, nền tảng vững vàng và sự khởi đầu.' },
+{ name: 'Nhì Nghèo', symbol: '', meaning: ' Thử thách & Vượt khó – Tượng trưng cho giai đoạn gian khó, nhắc nhở sự kiên trì để vượt qua thiếu sót.' },
+{ name: 'Ba Gà', symbol: '', meaning: 'Siêng năng & Báo tin – Tượng trưng cho sự chăm chỉ, thức khuya dậy sớm và khởi đầu một ngày mới/tin vui.' },
+{ name: 'Tứ Dóng', symbol: '', meaning: 'Gắn kết & Gánh vác – Tượng trưng cho sự kết nối, chịu khó gánh vác trách nhiệm và công việc.' },
+{ name: 'Ngũ Đụm', symbol: '', meaning: 'Hội tụ & Tích lũy – Tượng trưng cho điểm trung tâm, sự cân bằng và gom góp thành quả.' },
+{ name: 'Sáu Hột', symbol: '', meaning: 'Dẻo dai & Tích trữ – Tượng trưng cho thành quả lao động, sự tích lũy nhỏ tạo nên giá trị lớn.' },
+{ name: 'Bảy Thưa', symbol: '', meaning: 'Tượng trưng cho sự thưa thớt, buông bớt rắc rối, linh hoạt thả lỏng và canh giữ thành quả (hình ảnh bù nhìn giữ ruộng lúa đã thu hoạch).' },
+{ name: 'Tám Dầy', symbol: '', meaning: 'Tượng trưng cho sự dày dặn, đắt giá, khắt khe chuẩn mực và tình cảm/tài lộc gắn kết bền chặt (hình ảnh nút thắt may mắn đồng tâm).' },
+{ name: 'Chín Gối', symbol: '', meaning: 'Tâm an & Bình yên – Tượng trưng cho sự nghỉ ngơi, thư thái nội tại và an ổn tinh thần.' },
+{ name: 'Đỏ Mỏ', symbol: '', meaning: 'May mắn & Tỏa sáng – Tượng trưng cho cơ hội tốt lành, tin vui, tài lộc và sự khởi sắc rực rỡ.' },
 
 
 
 
 // PHÔ 03 — LÁ 21 → 30
-{ name: 'Bạch Huê', symbol: '', meaning: 'Ý nghĩa lá Bạch Huê viết ở đây.' },
-{ name: 'Bành Hai', symbol: '', meaning: 'Ý nghĩa lá Bành Hai viết ở đây.' },
-{ name: 'Bành Ba', symbol: '', meaning: 'Ý nghĩa lá Bành Ba viết ở đây.' },
-{ name: 'Dái Doi', symbol: '', meaning: 'Ý nghĩa lá Dái Doi viết ở đây.' },
-{ name: 'Năm Rún', symbol: '', meaning: 'Ý nghĩa lá Năm Rún viết ở đây.' },
-{ name: 'Sáu Tiền', symbol: '', meaning: 'Ý nghĩa lá Sáu Tiền viết ở đây.' },
-{ name: 'Thất Liễu', symbol: '', meaning: 'Ý nghĩa lá Thất Liễu viết ở đây.' },
-{ name: 'Tám Tiền', symbol: '', meaning: 'Ý nghĩa lá Tám Tiền viết ở đây.' },
-{ name: 'Chín Ghe', symbol: '', meaning: 'Ý nghĩa lá Chín Ghe viết ở đây.' },
-{ name: 'Ông Âm', symbol: '', meaning: 'Ý nghĩa lá Ông Âm viết ở đây.' },
+{ name: 'Bạch Huê', symbol: '', meaning: 'Tượng trưng cho sự thuần khiết, tâm trong sáng và con đường học vấn rộng mở.' },
+{ name: 'Bành Hai', symbol: '', meaning: 'Tượng trưng cho sự đầy đủ, vẹn toàn, gắn kết tình cảm và thành quả lao động.' },
+{ name: 'Bành Ba', symbol: '', meaning: 'Tượng trưng cho sự kiên định, thế chân kiềng vững chắc, cùng sự phong phú và nhiều cơ hội lựa chọn.' },
+{ name: 'Dái Doi', symbol: '', meaning: 'Tượng trưng cho sự dẻo dai, tài lộc hanh thông và những giá trị gắn kết lâu dài theo thời gian.' },
+{ name: 'Năm Rún', symbol: '', meaning: 'Tượng trưng cho sự hội tụ, điểm tựa vững chắc và sự hài hòa trong cuộc sống.' },
+{ name: 'Sáu Tiền', symbol: '', meaning: 'Tượng trưng cho dòng chảy tài chính nhỏ bắt đầu sinh lời, mang lại niềm vui.' },
+{ name: 'Thất Liễu', symbol: '', meaning: 'Tượng trưng cho sự linh hoạt thích ứng và giải tỏa mọi áp lực, phiền muộn.' },
+{ name: 'Tám Tiền', symbol: '', meaning: 'Tượng trưng cho sự sung túc, tài chính dồi dào và may mắn lớn về tiền bạc.' },
+{ name: 'Chín Ghe', symbol: '', meaning: 'Tượng trưng cho sự chuyển động, đồng lòng tiến về phía trước, công việc thuận buồm xuôi gió.' },
+{ name: 'Ông Âm', symbol: '', meaning: 'Tượng trưng cho sức mạnh, sự bừng tỉnh, cơ hội tạo nên tiếng vang và danh tiếng lớn.' },
 
 
 
