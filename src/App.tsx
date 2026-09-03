@@ -1605,18 +1605,25 @@ const nextCard = pho.cards[nextIndex]
                                 />
 
 
-                                <p
-                                  className="
-                                    text-xs
-                                    leading-5
-                                    text-white/85
+                               <p
+  className="
+    text-[9px]
+    leading-[14px]
+    text-white/85
 
-                                    sm:text-sm
-                                    sm:leading-6
-                                  "
-                                >
-                                  {cardInfo.meaning}
-                                </p>
+    sm:text-xs
+    sm:leading-5
+
+    lg:text-sm
+    lg:leading-6
+  "
+  style={{
+    WebkitTextSizeAdjust: '100%',
+    textSizeAdjust: '100%',
+  }}
+>
+  {cardInfo.meaning}
+</p>
 
                               </>
                             ) : (
@@ -1630,26 +1637,7 @@ const nextCard = pho.cards[nextIndex]
                             )}
 
 
-                            <span
-                              className="
-                                absolute
-
-                                inset-x-2
-                                bottom-3
-
-                                text-[8px]
-                                font-semibold
-                                uppercase
-
-                                tracking-[0.1em]
-
-                                text-white/55
-                              "
-                            >
-                              {isVietnamese
-                                ? 'Chạm để xem mặt trước'
-                                : 'Tap to see the front'}
-                            </span>
+                          
 
                           </div>
 
@@ -1659,7 +1647,7 @@ const nextCard = pho.cards[nextIndex]
 
                     </button>
 
-{/* NÚT NẰM DƯỚI LÁ BÀI */}
+{/* NÚT NẰM DƯỚI LÁ BÀI */} 
 
 <button
   type="button"
@@ -1670,18 +1658,30 @@ const nextCard = pho.cards[nextIndex]
     mx-auto
     mt-3
     block
+
+    whitespace-nowrap
     rounded-full
-    px-6
-    py-2
-    text-[10px]
+
+    px-3
+    py-1.5
+
+    text-[7px]
     font-bold
     uppercase
-    tracking-[0.08em]
+    tracking-[0.04em]
+
     transition-all
     duration-300
+
     hover:scale-105
     active:scale-95
-    sm:text-xs
+
+    sm:px-5
+    sm:py-2
+    sm:text-[10px]
+
+    lg:px-6
+    lg:text-xs
   "
   style={{
     background:
@@ -1693,7 +1693,6 @@ const nextCard = pho.cards[nextIndex]
     ? 'Chạm để xem ý nghĩa'
     : 'Tap to see the meaning'}
 </button>
-
 
 
                     {/* ========================= */}
