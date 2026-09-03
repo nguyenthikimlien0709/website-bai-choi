@@ -97,7 +97,7 @@ const content = {
     },
     characters: {
       title: 'Thẻ Bài',
-      sub: 'Mười hình tượng tiêu biểu trong bộ bài Chòi',
+      sub: '',
       cards: [
         { name: 'Nhất Trò', symbol: '一', meaning: 'Hình tượng người nghệ sĩ trong cuộc chơi, gợi tinh thần diễn xướng, sự dí dỏm và niềm vui hội làng.' },
         { name: 'Nhì Bí', symbol: '二', meaning: 'Quả bầu dân dã tượng trưng cho sự no đủ, sinh sôi và nét mộc mạc trong đời sống miền Trung.' },
@@ -109,6 +109,39 @@ const content = {
         { name: 'Bát Bồng', symbol: '八', meaning: 'Bát Bồng tượng trưng cho sự khéo léo, uyển chuyển và duyên dáng. Hình ảnh người phụ nữ nâng bát trong điệu múa gợi nên không khí hội hè dân gian và vẻ đẹp mềm mại của văn hóa Bài Chòi.' },
         { name: 'Cửu Thầy', symbol: '九', meaning: 'Bút nghiên và người thầy tượng trưng cho tri thức, đạo học và sự truyền dạy qua nhiều thế hệ.' },
         { name: 'Thái Tử', symbol: '王', meaning: 'Hình tượng thái tử biểu trưng cho phẩm chất cao quý, trách nhiệm và khát vọng hướng tới tương lai.' },
+
+
+
+
+        // PHÔ 02 — LÁ 11 → 20
+{ name: 'Nhất Nọc', symbol: '', meaning: 'Ý nghĩa lá Nhất Nọc viết ở đây.' },
+{ name: 'Nhì Nghèo', symbol: '', meaning: 'Ý nghĩa lá Nhì Nghèo viết ở đây.' },
+{ name: 'Ba Gà', symbol: '', meaning: 'Ý nghĩa lá Ba Gà viết ở đây.' },
+{ name: 'Tứ Dóng', symbol: '', meaning: 'Ý nghĩa lá Tứ Dóng viết ở đây.' },
+{ name: 'Ngũ Đụm', symbol: '', meaning: 'Ý nghĩa lá Ngũ Đụm viết ở đây.' },
+{ name: 'Sáu Hột', symbol: '', meaning: 'Ý nghĩa lá Sáu Hột viết ở đây.' },
+{ name: 'Bảy Thưa', symbol: '', meaning: 'Ý nghĩa lá Bảy Thưa viết ở đây.' },
+{ name: 'Tám Dầy', symbol: '', meaning: 'Ý nghĩa lá Tám Dầy viết ở đây.' },
+{ name: 'Chín Gối', symbol: '', meaning: 'Ý nghĩa lá Chín Gối viết ở đây.' },
+{ name: 'Đỏ Mỏ', symbol: '', meaning: 'Ý nghĩa lá Đỏ Mỏ viết ở đây.' },
+
+
+
+
+// PHÔ 03 — LÁ 21 → 30
+{ name: 'Bạch Huê', symbol: '', meaning: 'Ý nghĩa lá Bạch Huê viết ở đây.' },
+{ name: 'Bành Hai', symbol: '', meaning: 'Ý nghĩa lá Bành Hai viết ở đây.' },
+{ name: 'Bành Ba', symbol: '', meaning: 'Ý nghĩa lá Bành Ba viết ở đây.' },
+{ name: 'Dái Doi', symbol: '', meaning: 'Ý nghĩa lá Dái Doi viết ở đây.' },
+{ name: 'Năm Rún', symbol: '', meaning: 'Ý nghĩa lá Năm Rún viết ở đây.' },
+{ name: 'Sáu Tiền', symbol: '', meaning: 'Ý nghĩa lá Sáu Tiền viết ở đây.' },
+{ name: 'Thất Liễu', symbol: '', meaning: 'Ý nghĩa lá Thất Liễu viết ở đây.' },
+{ name: 'Tám Tiền', symbol: '', meaning: 'Ý nghĩa lá Tám Tiền viết ở đây.' },
+{ name: 'Chín Ghe', symbol: '', meaning: 'Ý nghĩa lá Chín Ghe viết ở đây.' },
+{ name: 'Ông Âm', symbol: '', meaning: 'Ý nghĩa lá Ông Âm viết ở đây.' },
+
+
+
       ],
     },
     publications: {
@@ -991,19 +1024,19 @@ function Characters({ c }: { c: typeof content.VIE }) {
   const phoGroups = [
     {
       id: 'pho-01',
-      title: isVietnamese ? 'PHÔ 01' : 'SUIT 01',
+      title: isVietnamese ? 'PHO VẠN' : 'SUIT 01',
       cards: CARD_ASSETS.slice(0, 10),
       startIndex: 0,
     },
     {
       id: 'pho-02',
-      title: isVietnamese ? 'PHÔ 02' : 'SUIT 02',
+      title: isVietnamese ? 'PHO SÁCH' : 'SUIT 02',
       cards: CARD_ASSETS.slice(10, 20),
       startIndex: 10,
     },
     {
       id: 'pho-03',
-      title: isVietnamese ? 'PHÔ 03' : 'SUIT 03',
+      title: isVietnamese ? 'PHO VĂN' : 'SUIT 03',
       cards: CARD_ASSETS.slice(20, 30),
       startIndex: 20,
     },
