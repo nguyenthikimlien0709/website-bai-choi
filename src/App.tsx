@@ -1546,71 +1546,75 @@ const nextCard = pho.cards[nextIndex]
                                 />
 
 
-                                <span
-                                  className="
-                                    text-4xl
-                                    font-black
-                                    text-[#E2BC5B]
+                               <span
+  className="
+    text-xl
+    font-black
+    leading-none
+    text-[#E2BC5B]
 
-                                    sm:text-5xl
-                                  "
-                                  style={{
-                                    fontFamily:
-                                      'var(--font-display)',
-                                  }}
-                                >
-                                  {cardInfo.symbol}
-                                </span>
+    sm:text-4xl
+  "
+  style={{
+    fontFamily: 'var(--font-display)',
+  }}
+>
+  {cardInfo.symbol}
+</span>
 
+<span
+  className="
+    mt-1
 
-                                <span
-                                  className="
-                                    mt-2
+    text-[7px]
+    font-bold
+    uppercase
 
-                                    text-[9px]
-                                    font-bold
-                                    uppercase
+    tracking-[0.12em]
 
-                                    tracking-[0.16em]
+    text-[#E2BC5B]
 
-                                    text-[#E2BC5B]
-                                  "
-                                >
-                                  {isVietnamese
-                                    ? 'Ý nghĩa lá bài'
-                                    : 'Card meaning'}
-                                </span>
+    sm:mt-2
+    sm:text-[9px]
+  "
+>
+  {isVietnamese
+    ? 'Ý nghĩa lá bài'
+    : 'Card meaning'}
+</span>
 
+<h3
+  className="
+    mt-1
 
-                                <h3
-                                  className="
-                                    mt-3
+    text-base
+    font-bold
+    leading-tight
 
-                                    text-xl
-                                    font-bold
-                                    leading-tight
+    text-white
 
-                                    text-white
+    sm:mt-2
+    sm:text-xl
+  "
+  style={{
+    fontFamily: 'var(--font-display)',
+  }}
+>
+  {cardInfo.name}
+</h3>
 
-                                    sm:text-2xl
-                                  "
-                                  style={{
-                                    fontFamily:
-                                      'var(--font-display)',
-                                  }}
-                                >
-                                  {cardInfo.name}
-                                </h3>
+<div
+  className="
+    my-2
+    h-px
+    w-10
 
+    bg-[#E2BC5B]/75
 
-                                <div
-                                  className="
-                                    my-4
-                                    h-px
-                                    w-12
-                                    bg-[#E2BC5B]/75
-                                  "
-                                />
+    sm:my-3
+    sm:w-12
+  "
+/>
 
 
                               <p
@@ -1635,7 +1639,7 @@ const nextCard = pho.cards[nextIndex]
     textSizeAdjust: '100%',
   }}
 >
-  {cardInfo.meaning}
+  {cardInfo.meaning}  
 </p>
 
                               </>
