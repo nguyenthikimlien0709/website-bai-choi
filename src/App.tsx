@@ -1496,27 +1496,35 @@ const nextCard = pho.cards[nextIndex]
                           {/* MẶT SAU */}
                           {/* ===================== */}
 
-                          <div
-                            className="
-                              card-flip-face
-                              card-flip-back
+                        <div
+  className="
+    card-flip-face
+    card-flip-back
 
-                              flex
-                              flex-col
+    flex
+    flex-col
 
-                              items-center
-                              justify-center
+    items-center
+    justify-start
 
-                              overflow-hidden
+    overflow-y-auto
+    overflow-x-hidden
 
-                              rounded-xl
+    rounded-xl
 
-                              px-4
-                              py-5
+    px-3
+    py-4
 
-                              text-center
-                            "
-                          >
+    text-center
+
+    sm:justify-center
+    sm:px-4
+    sm:py-5
+  "
+  style={{
+    WebkitOverflowScrolling: 'touch',
+  }}
+>
 
                             {cardInfo ? (
                               <>
@@ -1605,12 +1613,17 @@ const nextCard = pho.cards[nextIndex]
                                 />
 
 
-                               <p
+                              <p
   className="
-    text-[9px]
-    leading-[14px]
+    w-full
+    px-1
+    pb-4
+
+    text-[8px]
+    leading-[12px]
     text-white/85
 
+    sm:px-0
     sm:text-xs
     sm:leading-5
 
