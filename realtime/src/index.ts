@@ -1030,19 +1030,16 @@ export class BaiChoiRoom
       )
 
 
-      this.broadcast(
-        {
+      const callStartedAt = Date.now() + 1000
 
-          type:
-            'cardDrawn',
-
-          cardId:
-            game.currentCard,
-
-          drawIndex:
-            game.drawIndex,
-        }
-      )
+this.broadcast(
+  {
+    type: 'cardDrawn',
+    cardId: game.currentCard,
+    drawIndex: game.drawIndex,
+    callStartedAt,
+  }
+)
 
 
       return

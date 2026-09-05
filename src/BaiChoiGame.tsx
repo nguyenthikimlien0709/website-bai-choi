@@ -329,22 +329,20 @@ const [botHands, setBotHands] = useState<Card[][]>([])
     }
   }
 
-  const unlockAudio = async () => {
-    if (audioRef.current) return
-    const audio = new Audio()
-    audio.preload = 'auto'
-    audio.src = CARDS[0].sound
-    audio.volume = 0
-    audioRef.current = audio
-    try {
-      await audio.play()
-      audio.pause()
-      audio.currentTime = 0
-      audio.volume = 1
-    } catch {
-      audio.volume = 1
-    }
-  }
+const unlockAudio = async () => {
+  const audio = new Audio('/sound/silent.mp3')
+  audio.volume = 0
+  audio.preload = 'auto'
+
+  try {
+    await audio.play()
+    audio.pause()
+    audio.currentTime = 0
+    console.log('Âm thanh đã được mở')
+  } catch (error) {
+    console.error('Không thể mở âm thanh:', error)
+  }
+}
 
 const [isMobilePortrait, setIsMobilePortrait] = useState(() => {
   if (typeof window === 'undefined') return false
@@ -468,6 +466,7 @@ const playCall = async (card: Card) => {
   audio.preload = 'auto'
   audio.volume = 1
   audio.currentTime = 0
+
   audioRef.current = audio
 
   const revealCard = () => {
@@ -483,8 +482,9 @@ const playCall = async (card: Card) => {
   } catch (error) {
     console.error('Không thể phát âm thanh:', error)
 
-    // KHÔNG lật bài ngay ở đây
-    setMessage('Hãy chạm vào màn hình để bật âm thanh.')
+    setIsCalling(false)
+    setRevealedCard(card)
+    setMessage('Âm thanh bị trình duyệt chặn. Hãy bấm Bật âm thanh.')
   }
 }
 
@@ -595,10 +595,24 @@ if (
       if (data.type === 'gameStarted') {
         setHostId(data.hostId); setOnlinePlayers(data.players); setHand(data.hand.map((id: string) => CARDS.find((card) => card.id === id)).filter(Boolean)); setClaimed([]); setRevealedCard(null); setIsCalling(false); setDrawIndex(-1); setWinner(''); setMessage('Hội đã khai. Chủ hội sẽ rút quân đầu tiên!'); setScreen('playing')
       }
-      if (data.type === 'cardDrawn') {
-        const card = CARDS.find((item) => item.id === data.cardId)
-        if (card) { drawnCardRef.current = card; setRevealedCard(null); setDrawIndex(data.drawIndex); void playCall(card) }
-      }
+     if (data.type === 'cardDrawn') {
+  const card = CARDS.find((item) => item.id === data.cardId)
+
+  if (card) {
+    drawnCardRef.current = card
+    setRevealedCard(null)
+    setDrawIndex(data.drawIndex)
+
+    const delay = Math.max(
+      0,
+      (data.callStartedAt ?? Date.now()) - Date.now()
+    )
+
+    window.setTimeout(() => {
+      void playCall(card)
+    }, delay)
+  }
+}
       if (data.type === 'flagsUpdated') {
         setOnlinePlayers((previous) => previous.map((player) => player.id === data.playerId ? { ...player, flags: data.flags } : player))
         if (data.playerId === playerIdRef.current) setClaimed((previous) => drawnCardRef.current && !previous.includes(drawnCardRef.current.id) ? [...previous, drawnCardRef.current.id] : previous)
@@ -1615,8 +1629,54 @@ sm:max-w-[160px]
             </div> : <div className="mt-7">
               <div className="rounded-2xl border border-[#f29963]/40 bg-black/10 p-5 text-center"><p className="text-xs uppercase tracking-[.2em] text-white/55">Mã hội của bạn</p><div className="mt-2 text-3xl font-black tracking-[.2em] text-[#f29963]">{roomCode}</div><button onClick={() => void copyRoomCode()} className="mt-3 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white">{roomCodeCopied ? 'Đã sao chép ✓' : 'Sao chép mã'}</button></div>
               <div className="mt-4 space-y-2">{onlinePlayers.map((player) => <div key={player.id} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3"><span className="font-semibold">{player.name} {player.id === hostId && '👑'}</span><span className={player.ready ? 'text-[#f29963]' : 'text-white/45'}>{player.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span></div>)}</div>
-              {playerId !== hostId && <button onClick={() => {  socketRef.current?.send(JSON.stringify({ type: 'ready', ready: !onlinePlayers.find((player) => player.id === playerId)?.ready })) }} className="mt-5 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a]">{onlinePlayers.find((player) => player.id === playerId)?.ready ? 'Hủy sẵn sàng' : 'Tôi đã sẵn sàng'}</button>}
-              {playerId === hostId && <button onClick={() => {  socketRef.current?.send(JSON.stringify({ type: 'startGame' })) }} disabled={onlinePlayers.length < 2 || onlinePlayers.some((player) => !player.ready)} className="mt-5 w-full rounded-xl bg-[#c44837] px-4 py-3 font-bold disabled:cursor-not-allowed disabled:opacity-35">{onlinePlayers.length < 2 ? 'Chờ ít nhất một người bạn…' : onlinePlayers.some((player) => !player.ready) ? 'Chờ mọi người sẵn sàng…' : 'Khai hội'}</button>}
+             {playerId !== hostId && (
+  <button
+    onClick={() => {
+      socketRef.current?.send(
+        JSON.stringify({
+          type: 'ready',
+          ready: !onlinePlayers.find(
+            (player) => player.id === playerId
+          )?.ready
+        })
+      )
+    }}
+    className="mt-5 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a]"
+  >
+    {onlinePlayers.find((player) => player.id === playerId)?.ready
+      ? 'Hủy sẵn sàng'
+      : 'Tôi đã sẵn sàng'}
+  </button>
+)}
+
+<button
+  onClick={() => void unlockAudio()}
+  className="mt-5 w-full rounded-xl bg-[#f29963] px-4 py-3 font-bold text-[#173a3a]"
+>
+  🔊 Bật âm thanh
+</button>
+
+{playerId === hostId && (
+  <button
+    onClick={() => {
+      socketRef.current?.send(
+        JSON.stringify({ type: 'startGame' })
+      )
+    }}
+    disabled={
+      onlinePlayers.length < 2 ||
+      onlinePlayers.some((player) => !player.ready)
+    }
+    className="mt-5 w-full rounded-xl bg-[#c44837] px-4 py-3 font-bold disabled:cursor-not-allowed disabled:opacity-35"
+  >
+    {onlinePlayers.length < 2
+      ? 'Chờ ít nhất một người bạn…'
+      : onlinePlayers.some((player) => !player.ready)
+      ? 'Chờ mọi người sẵn sàng…'
+      : 'Khai hội'}
+  </button>
+)}
+
             </div>}
             {roomError && <p className="mt-4 rounded-xl bg-[#7c2421]/50 px-4 py-3 text-sm text-[#ffd3c2]">{roomError}</p>}
             </section>
