@@ -455,35 +455,38 @@ const goBack = () => {
   }
 }
 
-  const playCall = async (card: Card) => {
-    stopAudio(false)
-    setRevealedCard(null)
-    setIsCalling(true)
-    setMessage('Lắng nghe Chị Hiệu hô…')
+const playCall = async (card: Card) => {
+  stopAudio(false)
 
-    const audio = audioRef.current || new Audio()
-    audio.src = card.sound
-    audio.preload = 'auto'
-    audio.volume = 1
-    audioRef.current = audio
+  setRevealedCard(null)
+  setIsCalling(true)
+  setMessage('Lắng nghe Chị Hiệu hô…')
 
-    await new Promise<void>((resolve) => {
-      const revealCard = () => {
-        setRevealedCard(card)
-        setIsCalling(false)
-        setMessage(`Quân ${card.name}! Nếu có thẻ, hãy gõ mõ.`)
-        resolve()
-      }
+  const audio = audioRef.current || new Audio()
 
-      audio.onended = revealCard
-      audio.play().catch(() => {
-        setRevealedCard(card)
-        setIsCalling(false)
-        setMessage(`Quân ${card.name}! Chạm GÕ MÕ nếu bạn có thẻ. Trình duyệt đang chặn âm thanh.`)
-        resolve()
-      })
-    })
-  }
+  audio.src = card.sound
+  audio.preload = 'auto'
+  audio.volume = 1
+  audio.currentTime = 0
+  audioRef.current = audio
+
+  const revealCard = () => {
+    setRevealedCard(card)
+    setIsCalling(false)
+    setMessage(`Quân ${card.name}! Nếu có thẻ, hãy gõ mõ.`)
+  }
+
+  audio.onended = revealCard
+
+  try {
+    await audio.play()
+  } catch (error) {
+    console.error('Không thể phát âm thanh:', error)
+
+    // KHÔNG lật bài ngay ở đây
+    setMessage('Hãy chạm vào màn hình để bật âm thanh.')
+  }
+}
 
 const connectRoom = (action: 'createRoom' | 'joinRoom') => {
   setRoomError('')
