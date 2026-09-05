@@ -50,32 +50,32 @@ const CARD_IDS = [
   // PHÔ 02 — 11 → 20
   // ====================================================
 
-  'pho2-la1',
-  'pho2-la2',
-  'pho2-la3',
-  'pho2-la4',
-  'pho2-la5',
-  'pho2-la6',
-  'pho2-la7',
-  'pho2-la8',
-  'pho2-la9',
-  'pho2-la10',
+    'nhat-noc',
+  'nhi-ngheo',
+  'ba-ga',
+  'tu-dong',
+  'ngu-dum',
+  'sau-hot',
+  'bay-thua',
+  'tam-day',
+  'chin-goi',
+  'do-mo',
 
 
   // ====================================================
   // PHÔ 03 — 21 → 30
   // ====================================================
 
-  'pho3-la1',
-  'pho3-la2',
-  'pho3-la3',
-  'pho3-la4',
-  'pho3-la5',
-  'pho3-la6',
-  'pho3-la7',
-  'pho3-la8',
-  'pho3-la9',
-  'pho3-la10',
+   'bach-hue',
+  'banh-hai',
+  'banh-ba',
+  'dai-doi',
+  'nam-run',
+  'sau-tien',
+  'that-lieu',
+  'tam-tien',
+  'chin-ghe',
+  'ong-am',
 ]
 
 
@@ -263,14 +263,11 @@ export default {
       action === 'createRoom'
     ) {
 
-      roomId =
-        String(
-          Math.floor(
-            100000 +
-            Math.random() *
-              900000
-          )
-        )
+     roomId =
+  `CHOI-${Math.floor(
+    100000 +
+    Math.random() * 900000
+  )}`
     }
 
 
@@ -288,21 +285,12 @@ export default {
       123456
     */
 
-    if (
-      action === 'joinRoom'
-    ) {
-
-      roomId =
-        roomId.replace(
-          /^CHOI-/,
-          ''
-        )
-    }
+    
 
 
     if (
-      !/^\d{6}$/.test(roomId)
-    ) {
+  !/^CHOI-\d{6}$/.test(roomId)
+) {
 
       return json(
         {
@@ -381,16 +369,12 @@ export class BaiChoiRoom
   // ====================================================
 
   private players() {
-
-    return this
-      .sockets()
-      .map(
-        (socket) =>
-          socket.deserializeAttachment()
-            as PlayerAttachment
-      )
-      .filter(Boolean)
-  }
+  return this.sockets()
+    .map((socket) => {
+      return socket.deserializeAttachment() as PlayerAttachment
+    })
+    .filter(Boolean)
+}
 
 
   // ====================================================
@@ -779,9 +763,7 @@ export class BaiChoiRoom
     }
 
 
-    const player =
-      socket.deserializeAttachment()
-        as PlayerAttachment
+     const player = socket.deserializeAttachment() as PlayerAttachment
 
 
     let game =
@@ -932,10 +914,7 @@ export class BaiChoiRoom
           playerIndex
         ) => {
 
-          const attendee =
-            clientSocket
-              .deserializeAttachment()
-              as PlayerAttachment
+          const attendee =clientSocket.deserializeAttachment() as PlayerAttachment
 
 
           const start =
@@ -994,10 +973,7 @@ export class BaiChoiRoom
       clients.forEach(
         (clientSocket) => {
 
-          const attendee =
-            clientSocket
-              .deserializeAttachment()
-              as PlayerAttachment
+          const attendee =clientSocket.deserializeAttachment() as PlayerAttachment
 
 
           this.send(
