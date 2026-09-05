@@ -511,22 +511,21 @@ const connectRoom = (action: 'createRoom' | 'joinRoom') => {
   // ==========================================
   // MÃ HỘI CHỈ GỒM ĐÚNG 6 CHỮ SỐ
   // ==========================================
+const normalizedRoomCode =
+  action === 'joinRoom'
+    ? joinCode.toUpperCase()
+    : ''
 
-  const normalizedRoomCode =
-    action === 'joinRoom'
-      ? joinCode.replace(/\D/g, '').slice(0, 6)
-      : ''
+if (
+  action === 'joinRoom' &&
+  !/^CHOI-\d{6}$/.test(normalizedRoomCode)
+) {
+  setRoomError(
+    'Mã hội phải có dạng CHOI-123456.'
+  )
+  return
+}
 
-  // Nếu vào hội thì phải đủ đúng 6 số
-  if (
-    action === 'joinRoom' &&
-    !/^\d{6}$/.test(normalizedRoomCode)
-  ) {
-    setRoomError(
-      'Mã hội phải gồm đúng 6 chữ số.'
-    )
-    return
-  }
 
   // Chỉ chuyển sang connecting sau khi mã hợp lệ
   setSocketStatus('connecting')
@@ -1583,24 +1582,29 @@ sm:max-w-[160px]
               <div className="rounded-2xl border border-white/15 bg-black/10 p-5">
                 <h3 className="font-bold">Vào hội bằng mã</h3>
                 <input
+  type="text"
+  inputMode="text"
   value={joinCode}
   onChange={(event) => {
     const value = event.target.value
-      .replace(/\D/g, '')
-      .slice(0, 6)
+      .toUpperCase()
+      .replace(/\s/g, '')
+      .replace(/[^A-Z0-9-]/g, '')
+      .slice(0, 11)
 
     setJoinCode(value)
   }}
-  placeholder="286194"
-  inputMode="numeric"
-  maxLength={6}
+  placeholder="CHOI-123456"
+  autoCapitalize="characters"
+  autoCorrect="off"
+  spellCheck={false}
   className="mt-4 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-center font-bold tracking-widest outline-none"
 />
                 <button
                   onClick={() => { void unlockAudio(); connectRoom('joinRoom') }}
 
 
-                  disabled={!/^\d{6}$/.test(joinCode) || socketStatus === 'connecting'}
+                  disabled={!/^CHOI-\d{6}$/.test(joinCode) || socketStatus === 'connecting'}
                   className="mt-3 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:cursor-not-allowed disabled:opacity-35"
                 >
                   Vào hội
