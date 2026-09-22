@@ -11,6 +11,9 @@
   "openGraph": {
     "image": "/assets/poster.jpg"
   },
+  "analytics": {
+    "googleAnalyticsId": "G-5LCFB84C0K"
+  },
   "accessibility": {
     "addBypassLinks": false,
     "ignoreReducedMotion": false
