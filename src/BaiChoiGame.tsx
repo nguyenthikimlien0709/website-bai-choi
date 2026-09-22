@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import './index.css';
+import BaiChoiPuzzle, { PuzzleLevel } from './BaiChoiPuzzle';
+import { getChantLyrics } from './chantLyrics';
 
 type Screen = 'name' | 'mode' | 'matchmaking' | 'friend' | 'playing' | 'result'
 type OnlinePlayer = { id: string; name: string; ready: boolean; flags: number }
 
 type Card = {
-  id: string
-  name: string
-  image: string
-  sound: string
+  id: string
+  name: string
+  image: string
+  sound: string
 }
 
 const CARDS: Card[] = [
@@ -250,16 +252,82 @@ const showcaseCards = [...CARDS]
 const BOT_NAMES = ['Cô Ba', 'Chú Tư', 'Anh Năm', 'Chị Sáu']
 
 function shuffle<T>(items: readonly T[]) {
-  const result = [...items]
-  for (let i = result.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[result[i], result[j]] = [result[j], result[i]]
-  }
-  return result
+  const result = [...items]
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
 }
 
 function cleanName(value: string) {
   return value.normalize('NFC').trim().replace(/\s+/g, ' ').slice(0, 16)
+}
+
+function generateDramaticDeck(playerHand: Card[], botHands: Card[][], allCards: Card[]): Card[] {
+  const allOwnedIds = new Set([
+    ...playerHand.map((c) => c.id),
+    ...botHands.flatMap((h) => h.map((c) => c.id))
+  ])
+  const blankCards = shuffle(allCards.filter((c) => !allOwnedIds.has(c.id)))
+
+  // 70% tỉ lệ người chơi thắng, 30% bot thắng để tạo tính ganh đua
+  const playerWins = Math.random() < 0.7
+  // Trận đấu kết thúc ở lượt thứ 6 hoặc 7 (khoảng 3 - 3.5 phút)
+  const targetTurns = Math.random() < 0.5 ? 6 : 7
+
+  const drawnSequence: Card[] = []
+  const usedCardIds = new Set<string>()
+
+  // Chọn 1 bot làm đối thủ chính (rival bot) để đua cờ sát nút với người chơi
+  const rivalBotIndex = Math.floor(Math.random() * botHands.length)
+  const rivalHand = shuffle([...botHands[rivalBotIndex]])
+  const otherBots = botHands.filter((_, idx) => idx !== rivalBotIndex)
+  const shuffledPlayerHand = shuffle([...playerHand])
+
+  if (playerWins) {
+    // Kịch bản Người chơi thắng ở lượt targetTurns (3 cờ)
+    const p0 = shuffledPlayerHand[0]
+    const p1 = shuffledPlayerHand[1]
+    const pWinner = shuffledPlayerHand[2]
+
+    // Rival bot có 2 cờ tạo thế đối đầu kịch tính
+    const r0 = rivalHand[0]
+    const r1 = rivalHand[1]
+
+    // 1 bot khác có 1 cờ
+    const otherBotCard = shuffle(otherBots.flatMap((b) => b))[0]
+    const blankCard = blankCards[0]
+
+    if (targetTurns === 6) {
+      drawnSequence.push(p0, r0, otherBotCard, p1, r1, pWinner)
+    } else {
+      drawnSequence.push(r0, p0, otherBotCard, p1, blankCard, r1, pWinner)
+    }
+  } else {
+    // Kịch bản Bot thắng ở lượt targetTurns (3 cờ)
+    const r0 = rivalHand[0]
+    const r1 = rivalHand[1]
+    const rWinner = rivalHand[2]
+
+    // Người chơi vẫn đạt 2 cờ (tạo cảm giác suýt soát)
+    const p0 = shuffledPlayerHand[0]
+    const p1 = shuffledPlayerHand[1]
+
+    const otherBotCard = shuffle(otherBots.flatMap((b) => b))[0]
+    const blankCard = blankCards[0]
+
+    if (targetTurns === 6) {
+      drawnSequence.push(p0, r0, p1, otherBotCard, r1, rWinner)
+    } else {
+      drawnSequence.push(p0, r0, p1, blankCard, otherBotCard, r1, rWinner)
+    }
+  }
+
+  drawnSequence.forEach((c) => usedCardIds.add(c.id))
+  const remainingCards = shuffle(allCards.filter((c) => !usedCardIds.has(c.id)))
+
+  return [...drawnSequence, ...remainingCards]
 }
 
 function FlyingClouds() {
@@ -274,60 +342,84 @@ function FlyingClouds() {
 }
 
 export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
-  const [screen, setScreen] = useState<Screen>('name')
-  const [nameInput, setNameInput] = useState('')
-  const [playerName, setPlayerName] = useState('')
-  const [error, setError] = useState('')
-  const [countdown, setCountdown] = useState(8)
-  const [roomCode, setRoomCode] = useState('')
-  const [joinCode, setJoinCode] = useState('')
-  const [deck, setDeck] = useState<Card[]>([])
-  const [hand, setHand] = useState<Card[]>([])
-  const [drawIndex, setDrawIndex] = useState(-1)
-  const [claimed, setClaimed] = useState<string[]>([])
-  const [botFlags, setBotFlags] = useState([0, 0, 0, 0])
+  const [screen, setScreen] = useState<Screen>('name')
+  const [nameInput, setNameInput] = useState('')
+  const [playerName, setPlayerName] = useState('')
+  const [error, setError] = useState('')
+  const [countdown, setCountdown] = useState(8)
+  const [roomCode, setRoomCode] = useState('')
+  const [joinCode, setJoinCode] = useState('')
+  const [deck, setDeck] = useState<Card[]>([])
+  const [hand, setHand] = useState<Card[]>([])
+  const [drawIndex, setDrawIndex] = useState(-1)
+  const [claimed, setClaimed] = useState<string[]>([])
+  const [botFlags, setBotFlags] = useState([0, 0, 0, 0])
 const [botHands, setBotHands] = useState<Card[][]>([])
-  const [message, setMessage] = useState('Anh Hiệu đang chuẩn bị ống thẻ…')
-  const [winner, setWinner] = useState('')
-  const [onlineMode, setOnlineMode] = useState(false)
-  const [onlinePlayers, setOnlinePlayers] = useState<OnlinePlayer[]>([])
-  const [playerId, setPlayerId] = useState('')
-  const [hostId, setHostId] = useState('')
-  const [roomError, setRoomError] = useState('')
-  const [roomCodeCopied, setRoomCodeCopied] = useState(false)
-  const [socketStatus, setSocketStatus] = useState<'idle' | 'connecting' | 'connected'>('idle')
-  const [revealedCard, setRevealedCard] = useState<Card | null>(null)
-  const [isCalling, setIsCalling] = useState(false)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const socketRef = useRef<WebSocket | null>(null)
-  const playerIdRef = useRef('')
-  const drawnCardRef = useRef<Card | null>(null)
+  const [message, setMessage] = useState('Anh Hiệu đang chuẩn bị ống thẻ…')
+  const [winner, setWinner] = useState('')
+  const [onlineMode, setOnlineMode] = useState(false)
+  const [onlinePlayers, setOnlinePlayers] = useState<OnlinePlayer[]>([])
+  const [playerId, setPlayerId] = useState('')
+  const [hostId, setHostId] = useState('')
+  const [roomError, setRoomError] = useState('')
+  const [roomCodeCopied, setRoomCodeCopied] = useState(false)
+  const [socketStatus, setSocketStatus] = useState<'idle' | 'connecting' | 'connected'>('idle')
+  const [revealedCard, setRevealedCard] = useState<Card | null>(null)
+  const [isCalling, setIsCalling] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const socketRef = useRef<WebSocket | null>(null)
+  const playerIdRef = useRef('')
+  const drawnCardRef = useRef<Card | null>(null)
+  const [puzzleLevel, setPuzzleLevel] = useState<PuzzleLevel>(1)
+  const [currentCallingCard, setCurrentCallingCard] = useState<Card | null>(null)
+  const [showPuzzleModal, setShowPuzzleModal] = useState(false)
+  const puzzleCompletedManuallyRef = useRef(false)
+  const fallbackTimerRef = useRef<number | null>(null)
+  const [chantLyricIndex, setChantLyricIndex] = useState(0)
 
-  const currentCard = revealedCard
-  const canClaim = Boolean(currentCard && hand.some((card) => card.id === currentCard.id) && !claimed.includes(currentCard.id))
-  const players = useMemo(() => onlineMode ? onlinePlayers.map((player) => player.name) : [playerName, ...BOT_NAMES], [onlineMode, onlinePlayers, playerName])
+  // Tự động chuyển câu hò mỗi ~7 giây khi Chị Hiệu đang hô
+  useEffect(() => {
+    if (!isCalling || !currentCallingCard) {
+      setChantLyricIndex(0)
+      return
+    }
+    setChantLyricIndex(0)
+    const timer = setInterval(() => {
+      setChantLyricIndex((prev) => (prev < 3 ? prev + 1 : prev))
+    }, 7000)
+    return () => clearInterval(timer)
+  }, [isCalling, currentCallingCard?.id])
 
-  useEffect(() => {
-    if (screen !== 'matchmaking') return
-    if (countdown <= 0) {
-      startGame()
-      return
-    }
-    const timer = window.setTimeout(() => setCountdown((value) => value - 1), 1000)
-    return () => window.clearTimeout(timer)
-  }, [countdown, screen])
+  const currentCard = revealedCard
+  const canClaim = Boolean(currentCard && hand.some((card) => card.id === currentCard.id) && !claimed.includes(currentCard.id))
+  const players = useMemo(() => onlineMode ? onlinePlayers.map((player) => player.name) : [playerName, ...BOT_NAMES], [onlineMode, onlinePlayers, playerName])
 
-  const stopAudio = (release = true) => {
-    if (!audioRef.current) return
-    audioRef.current.pause()
-    audioRef.current.currentTime = 0
-    audioRef.current.onended = null
-    if (release) {
-      audioRef.current.removeAttribute('src')
-      audioRef.current.load()
-      audioRef.current = null
-    }
-  }
+  useEffect(() => {
+    if (screen !== 'matchmaking') return
+    if (countdown <= 0) {
+      startGame()
+      return
+    }
+    const timer = window.setTimeout(() => setCountdown((value) => value - 1), 1000)
+    return () => window.clearTimeout(timer)
+  }, [countdown, screen])
+
+  const stopAudio = (release = true) => {
+    if (fallbackTimerRef.current) {
+      window.clearTimeout(fallbackTimerRef.current)
+      fallbackTimerRef.current = null
+    }
+    if (!audioRef.current) return
+    audioRef.current.pause()
+    audioRef.current.currentTime = 0
+    audioRef.current.onended = null
+    audioRef.current.onerror = null
+    if (release) {
+      audioRef.current.removeAttribute('src')
+      audioRef.current.load()
+      audioRef.current = null
+    }
+  }
 
 const unlockAudio = async () => {
   const audio = new Audio('/sound/silent.mp3')
@@ -389,10 +481,10 @@ useEffect(() => {
   }
 }, [screen])
 
-  useEffect(() => () => {
-    stopAudio()
-    socketRef.current?.close()
-  }, [])
+  useEffect(() => () => {
+    stopAudio()
+    socketRef.current?.close()
+  }, [])
 useEffect(() => {
   const preventZoom = (e: WheelEvent) => {
     if (e.ctrlKey) {
@@ -409,22 +501,24 @@ useEffect(() => {
   };
 }, []);
 
-  const leaveGame = () => {
-    stopAudio()
-    socketRef.current?.close()
-    onClose()
-  }
+  const leaveGame = () => {
+    stopAudio()
+    socketRef.current?.close()
+    onClose()
+  }
 
-  const backToMode = () => {
-    stopAudio()
-    socketRef.current?.close()
-    socketRef.current = null
-    setOnlineMode(false)
-    setRoomCode('')
-    setOnlinePlayers([])
-    setSocketStatus('idle')
-    setScreen('mode')
-  }
+  const backToMode = () => {
+    stopAudio()
+    socketRef.current?.close()
+    socketRef.current = null
+    setOnlineMode(false)
+    setRoomCode('')
+    setOnlinePlayers([])
+    setSocketStatus('idle')
+    setCurrentCallingCard(null)
+    setPuzzleLevel(1)
+    setScreen('mode')
+  }
 
 
 const goBack = () => {
@@ -457,8 +551,11 @@ const playCall = async (card: Card) => {
   stopAudio(false)
 
   setRevealedCard(null)
+  setCurrentCallingCard(card)
+  puzzleCompletedManuallyRef.current = false
   setIsCalling(true)
-  setMessage('Lắng nghe Chị Hiệu hô…')
+  setShowPuzzleModal(true) // Tự động mở popup xếp hình nổi khi bắt đầu hô
+  setMessage('Lắng nghe Chị Hiệu hô & Xếp hình giải mã…')
 
   const audio = audioRef.current || new Audio()
 
@@ -470,22 +567,62 @@ const playCall = async (card: Card) => {
   audioRef.current = audio
 
   const revealCard = () => {
+    if (fallbackTimerRef.current) {
+      window.clearTimeout(fallbackTimerRef.current)
+      fallbackTimerRef.current = null
+    }
+
     setRevealedCard(card)
     setIsCalling(false)
+    setShowPuzzleModal(false) // Tự động đóng modal xếp hình khi kết thúc câu hò
     setMessage(`Quân ${card.name}! Nếu có thẻ, hãy gõ mõ.`)
+
+    // Cập nhật cờ cho các bot sau khi bài đã được công bố chính thức
+    setBotFlags((previous) =>
+      previous.map((flags, index) => {
+        const botHasCard =
+          botHands[index]?.some(
+            (botCard) => botCard.id === card.id
+          ) ?? false
+
+        return botHasCard && flags < 3
+          ? flags + 1
+          : flags
+      })
+    )
+
+    // Cơ chế Phục thù & Thăng cấp theo thực lực người chơi
+    if (puzzleCompletedManuallyRef.current) {
+      setPuzzleLevel((prev) => {
+        if (prev < 4) return (prev + 1) as PuzzleLevel
+        return Math.random() > 0.5 ? 3 : 4
+      })
+    }
   }
 
   audio.onended = revealCard
+  audio.onerror = () => {
+    console.warn('Không thể tải file âm thanh:', card.sound)
+    if (!fallbackTimerRef.current) {
+      fallbackTimerRef.current = window.setTimeout(revealCard, 20000)
+    }
+  }
 
   try {
     await audio.play()
   } catch (error) {
     console.error('Không thể phát âm thanh:', error)
-
-    setIsCalling(false)
-    setRevealedCard(card)
-    setMessage('Âm thanh bị trình duyệt chặn. Hãy bấm Bật âm thanh.')
+    // Nếu trình duyệt chặn âm thanh, KHÔNG lật bài ngay lập tức mà duy trì thời gian hô 20s
+    setMessage('Đang hô… (Bấm "🔊 Bật âm thanh" nếu chưa nghe tiếng)')
+    if (!fallbackTimerRef.current) {
+      fallbackTimerRef.current = window.setTimeout(revealCard, 20000)
+    }
   }
+}
+
+const handlePuzzleComplete = () => {
+  puzzleCompletedManuallyRef.current = true
+  setMessage(`Đã ghép xong Quân ${currentCallingCard?.name || ''}! Chờ Chị Hiệu xướng tên.`)
 }
 
 const connectRoom = (action: 'createRoom' | 'joinRoom') => {
@@ -572,30 +709,30 @@ if (
   socketRef.current = socket
 
 
-    socket.onopen = () => {
-      setSocketStatus('connected')
-      if (!configuredRealtimeUrl) {
-        socket.send(JSON.stringify({
-          type: action,
-          name: playerName,
-          roomId: normalizedRoomCode,
-        }))
-      }
-    }
-    socket.onerror = () => { setRoomError(isLocalHost ? 'Không thể kết nối máy chủ phòng. Hãy khởi động lại npm run dev.' : 'Máy chủ phòng online đang không phản hồi.'); setSocketStatus('idle') }
-    socket.onclose = () => setSocketStatus('idle')
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      if (data.type === 'error') return setRoomError(data.message)
-      if (data.type === 'roomJoined') {
-        playerIdRef.current = data.playerId
-        setRoomCode(data.roomId); setPlayerId(data.playerId); setHostId(data.hostId); setOnlinePlayers(data.players); setOnlineMode(true)
-      }
-      if (data.type === 'roomState') { setHostId(data.hostId); setOnlinePlayers(data.players) }
-      if (data.type === 'gameStarted') {
-        setHostId(data.hostId); setOnlinePlayers(data.players); setHand(data.hand.map((id: string) => CARDS.find((card) => card.id === id)).filter(Boolean)); setClaimed([]); setRevealedCard(null); setIsCalling(false); setDrawIndex(-1); setWinner(''); setMessage('Hội đã khai. Chủ hội sẽ rút quân đầu tiên!'); setScreen('playing')
-      }
-     if (data.type === 'cardDrawn') {
+    socket.onopen = () => {
+      setSocketStatus('connected')
+      if (!configuredRealtimeUrl) {
+        socket.send(JSON.stringify({
+          type: action,
+          name: playerName,
+          roomId: normalizedRoomCode,
+        }))
+      }
+    }
+    socket.onerror = () => { setRoomError(isLocalHost ? 'Không thể kết nối máy chủ phòng. Hãy khởi động lại npm run dev.' : 'Máy chủ phòng online đang không phản hồi.'); setSocketStatus('idle') }
+    socket.onclose = () => setSocketStatus('idle')
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data)
+      if (data.type === 'error') return setRoomError(data.message)
+      if (data.type === 'roomJoined') {
+        playerIdRef.current = data.playerId
+        setRoomCode(data.roomId); setPlayerId(data.playerId); setHostId(data.hostId); setOnlinePlayers(data.players); setOnlineMode(true)
+      }
+      if (data.type === 'roomState') { setHostId(data.hostId); setOnlinePlayers(data.players) }
+      if (data.type === 'gameStarted') {
+        setHostId(data.hostId); setOnlinePlayers(data.players); setHand(data.hand.map((id: string) => CARDS.find((card) => card.id === id)).filter(Boolean)); setClaimed([]); setRevealedCard(null); setIsCalling(false); setDrawIndex(-1); setWinner(''); setMessage('Hội đã khai. Chủ hội sẽ rút quân đầu tiên!'); setScreen('playing')
+      }
+     if (data.type === 'cardDrawn') {
   const card = CARDS.find((item) => item.id === data.cardId)
 
   if (card) {
@@ -613,157 +750,137 @@ if (
     }, delay)
   }
 }
-      if (data.type === 'flagsUpdated') {
-        setOnlinePlayers((previous) => previous.map((player) => player.id === data.playerId ? { ...player, flags: data.flags } : player))
-        if (data.playerId === playerIdRef.current) setClaimed((previous) => drawnCardRef.current && !previous.includes(drawnCardRef.current.id) ? [...previous, drawnCardRef.current.id] : previous)
-      }
-      if (data.type === 'claimRejected') setMessage('Thẻ này không có trong tay bạn hoặc đã nhận cờ rồi.')
-      if (data.type === 'winner') finishGame(data.name)
-    }
-  }
+      if (data.type === 'flagsUpdated') {
+        setOnlinePlayers((previous) => previous.map((player) => player.id === data.playerId ? { ...player, flags: data.flags } : player))
+        if (data.playerId === playerIdRef.current) setClaimed((previous) => drawnCardRef.current && !previous.includes(drawnCardRef.current.id) ? [...previous, drawnCardRef.current.id] : previous)
+      }
+      if (data.type === 'claimRejected') setMessage('Thẻ này không có trong tay bạn hoặc đã nhận cờ rồi.')
+      if (data.type === 'winner') finishGame(data.name)
+    }
+  }
 
-  const submitName = () => {
-    const nextName = cleanName(nameInput)
-    if (nextName.length < 2) {
-      setError('')
-      return
-    }
-    if (/^(máy|anh hiệu|chị hiệu)$/i.test(nextName)) {
-      setError('Tên này được dành cho nhân vật trong hội.')
-      return
-    }
-    setPlayerName(nextName)
-    setError('')
-    setScreen('mode')
-  }
+  const submitName = () => {
+    const nextName = cleanName(nameInput)
+    if (nextName.length < 2) {
+      setError('')
+      return
+    }
+    if (/^(máy|anh hiệu|chị hiệu)$/i.test(nextName)) {
+      setError('Tên này được dành cho nhân vật trong hội.')
+      return
+    }
+    setPlayerName(nextName)
+    setError('')
+    setScreen('mode')
+  }
 
-  const startGame = () => {
-  setOnlineMode(false)
+  const startGame = () => {
+    setOnlineMode(false)
 
-  // Bộ 30 quân dùng để Anh/Chị Hiệu rút và hô
-  const nextDeck = shuffle(CARDS)
+    // Một bộ xáo riêng để chia bài cho các chòi
+    const dealDeck = shuffle(CARDS)
 
-  // Một bộ xáo riêng để chia bài cho các chòi
-  const dealDeck = shuffle(CARDS)
+    // Người chơi nhận 3 quân
+    const playerHand = dealDeck.slice(0, 3)
 
-  // Người chơi nhận 3 quân
-  const playerHand = dealDeck.slice(0, 3)
+    // 4 bot, mỗi bot nhận 3 quân riêng
+    const nextBotHands = BOT_NAMES.map((_, botIndex) => {
+      const start = 3 + botIndex * 3
+      return dealDeck.slice(start, start + 3)
+    })
 
-  // 4 bot, mỗi bot nhận 3 quân riêng
-  const nextBotHands = BOT_NAMES.map((_, botIndex) => {
-    const start = 3 + botIndex * 3
+    // Sinh bộ bài kịch tính kết thúc ở lượt 6 hoặc 7 (khoảng 3 - 3.5 phút)
+    const nextDeck = generateDramaticDeck(playerHand, nextBotHands, CARDS)
 
-    return dealDeck.slice(start, start + 3)
-  })
+    setDeck(nextDeck)
+    setHand(playerHand)
+    setBotHands(nextBotHands)
 
-  setDeck(nextDeck)
+    setDrawIndex(-1)
+    setClaimed([])
+    setRevealedCard(null)
+    setCurrentCallingCard(null)
+    setPuzzleLevel(1)
+    puzzleCompletedManuallyRef.current = false
+    setIsCalling(false)
+    setBotFlags([0, 0, 0, 0])
+    setWinner('')
 
-  setHand(playerHand)
+    setMessage('Hội đã đủ chòi. Mời bạn nghe câu hô đầu tiên!')
+    setScreen('playing')
+  }
 
-  // QUAN TRỌNG
-  setBotHands(nextBotHands)
+  const drawNext = async () => {
+    if (winner || isCalling) return
+    if (onlineMode) {
+      socketRef.current?.send(JSON.stringify({ type: 'draw' }))
+      return
+    }
+    if (drawIndex >= deck.length - 1) return
+    const nextIndex = drawIndex + 1
+    const card = deck[nextIndex]
+    setDrawIndex(nextIndex)
+    setMessage('Lắng nghe Chị Hiệu hô & Xếp hình giải mã…')
+    await playCall(card)
+  }
 
-  setDrawIndex(-1)
-  setClaimed([])
-  setRevealedCard(null)
-  setIsCalling(false)
+  useEffect(() => {
+    if (screen !== 'playing' || winner) return
+    const botWinnerIndex = botFlags.findIndex((flags) => flags >= 3)
+    if (botWinnerIndex >= 0) {
+      const timer = window.setTimeout(() => finishGame(BOT_NAMES[botWinnerIndex]), 1200)
+      return () => window.clearTimeout(timer)
+    }
+  }, [botFlags, screen, winner])
 
-  setBotFlags([0, 0, 0, 0])
+  const finishGame = (winnerName: string) => {
+    setWinner(winnerName)
+    setMessage(winnerName === playerName ? 'TỚI! Ba cờ đã về chòi của bạn!' : `${winnerName} đã hô TỚI!`)
+    stopAudio(false)
+    const audio = audioRef.current || new Audio()
+    audio.src = '/sound/Toi-Goi.mp3'
+    audio.volume = 1
+    audioRef.current = audio
+    void audio.play().catch(() => undefined)
+    window.setTimeout(() => setScreen('result'), 1400)
+  }
 
-  setWinner('')
+  const claimCard = () => {
+    if (onlineMode) {
+      socketRef.current?.send(JSON.stringify({ type: 'claim' }))
+      return
+    }
+    if (!currentCard || !canClaim) {
+      setMessage('Ướm… thẻ này không có trong tay bạn.')
+      return
+    }
+    const nextClaimed = [...claimed, currentCard.id]
+    setClaimed(nextClaimed)
+    setMessage(`Có đây! Bạn nhận cờ thứ ${nextClaimed.length}.`)
+    if (nextClaimed.length === 3) window.setTimeout(() => finishGame(playerName), 500)
+  }
 
-  setMessage(
-    'Hội đã đủ chòi. Mời bạn nghe câu hô đầu tiên!'
-  )
+  const createRoom = () => {
+    connectRoom('createRoom')
+  }
 
-  setScreen('playing')
-}
+  const copyRoomCode = async () => {
+    try {
+      await navigator.clipboard.writeText(roomCode)
+    } catch {
+      const input = document.createElement('input')
+      input.value = roomCode
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      input.remove()
+    }
+    setRoomCodeCopied(true)
+    window.setTimeout(() => setRoomCodeCopied(false), 1800)
+  }
 
-  const drawNext = async () => {
-    if (winner || isCalling) return
-    if (onlineMode) {
-      socketRef.current?.send(JSON.stringify({ type: 'draw' }))
-      return
-    }
-    if (drawIndex >= deck.length - 1) return
-    const nextIndex = drawIndex + 1
-    const card = deck[nextIndex]
-    setDrawIndex(nextIndex)
-    setMessage('Lắng nghe Anh Hiệu hô…')
-    await playCall(card)
-
-    setBotFlags((previous) =>
-  previous.map((flags, index) => {
-
-    const botHasCard =
-      botHands[index]?.some(
-        (botCard) => botCard.id === card.id
-      ) ?? false
-
-    return botHasCard && flags < 3
-      ? flags + 1
-      : flags
-  })
-)
-}
-
-  useEffect(() => {
-    if (screen !== 'playing' || winner) return
-    const botWinnerIndex = botFlags.findIndex((flags) => flags >= 3)
-    if (botWinnerIndex >= 0) {
-      const timer = window.setTimeout(() => finishGame(BOT_NAMES[botWinnerIndex]), 1200)
-      return () => window.clearTimeout(timer)
-    }
-  }, [botFlags, screen, winner])
-
-  const finishGame = (winnerName: string) => {
-    setWinner(winnerName)
-    setMessage(winnerName === playerName ? 'TỚI! Ba cờ đã về chòi của bạn!' : `${winnerName} đã hô TỚI!`)
-    stopAudio(false)
-    const audio = audioRef.current || new Audio()
-    audio.src = '/sound/Toi-Goi.mp3'
-    audio.volume = 1
-    audioRef.current = audio
-    void audio.play().catch(() => undefined)
-    window.setTimeout(() => setScreen('result'), 1400)
-  }
-
-  const claimCard = () => {
-    if (onlineMode) {
-      socketRef.current?.send(JSON.stringify({ type: 'claim' }))
-      return
-    }
-    if (!currentCard || !canClaim) {
-      setMessage('Ướm… thẻ này không có trong tay bạn.')
-      return
-    }
-    const nextClaimed = [...claimed, currentCard.id]
-    setClaimed(nextClaimed)
-    setMessage(`Có đây! Bạn nhận cờ thứ ${nextClaimed.length}.`)
-    if (nextClaimed.length === 3) window.setTimeout(() => finishGame(playerName), 500)
-  }
-
-  const createRoom = () => {
-    connectRoom('createRoom')
-  }
-
-  const copyRoomCode = async () => {
-    try {
-      await navigator.clipboard.writeText(roomCode)
-    } catch {
-      const input = document.createElement('input')
-      input.value = roomCode
-      document.body.appendChild(input)
-      input.select()
-      document.execCommand('copy')
-      input.remove()
-    }
-    setRoomCodeCopied(true)
-    window.setTimeout(() => setRoomCodeCopied(false), 1800)
-  }
-
-  return (
-  <div
+  return (
+  <div
   className={`
     fixed inset-0 z-[300]
     select-none
@@ -1577,27 +1694,27 @@ sm:max-w-[160px]
           <section className="relative z-10 w-full max-w-xl text-center">
             <FlyingClouds />
             <div className="mx-auto mb-7 grid h-32 w-32 place-items-center rounded-full border-4 border-[#f29963]/30 bg-[#0b5558] text-5xl font-black text-[#f29963] shadow-[0_0_50px_rgba(242,153,99,.2)]">{countdown}</div>
-            <h2 className="text-3xl font-black">Bạn đang tìm bạn chơi…</h2>
-            <p className="mt-3 text-white/65">Hết thời gian chờ, hệ thống sẽ mời các chòi máy vào.</p>
-            <button onClick={startGame} className="mt-8 rounded-full border border-white/25 px-6 py-3 font-semibold hover:bg-white/10">Chơi với máy ngay</button>
-          </section>
-        )}
+            <h2 className="text-3xl font-black">Bạn đang tìm bạn chơi…</h2>
+            <p className="mt-3 text-white/65">Hết thời gian chờ, hệ thống sẽ mời các chòi máy vào.</p>
+            <button onClick={startGame} className="mt-8 rounded-full border border-white/25 px-6 py-3 font-semibold hover:bg-white/10">Chơi với máy ngay</button>
+          </section>
+        )}
 
         {screen === 'friend' && (
           <>
             <FlyingClouds />
             <section className="friend-light-frame relative z-10 w-full max-w-2xl overflow-hidden rounded-[2rem] p-7 sm:p-10">
             
-            <h2 className="text-3xl font-black">Mở hội cùng bạn</h2>
-            <p className="mt-3 text-white/65">Tạo mã rồi gửi cho bạn bè đang mở cùng địa chỉ website này.</p>
-            {!roomCode ? <div className="mt-7 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/15 bg-black/10 p-5">
-                <h3 className="font-bold">Tạo hội mới</h3>
-                <button onClick={createRoom} disabled={socketStatus === 'connecting'} className="mt-4 w-full rounded-xl bg-[#c44837] px-4 py-3 font-bold disabled:opacity-50">{socketStatus === 'connecting' ? 'Đang kết nối…' : 'Tạo mã hội'}</button>
-              </div>
-              <div className="rounded-2xl border border-white/15 bg-black/10 p-5">
-                <h3 className="font-bold">Vào hội bằng mã</h3>
-                <input
+            <h2 className="text-3xl font-black">Mở hội cùng bạn</h2>
+            <p className="mt-3 text-white/65">Tạo mã rồi gửi cho bạn bè đang mở cùng địa chỉ website này.</p>
+            {!roomCode ? <div className="mt-7 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl border border-white/15 bg-black/10 p-5">
+                <h3 className="font-bold">Tạo hội mới</h3>
+                <button onClick={createRoom} disabled={socketStatus === 'connecting'} className="mt-4 w-full rounded-xl bg-[#c44837] px-4 py-3 font-bold disabled:opacity-50">{socketStatus === 'connecting' ? 'Đang kết nối…' : 'Tạo mã hội'}</button>
+              </div>
+              <div className="rounded-2xl border border-white/15 bg-black/10 p-5">
+                <h3 className="font-bold">Vào hội bằng mã</h3>
+                <input
   type="text"
   inputMode="text"
   value={joinCode}
@@ -1616,20 +1733,20 @@ sm:max-w-[160px]
   spellCheck={false}
   className="mt-4 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-center font-bold tracking-widest outline-none"
 />
-                <button
-                  onClick={() => { connectRoom('joinRoom') }}
+                <button
+                  onClick={() => { connectRoom('joinRoom') }}
 
 
-                  disabled={!/^CHOI-\d{6}$/.test(joinCode) || socketStatus === 'connecting'}
-                  className="mt-3 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:cursor-not-allowed disabled:opacity-35"
-                >
-                  Vào hội
-                </button>
-              </div>
-            </div> : <div className="mt-7">
-              <div className="rounded-2xl border border-[#f29963]/40 bg-black/10 p-5 text-center"><p className="text-xs uppercase tracking-[.2em] text-white/55">Mã hội của bạn</p><div className="mt-2 text-3xl font-black tracking-[.2em] text-[#f29963]">{roomCode}</div><button onClick={() => void copyRoomCode()} className="mt-3 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white">{roomCodeCopied ? 'Đã sao chép ✓' : 'Sao chép mã'}</button></div>
-              <div className="mt-4 space-y-2">{onlinePlayers.map((player) => <div key={player.id} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3"><span className="font-semibold">{player.name} {player.id === hostId && '👑'}</span><span className={player.ready ? 'text-[#f29963]' : 'text-white/45'}>{player.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span></div>)}</div>
-             {playerId !== hostId && (
+                  disabled={!/^CHOI-\d{6}$/.test(joinCode) || socketStatus === 'connecting'}
+                  className="mt-3 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  Vào hội
+                </button>
+              </div>
+            </div> : <div className="mt-7">
+              <div className="rounded-2xl border border-[#f29963]/40 bg-black/10 p-5 text-center"><p className="text-xs uppercase tracking-[.2em] text-white/55">Mã hội của bạn</p><div className="mt-2 text-3xl font-black tracking-[.2em] text-[#f29963]">{roomCode}</div><button onClick={() => void copyRoomCode()} className="mt-3 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white">{roomCodeCopied ? 'Đã sao chép ✓' : 'Sao chép mã'}</button></div>
+              <div className="mt-4 space-y-2">{onlinePlayers.map((player) => <div key={player.id} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3"><span className="font-semibold">{player.name} {player.id === hostId && '👑'}</span><span className={player.ready ? 'text-[#f29963]' : 'text-white/45'}>{player.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span></div>)}</div>
+             {playerId !== hostId && (
   <button
     onClick={() => {
       socketRef.current?.send(
@@ -1677,22 +1794,22 @@ sm:max-w-[160px]
   </button>
 )}
 
-            </div>}
-            {roomError && <p className="mt-4 rounded-xl bg-[#7c2421]/50 px-4 py-3 text-sm text-[#ffd3c2]">{roomError}</p>}
+            </div>}
+            {roomError && <p className="mt-4 rounded-xl bg-[#7c2421]/50 px-4 py-3 text-sm text-[#ffd3c2]">{roomError}</p>}
             </section>
           </>
         )}
 
-      {screen === 'playing' && (
+      {screen === 'playing' && (
   <section className="w-full px-3 pb-16 sm:px-4 sm:pb-12">
-            <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <div><p className="text-xs uppercase tracking-[.2em] text-[#f29963]">Hội Bài Chòi • 5 chòi</p><h2 className="text-2xl font-black">Ván đang diễn ra</h2></div>
-              <div className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm">Cờ của bạn: <strong className="text-[#f29963]">{claimed.length}/3</strong></div>
-            </header>
-            <div className="grid gap-5 lg:grid-cols-[1fr_1.25fr]">
-              <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
-              <p className="mb-4 text-center text-sm text-white/70">{message}</p>
-                <div className="bai-choi-draw-stage">
+            <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
+              <div><p className="text-xs uppercase tracking-[.2em] text-[#f29963]">Hội Bài Chòi • 5 chòi</p><h2 className="text-2xl font-black">Ván đang diễn ra</h2></div>
+              <div className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm">Cờ của bạn: <strong className="text-[#f29963]">{claimed.length}/3</strong></div>
+            </header>
+            <div className="grid gap-5 lg:grid-cols-[1fr_1.25fr]">
+              <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
+              <p className="mb-4 text-center text-sm text-white/70">{message}</p>
+              <div className="bai-choi-draw-stage">
 
   {/* NỀN / VÒNG MA THUẬT */}
   <img
@@ -1713,7 +1830,18 @@ sm:max-w-[160px]
     `}
   />
 
-  {/* LÁ BÀI */}
+  {/* NÚT MỞ LẠI XẾP HÌNH NẾU ĐÃ THOÁT RA BÀN CHƠI (Khi đang hô) */}
+  {isCalling && currentCallingCard && !showPuzzleModal && (
+    <button
+      onClick={() => setShowPuzzleModal(true)}
+      className="absolute top-4 right-4 z-30 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#f29963] hover:bg-[#ffb07f] active:scale-95 text-[#072d2e] font-black text-xs shadow-lg transition"
+    >
+      <span className="text-sm">🧩</span>
+      <span>Vào Xếp Hình</span>
+    </button>
+  )}
+
+  {/* LÁ BÀI TRÊN SÂN KHẤU CHÍNH (GIỮ NGUYÊN KHÔNG THAY ĐỔI) */}
   {(isCalling || currentCard) ? (
     <div
       className={`
@@ -1772,11 +1900,13 @@ sm:max-w-[160px]
   )}
 
   <div className="draw-status">
-    {isCalling ? (
-      <>
-        <span className="draw-status-dot" />
-        <span>Chị Hiệu đang hô...</span>
-      </>
+    {isCalling && currentCallingCard ? (
+      <div className="flex items-center justify-center gap-1.5 px-3.5 py-1 rounded-full bg-black/60 border border-[#f6d274]/40 backdrop-blur-md shadow-lg transition-all duration-300">
+        <span className="text-xs text-[#f6d274] animate-pulse">🎶</span>
+        <span className="text-xs sm:text-[13px] font-semibold italic text-[#ffe58b] tracking-wide font-serif leading-snug">
+          "{getChantLyrics(currentCallingCard.id, currentCallingCard.name)[chantLyricIndex]}"
+        </span>
+      </div>
     ) : currentCard ? (
       <span className="draw-card-name">
         QUÂN {currentCard.name.toUpperCase()}
@@ -1787,7 +1917,7 @@ sm:max-w-[160px]
   </div>
 
 </div>
-               <div className="mt-5 grid grid-cols-2 gap-3">
+                <div className="mt-5 grid grid-cols-2 gap-3">
 
   {/* NÚT HÔ */}
   <button
@@ -1823,11 +1953,11 @@ sm:max-w-[160px]
 </button>
 
 </div>
-              </div>
-              <div className="space-y-5">
-                <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
-                  <p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#f29963]">Ba thẻ trong chòi của bạn</p>
-                  <div className="grid grid-cols-3 gap-3">
+              </div>
+              <div className="space-y-5">
+                <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
+                  <p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#f29963]">Ba thẻ trong chòi của bạn</p>
+                  <div className="grid grid-cols-3 gap-3">
   {hand.map((card) => {
     const isClaimed = claimed.includes(card.id)
 
@@ -1870,25 +2000,64 @@ sm:max-w-[160px]
     )
   })}
 </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-                  {players.map((player, index) => <div key={`${player}-${index}`} className={`rounded-2xl border p-3 text-center ${(onlineMode ? onlinePlayers[index]?.id === playerId : index === 0) ? 'border-[#f29963] bg-[#c44837]/25' : 'border-white/15 bg-[#0b5558]/80'}`}><div className="mx-auto mb-2 grid h-9 w-9 place-items-center rounded-full bg-white/10">{onlineMode ? '☺' : index === 0 ? '☺' : '⚙'}</div><p className="truncate text-xs font-bold">{player}</p><p className="mt-1 text-[11px] text-[#f29963]">⚑ {onlineMode ? onlinePlayers[index]?.flags || 0 : index === 0 ? claimed.length : botFlags[index - 1]}/3</p></div>)}
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                  {players.map((player, index) => <div key={`${player}-${index}`} className={`rounded-2xl border p-3 text-center ${(onlineMode ? onlinePlayers[index]?.id === playerId : index === 0) ? 'border-[#f29963] bg-[#c44837]/25' : 'border-white/15 bg-[#0b5558]/80'}`}><div className="mx-auto mb-2 grid h-9 w-9 place-items-center rounded-full bg-white/10">{onlineMode ? '☺' : index === 0 ? '☺' : '⚙'}</div><p className="truncate text-xs font-bold">{player}</p><p className="mt-1 text-[11px] text-[#f29963]">⚑ {onlineMode ? onlinePlayers[index]?.flags || 0 : index === 0 ? claimed.length : botFlags[index - 1]}/3</p></div>)}
+                </div>
+              </div>
+            </div>
+          
+        {/* MODAL POPUP XẾP HÌNH JIGSAW NỔI TRÊN MÀN HÌNH (LÀM TỐI PHÍA SAU) */}
+        {showPuzzleModal && isCalling && currentCallingCard && (
+          <div className="fixed inset-0 z-[500] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-2 sm:p-4 select-none overflow-y-auto animate-fadeIn">
+            <div className="w-full max-w-[460px] flex flex-col items-center my-auto">
+              {/* THANH ĐIỀU HƯỚNG TRÊN CÙNG */}
+              <div className="w-full flex items-center justify-between mb-2 px-1">
+                <button
+                  type="button"
+                  onClick={() => setShowPuzzleModal(false)}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#c44837] hover:bg-[#a33829] active:scale-95 text-white font-bold text-xs shadow-xl transition"
+                >
+                  <span>←</span>
+                  <span>Quay lại bàn chơi</span>
+                </button>
 
-        {screen === 'result' && (
-          <section className="w-full max-w-xl rounded-[2rem] border border-[#f29963]/50 bg-[#0b5558]/95 p-8 text-center shadow-2xl sm:p-12">
-            <div className="text-6xl">{winner === playerName ? '🎊' : '🏁'}</div>
-            <p className="mt-5 text-xs font-bold uppercase tracking-[.25em] text-[#f29963]">Kết thúc ván</p>
-            <h2 className="mt-2 text-4xl font-black" style={{ fontFamily: 'var(--font-display)' }}>{winner === playerName ? 'Bạn đã hô TỚI!' : `${winner} chiến thắng!`}</h2>
-            <p className="mt-4 text-white/65">Cảm ơn {playerName} đã cùng vào hội.</p>
-            <div className="mt-8 grid grid-cols-2 gap-3"><button onClick={() => { stopAudio(); onlineMode ? backToMode() : startGame() }} className="rounded-xl bg-[#c44837] px-4 py-3 font-bold">{onlineMode ? 'Về phòng hội' : 'Chơi ván nữa'}</button><button onClick={backToMode} className="rounded-xl border border-white/20 px-4 py-3 font-bold hover:bg-white/10">Về sảnh hội</button></div>
-          </section>
-        )}
-      </main>
-    </div>
-  )
+                <button
+                  type="button"
+                  onClick={() => setShowPuzzleModal(false)}
+                  className="text-xs font-semibold text-white/75 hover:text-white px-2.5 py-1 rounded-md bg-white/10 hover:bg-white/20 transition"
+                >
+                  Bỏ qua ✕
+                </button>
+              </div>
+
+              {/* BÀN CHƠI JIGSAW */}
+              <div className="w-full">
+                <BaiChoiPuzzle
+                  card={currentCallingCard}
+                  isCalling={isCalling}
+                  level={puzzleLevel}
+                  lyricIndex={chantLyricIndex}
+                  onComplete={handlePuzzleComplete}
+                  onClose={() => setShowPuzzleModal(false)}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+        )}
+
+        {screen === 'result' && (
+          <section className="w-full max-w-xl rounded-[2rem] border border-[#f29963]/50 bg-[#0b5558]/95 p-8 text-center shadow-2xl sm:p-12">
+            <div className="text-6xl">{winner === playerName ? '🎊' : '🏁'}</div>
+            <p className="mt-5 text-xs font-bold uppercase tracking-[.25em] text-[#f29963]">Kết thúc ván</p>
+            <h2 className="mt-2 text-4xl font-black" style={{ fontFamily: 'var(--font-display)' }}>{winner === playerName ? 'Bạn đã hô TỚI!' : `${winner} chiến thắng!`}</h2>
+            <p className="mt-4 text-white/65">Cảm ơn {playerName} đã cùng vào hội.</p>
+            <div className="mt-8 grid grid-cols-2 gap-3"><button onClick={() => { stopAudio(); onlineMode ? backToMode() : startGame() }} className="rounded-xl bg-[#c44837] px-4 py-3 font-bold">{onlineMode ? 'Về phòng hội' : 'Chơi ván nữa'}</button><button onClick={backToMode} className="rounded-xl border border-white/20 px-4 py-3 font-bold hover:bg-white/10">Về sảnh hội</button></div>
+          </section>
+        )}
+      </main>
+    </div>
+  )
 }
