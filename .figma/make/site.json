@@ -1,8 +1,15 @@
 {
-  "title": "Bài Chòi",
-  "description": "Explore the vibrant heritage of Bai Choi through an interactive landing page featuring history, game rules, character insights, and multimedia content.",
+  "title": "Bài Chòi Miền Trung - Di Sản Văn Hóa Dân Gian Việt Nam",
+  "description": "Khám phá di sản nghệ thuật Bài Chòi Trung Bộ qua không gian tương tác trực tuyến: lịch sử, 30 quân bài, luật chơi hội Bài Chòi, hô bài chòi và trò chơi xếp hình dân gian đặc sắc.",
+  "language": "vi",
   "robots": {
-    "index": false
+    "index": true
+  },
+  "icons": {
+    "icon": "/assets/choi.png"
+  },
+  "openGraph": {
+    "image": "/assets/poster.jpg"
   },
   "accessibility": {
     "addBypassLinks": false,
