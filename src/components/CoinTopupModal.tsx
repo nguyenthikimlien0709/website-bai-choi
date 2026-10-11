@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import type { UserProfile, CoinTransaction } from '../types/auth'
 import { authService } from '../lib/authService'
 import ChoiCoin from './ChoiCoin'
@@ -165,9 +166,11 @@ export default function CoinTopupModal({
   const orderId = `NAP-${currentUser?.id ? currentUser.id.slice(0, 4).toUpperCase() : '8492'}-${selectedPkg.vnd / 1000}K`
   const transferCode = `NAPXU ${currentUser?.username ? currentUser.username.toUpperCase() : 'KIMLIEN'}`
 
-  return (
+  if (!isOpen) return null
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
+      className="fixed inset-0 z-[100000] flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
       onClick={onClose}
     >
       {/* Backdrop chuẩn fintech ngân hàng */}
@@ -943,6 +946,7 @@ export default function CoinTopupModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { authService } from '../lib/authService'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import type { UserProfile } from '../types/auth'
@@ -389,9 +390,11 @@ export default function AuthModal({
     }
   }
 
-  return (
+  if (!isOpen) return null
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in"
+      className="fixed inset-0 z-[100000] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md animate-in fade-in"
       onClick={onClose}
     >
       <div
@@ -1029,6 +1032,7 @@ export default function AuthModal({
         )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
