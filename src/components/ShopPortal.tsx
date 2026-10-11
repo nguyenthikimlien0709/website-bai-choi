@@ -304,6 +304,27 @@ export default function ShopPortal({
   } | null>(null)
   const [orderError, setOrderError] = useState('')
 
+  // Tự động điền thông tin người dùng vào các form khi đăng nhập thành công
+  useEffect(() => {
+    if (effectiveUser) {
+      if (effectiveUser.fullName) {
+        setBuyerName((prev) => prev || effectiveUser.fullName)
+        setShippingName((prev) => prev || effectiveUser.fullName)
+      }
+      if (effectiveUser.phone) {
+        setBuyerPhone((prev) => prev || effectiveUser.phone || '')
+        setShippingPhone((prev) => prev || effectiveUser.phone || '')
+      }
+      if (effectiveUser.email) {
+        setBuyerEmail((prev) => prev || effectiveUser.email || '')
+      }
+      if (effectiveUser.address) {
+        setTicketShippingAddress((prev) => prev || effectiveUser.address || '')
+        setShippingAddress((prev) => prev || effectiveUser.address || '')
+      }
+    }
+  }, [effectiveUser])
+
   // Filtered lists (Vietnamese-normalized & ticket/product intent matching)
   const filteredEvents = useMemo(() => {
     const rawQuery = searchQuery.trim()
@@ -425,7 +446,8 @@ export default function ShopPortal({
 
     if (ticketBuyMethod === 'coin') {
       if (!effectiveUser) {
-        setBookingError(isVie ? 'Vui lòng đăng nhập tài khoản để thanh toán bằng Xu Chòi.' : 'Please login to pay with ChoiCoin')
+        onOpenAuth('login')
+        setBookingError(isVie ? 'Vui lòng đăng nhập hoặc đăng ký tài khoản để thanh toán bằng Xu Chòi.' : 'Please login or register to pay with ChoiCoin')
         return
       }
       if ((effectiveUser.coins || 0) < totalCoins) {
@@ -517,7 +539,8 @@ export default function ShopPortal({
 
     if (prodBuyMethod === 'coin') {
       if (!effectiveUser) {
-        setOrderError(isVie ? 'Vui lòng đăng nhập tài khoản để thanh toán bằng Xu Chòi.' : 'Please login to pay with ChoiCoin')
+        onOpenAuth('login')
+        setOrderError(isVie ? 'Vui lòng đăng nhập hoặc đăng ký tài khoản để thanh toán bằng Xu Chòi.' : 'Please login or register to pay with ChoiCoin')
         return
       }
       if ((effectiveUser.coins || 0) < totalCoins) {
@@ -2136,7 +2159,12 @@ export default function ShopPortal({
                       Hủy
                     </button>
                     <button
-                      type="submit"
+                      type={ticketBuyMethod === 'coin' && !effectiveUser ? 'button' : 'submit'}
+                      onClick={() => {
+                        if (ticketBuyMethod === 'coin' && !effectiveUser) {
+                          onOpenAuth('login')
+                        }
+                      }}
                       disabled={bookingLoading}
                       className="px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-[#c8382b] to-[#92261b] hover:from-[#d94437] hover:to-[#a82d21] rounded-xl shadow-md cursor-pointer disabled:opacity-50 transition"
                     >
@@ -2535,7 +2563,12 @@ export default function ShopPortal({
                       Hủy
                     </button>
                     <button
-                      type="submit"
+                      type={prodBuyMethod === 'coin' && !effectiveUser ? 'button' : 'submit'}
+                      onClick={() => {
+                        if (prodBuyMethod === 'coin' && !effectiveUser) {
+                          onOpenAuth('login')
+                        }
+                      }}
                       disabled={orderLoading}
                       className="px-5 py-2.5 text-xs font-bold text-white bg-slate-900 hover:bg-black rounded-xl shadow-md cursor-pointer disabled:opacity-50 transition"
                     >

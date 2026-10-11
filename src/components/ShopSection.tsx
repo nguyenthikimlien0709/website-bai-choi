@@ -274,7 +274,8 @@ export default function ShopSection({ lang, currentUser, onGoToShopPortal, onOpe
 
     if (ticketBuyMethod === 'coin') {
       if (!currentUser) {
-        setBookingError(isVie ? 'Vui lòng đăng nhập tài khoản để thanh toán bằng Xu Chòi.' : 'Please login to pay with coins')
+        onOpenAuth?.('login')
+        setBookingError(isVie ? 'Vui lòng đăng nhập hoặc đăng ký tài khoản để thanh toán bằng Xu Chòi.' : 'Please login or register to pay with coins')
         return
       }
       if ((currentUser.coins || 0) < totalCoins) {
@@ -389,7 +390,8 @@ export default function ShopSection({ lang, currentUser, onGoToShopPortal, onOpe
 
     if (prodBuyMethod === 'coin') {
       if (!currentUser) {
-        setProdError(isVie ? 'Vui lòng đăng nhập tài khoản để thanh toán bằng Xu Chòi.' : 'Please login to pay with coins')
+        onOpenAuth?.('login')
+        setProdError(isVie ? 'Vui lòng đăng nhập hoặc đăng ký tài khoản để thanh toán bằng Xu Chòi.' : 'Please login or register to pay with coins')
         return
       }
       if ((currentUser.coins || 0) < totalCoins) {
@@ -1259,7 +1261,12 @@ export default function ShopSection({ lang, currentUser, onGoToShopPortal, onOpe
                       Hủy bỏ
                     </button>
                     <button
-                      type="submit"
+                      type={ticketBuyMethod === 'coin' && !currentUser ? 'button' : 'submit'}
+                      onClick={() => {
+                        if (ticketBuyMethod === 'coin' && !currentUser) {
+                          onOpenAuth?.('login')
+                        }
+                      }}
                       disabled={bookingLoading}
                       className="rounded-xl bg-gradient-to-r from-[#c8382b] to-[#92261b] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:scale-102 active:scale-98 transition disabled:opacity-60 cursor-pointer"
                     >
@@ -1733,7 +1740,12 @@ export default function ShopSection({ lang, currentUser, onGoToShopPortal, onOpe
                       Hủy bỏ
                     </button>
                     <button
-                      type="submit"
+                      type={prodBuyMethod === 'coin' && !currentUser ? 'button' : 'submit'}
+                      onClick={() => {
+                        if (prodBuyMethod === 'coin' && !currentUser) {
+                          onOpenAuth?.('login')
+                        }
+                      }}
                       disabled={prodLoading}
                       className="rounded-xl bg-gradient-to-r from-[#006368] to-[#084c4f] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:scale-102 active:scale-98 transition disabled:opacity-60 cursor-pointer"
                     >
