@@ -457,6 +457,12 @@ a {
   transform: translateY(42px);
 }
 
+/* Hero trang chủ luôn hiển thị ngay, không bị ẩn khi vào lại trang chủ */
+#home [data-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 [data-reveal='left'] {
   transform: translateX(-54px);
 }

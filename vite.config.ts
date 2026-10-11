@@ -58,7 +58,7 @@ function baiChoiRealtimePlugin(): Plugin {
     status: room.status,
     players: [...room.players.values()].map(({ id, name, ready, claimed }) => ({ id, name, ready, flags: claimed.length })),
   })
-  const send = (socket: WebSocket | undefined, data: object) => socket?.readyState === socket.OPEN && socket.send(JSON.stringify(data))
+  const send = (socket: WebSocket | undefined, data: object) => socket && socket.readyState === 1 && socket.send(JSON.stringify(data))
   const broadcast = (room: GameRoom, data: object) => room.players.forEach((player) => send(sockets.get(player.id), data))
 
   return {

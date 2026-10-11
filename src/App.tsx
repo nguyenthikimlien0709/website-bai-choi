@@ -4,6 +4,20 @@ import IntroAnimation from './IntroAnimation'
 import { CARD_ASSETS } from './cardAssets'
 import { PUBLICATION_GROUPS, PUBLICATIONS_ARE_DEMOS } from './publications'
 import BaiChoiGame from './BaiChoiGame'
+import OfflinePlay from './OfflinePlay'
+import AuthModal from './components/AuthModal'
+import CookieBanner from './components/CookieBanner'
+import AdminDashboard from './components/AdminDashboard'
+import StaffPortal from './components/StaffPortal'
+import ShopSection from './components/ShopSection'
+import ShopPortal from './components/ShopPortal'
+import GamePortal, { type GamePortalTab } from './components/GamePortal'
+import { PolicyModal } from './components/PolicyModal'
+import ChoiCoin from './components/ChoiCoin'
+import CoinTopupModal from './components/CoinTopupModal'
+import { authService } from './lib/authService'
+import { supabase, isSupabaseConfigured } from './lib/supabase'
+import type { UserProfile } from './types/auth'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Lang = 'VIE' | 'ENG'
@@ -32,7 +46,7 @@ class IntroErrorBoundary extends Component<
 const content = {
   VIE: {
     nav: {
-      menu: ['Trang chủ', 'Giới Thiệu', 'Thẻ Bài', 'Luật chơi', 'Ấn Phẩm'],
+      menu: ['Trang chủ', 'Giới Thiệu', 'Thẻ Bài', 'Luật chơi', 'Hội Chơi Game', 'Cửa hàng'],
       cta: 'Trải Nghiệm Ngay',
     },
     hero: {
@@ -175,7 +189,7 @@ const content = {
   },
   ENG: {
     nav: {
-      menu: ['Home', 'About', 'Cards', 'Rules', 'Publications'],
+      menu: ['Home', 'About', 'Cards', 'Rules', 'Game Arena', 'Shop'],
       cta: 'Experience Now',
     },
     hero: {
@@ -310,9 +324,31 @@ function DragonDivider() {
 }
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
-function Nav({ lang, setLang, c, onPlay }: { lang: Lang; setLang: (l: Lang) => void; c: typeof content.VIE; onPlay: () => void }) {
+function Nav({
+  lang,
+  setLang,
+  c,
+  onPlay,
+  currentUser,
+  onOpenAuth,
+  onLogout,
+  onGoToPortal,
+  onOpenCoins,
+}: {
+  lang: Lang
+  setLang: (l: Lang) => void
+  c: typeof content.VIE
+  onPlay: () => void
+  currentUser: UserProfile | null
+  onOpenAuth: (mode?: 'login' | 'register') => void
+  onLogout: () => void
+  onGoToPortal?: (portal: 'site' | 'admin' | 'staff' | 'shop' | 'game') => void
+  onOpenCoins?: () => void
+}) {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
@@ -320,7 +356,19 @@ function Nav({ lang, setLang, c, onPlay }: { lang: Lang; setLang: (l: Lang) => v
     return () => window.removeEventListener('scroll', fn)
   }, [])
 
-  const anchors = ['#home', '#history', '#characters', '#rules', '#publications']
+  // Đóng menu tài khoản khi bấm ra ngoài
+  useEffect(() => {
+    if (!userMenuOpen) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [userMenuOpen])
+
+  const anchors = ['#home', '#history', '#characters', '#rules', '#game', '#shop']
 
   return (
     <nav
@@ -353,28 +401,261 @@ function Nav({ lang, setLang, c, onPlay }: { lang: Lang; setLang: (l: Lang) => v
 
         {/* Desktop Menu */}
         <div className="hidden lg:flex items-center gap-1">
-          {c.nav.menu.map((item, i) => (
-            <a
-              key={item}
-              href={anchors[i]}
-              className="relative rounded-md px-3 py-2 text-base font-semibold transition-all duration-200 group xl:px-4 xl:text-[17px]"
-              style={{ color: '#006368', fontFamily: 'var(--font-body)' }}
-            >
-              <span className="relative z-10 group-hover:text-vermilion transition-colors" style={{ color: 'inherit' }}>{item}</span>
-              <span className="absolute bottom-1 left-4 right-4 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" style={{ background: '#F29963' }} />
-            </a>
-          ))}
+          {c.nav.menu.map((item, i) => {
+            const isShop = anchors[i] === '#shop'
+            const isGame = anchors[i] === '#game'
+            if (isShop) {
+              return (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => onGoToPortal?.('shop')}
+                  className="relative rounded-md px-3 py-2 text-base font-semibold transition-all duration-200 group xl:px-4 xl:text-[17px] cursor-pointer flex items-center gap-1.5"
+                  style={{ color: '#006368', fontFamily: 'var(--font-body)' }}
+                >
+                  <span className="relative z-10 group-hover:text-vermilion transition-colors" style={{ color: 'inherit' }}>{item}</span>
+                  <span className="relative z-10 text-xs">🛍️</span>
+                  <span className="absolute bottom-1 left-4 right-4 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" style={{ background: '#F29963' }} />
+                </button>
+              )
+            }
+            if (isGame) {
+              return (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => onGoToPortal?.('game')}
+                  className="relative rounded-md px-3 py-2 text-base font-semibold transition-all duration-200 group xl:px-4 xl:text-[17px] cursor-pointer flex items-center gap-1.5"
+                  style={{ color: '#006368', fontFamily: 'var(--font-body)' }}
+                >
+                  <span className="relative z-10 group-hover:text-vermilion transition-colors" style={{ color: 'inherit' }}>{item}</span>
+                  <span className="relative z-10 text-xs">🎮</span>
+                  <span className="absolute bottom-1 left-4 right-4 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" style={{ background: '#F29963' }} />
+                </button>
+              )
+            }
+            return (
+              <a
+                key={item}
+                href={anchors[i]}
+                className="relative rounded-md px-3 py-2 text-base font-semibold transition-all duration-200 group xl:px-4 xl:text-[17px]"
+                style={{ color: '#006368', fontFamily: 'var(--font-body)' }}
+              >
+                <span className="relative z-10 group-hover:text-vermilion transition-colors" style={{ color: 'inherit' }}>{item}</span>
+                <span className="absolute bottom-1 left-4 right-4 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" style={{ background: '#F29963' }} />
+              </a>
+            )
+          })}
         </div>
 
         {/* Right controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Coin Wallet Button (Tám Tiền) */}
+          {currentUser ? (
+            <button
+              type="button"
+              onClick={onOpenCoins}
+              title="Ví Xu Chòi - Bấm để nạp xu hoặc xem lịch sử"
+              className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-950 text-xs font-bold transition shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+            >
+              <ChoiCoin size={18} animate glow />
+              <span className="font-mono text-xs sm:text-sm font-black text-amber-900">
+                {(currentUser.coins ?? 50).toLocaleString()}
+              </span>
+              <span className="text-[11px] font-semibold text-amber-800 hidden min-[480px]:inline">
+                Xu
+              </span>
+              <span className="h-4 w-4 rounded-full bg-[#006368] text-white flex items-center justify-center text-[10px] font-black ml-0.5 shadow-2xs">
+                +
+              </span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onOpenAuth('register')}
+              title="Đăng ký tài khoản nhận ngay 50 Xu tân thủ"
+              className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50/90 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold transition hover:scale-105 cursor-pointer shadow-2xs"
+            >
+              <ChoiCoin size={16} glow />
+              <span>Tặng 50 Xu</span>
+              <span className="text-[9px] bg-red-600 text-white font-black px-1.5 py-0.2 rounded-full">
+                MỚI
+              </span>
+            </button>
+          )}
+
+          {/* User Auth Control */}
+          {currentUser ? (
+            <div className="relative" ref={userMenuRef}>
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen((prev) => !prev)}
+                title="Bấm để xem thông tin hoặc đăng xuất"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border shadow-xs transition hover:scale-105 active:scale-95 cursor-pointer"
+                style={{
+                  background: currentUser.role === 'admin' ? '#FEF2F2' : currentUser.role === 'staff' ? '#EFF6FF' : '#F0FDF4',
+                  borderColor: currentUser.role === 'admin' ? '#FCA5A5' : currentUser.role === 'staff' ? '#93C5FD' : '#86EFAC',
+                  color: currentUser.role === 'admin' ? '#991B1B' : currentUser.role === 'staff' ? '#1E40AF' : '#166534',
+                }}
+              >
+                {currentUser.avatar ? (
+                  <img
+                    src={currentUser.avatar}
+                    alt={currentUser.fullName}
+                    className="h-4.5 w-4.5 rounded-full object-cover shrink-0 border border-current"
+                  />
+                ) : (
+                  <span>{currentUser.role === 'admin' ? '👑' : currentUser.role === 'staff' ? '🎫' : '👤'}</span>
+                )}
+                <span className="max-w-[85px] sm:max-w-[120px] truncate">
+                  {currentUser.username || currentUser.fullName}
+                </span>
+                <span className="text-[10px] opacity-60">▼</span>
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white p-3 shadow-xl border border-slate-100 z-50 animate-in fade-in">
+                  <div className="border-b border-slate-100 pb-2 mb-2 flex items-center gap-2.5">
+                    <div className="h-9 w-9 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-slate-500 shadow-2xs">
+                      {currentUser.avatar ? (
+                        <img src={currentUser.avatar} alt="Avatar" className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="text-base">👤</span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-slate-800 truncate">
+                        {currentUser.fullName}
+                      </p>
+                      {currentUser.username && (
+                        <p className="text-[11px] font-semibold text-slate-600 truncate">
+                          @{currentUser.username}
+                        </p>
+                      )}
+                      <p className="text-[11px] text-slate-400 truncate">{currentUser.email}</p>
+                    </div>
+                  </div>
+
+                  {/* Coin row in dropdown */}
+                  <div className="mb-2.5 p-2 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <ChoiCoin size={20} glow />
+                      <div>
+                        <span className="text-[10px] text-amber-800 font-semibold block leading-tight">Ví Xu Chòi:</span>
+                        <span className="text-xs font-black text-amber-950 font-mono">
+                          {(currentUser.coins ?? 50).toLocaleString()} Xu
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false)
+                        onOpenCoins?.()
+                      }}
+                      className="text-[10px] bg-[#006368] hover:bg-[#004d50] text-white font-bold px-2 py-1 rounded-lg transition shadow-2xs cursor-pointer shrink-0"
+                    >
+                      + Nạp Xu
+                    </button>
+                  </div>
+
+                  <div className="mb-2">
+                    <span
+                      className="inline-block rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                      style={{
+                        background: currentUser.role === 'admin' ? '#FEE2E2' : currentUser.role === 'staff' ? '#DBEAFE' : '#DCFCE7',
+                        color: currentUser.role === 'admin' ? '#991B1B' : currentUser.role === 'staff' ? '#1E40AF' : '#166534',
+                      }}
+                    >
+                      {currentUser.role === 'admin' ? 'Quản trị viên' : currentUser.role === 'staff' ? 'Nhân viên quầy' : 'Khách hàng'}
+                    </span>
+                  </div>
+
+                  {currentUser.role === 'admin' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false)
+                        onGoToPortal?.('admin')
+                      }}
+                      className="w-full text-left rounded-xl px-3 py-2 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 transition cursor-pointer flex items-center gap-2 mb-1"
+                    >
+                      <span>👑</span>
+                      <span>Trang Quản Trị (Admin)</span>
+                    </button>
+                  )}
+
+                  {currentUser.role === 'staff' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false)
+                        onGoToPortal?.('staff')
+                      }}
+                      className="w-full text-left rounded-xl px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition cursor-pointer flex items-center gap-2 mb-1"
+                    >
+                      <span>🎫</span>
+                      <span>Quầy Soát Vé (Staff)</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserMenuOpen(false)
+                      onGoToPortal?.('game')
+                    }}
+                    className="w-full text-left rounded-xl px-3 py-2 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition cursor-pointer flex items-center gap-2 mb-1"
+                  >
+                    <span>🎮</span>
+                    <span>Hội Chơi Bài Chòi & Game</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserMenuOpen(false)
+                      onGoToPortal?.('shop')
+                    }}
+                    className="w-full text-left rounded-xl px-3 py-2 text-xs font-bold text-teal-800 bg-teal-50 hover:bg-teal-100 transition cursor-pointer flex items-center gap-2 mb-1"
+                  >
+                    <span>🛍️</span>
+                    <span>Cửa Hàng & Vé Sự Kiện</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserMenuOpen(false)
+                      onLogout()
+                    }}
+                    className="w-full text-left rounded-xl px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer flex items-center gap-2"
+                  >
+                    <span>🚪</span>
+                    <span>Đăng xuất</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onOpenAuth('login')}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 hover:bg-slate-50 active:scale-95"
+              style={{ borderColor: 'rgba(0,99,104,0.35)', color: '#006368' }}
+            >
+              <span>👤</span>
+              <span>Đăng nhập</span>
+            </button>
+          )}
+
           {/* Language switcher */}
           <div className="hidden sm:flex rounded-full overflow-hidden border" style={{ borderColor: 'rgba(0,99,104,0.55)' }}>
             {(['VIE', 'ENG'] as Lang[]).map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className="px-3 py-1 text-xs font-semibold transition-all duration-200"
+                className="px-2.5 py-1 text-xs font-semibold transition-all duration-200"
                 style={{
                   background: lang === l ? '#006368' : 'transparent',
                   color: lang === l ? '#FFFFFF' : '#006368',
@@ -389,7 +670,7 @@ function Nav({ lang, setLang, c, onPlay }: { lang: Lang; setLang: (l: Lang) => v
           {/* CTA */}
           <button
             onClick={onPlay}
-            className="hidden sm:block px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95"
+            className="hidden sm:block px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95"
             style={{
               background: 'linear-gradient(135deg, #C44837 0%, #7C2421 100%)',
               color: '#FFFFFF',
@@ -416,12 +697,145 @@ function Nav({ lang, setLang, c, onPlay }: { lang: Lang; setLang: (l: Lang) => v
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="absolute left-0 right-0 top-full flex max-h-[calc(100dvh-80px)] flex-col gap-3 overflow-y-auto px-5 py-4 lg:hidden" style={{ background: 'rgba(255,255,255,0.98)', borderBottom: '1px solid rgba(0,99,104,0.24)' }}>
-          {c.nav.menu.map((item, i) => (
-            <a key={item} href={anchors[i]} onClick={() => setMobileOpen(false)}
-              className="border-b py-2 text-base font-semibold" style={{ color: '#006368', borderColor: 'rgba(0,99,104,0.16)' }}>
-              {item}
-            </a>
-          ))}
+          {currentUser ? (
+            <>
+              <div className="flex items-center justify-between border-b pb-3 mb-1" style={{ borderColor: 'rgba(0,99,104,0.16)' }}>
+                <div>
+                  <p className="text-sm font-bold text-slate-800">{currentUser.fullName}</p>
+                  <p className="text-xs text-slate-500">{currentUser.email || currentUser.username}</p>
+                  <span className="text-[10px] font-bold uppercase text-emerald-700">
+                    {currentUser.role === 'admin' ? '👑 Quản trị viên' : currentUser.role === 'staff' ? '🎫 Nhân viên quầy' : '👤 Khách hàng'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    onLogout()
+                  }}
+                  className="rounded-xl bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-100 transition flex items-center gap-1.5"
+                >
+                  <span>🚪</span>
+                  <span>Đăng xuất</span>
+                </button>
+              </div>
+              {currentUser.role === 'admin' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    onGoToPortal?.('admin')
+                  }}
+                  className="w-full text-left rounded-xl px-3 py-2 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 transition cursor-pointer flex items-center gap-2 mb-1"
+                >
+                  <span>👑</span>
+                  <span>Vào Trang Quản Trị (Admin)</span>
+                </button>
+              )}
+              {currentUser.role === 'staff' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    onGoToPortal?.('staff')
+                  }}
+                  className="w-full text-left rounded-xl px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition cursor-pointer flex items-center gap-2 mb-1"
+                >
+                  <span>🎫</span>
+                  <span>Vào Quầy Soát Vé (Staff)</span>
+                </button>
+              )}
+
+              {/* Coin wallet in mobile */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-amber-50 border border-amber-200 mb-1">
+                <div className="flex items-center gap-2.5">
+                  <ChoiCoin size={26} glow />
+                  <div>
+                    <span className="text-[11px] text-amber-800 font-semibold block leading-tight">Ví Xu Chòi:</span>
+                    <span className="text-sm font-black text-amber-950 font-mono">
+                      {(currentUser.coins ?? 50).toLocaleString()} Xu
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    onOpenCoins?.()
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-[#006368] text-white text-xs font-bold transition shadow-2xs cursor-pointer"
+                >
+                  + Nạp Xu
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="border-b pb-3 mb-1" style={{ borderColor: 'rgba(0,99,104,0.16)' }}>
+              <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 mb-2 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ChoiCoin size={20} glow />
+                  <span className="text-xs font-bold text-amber-900">Tặng 50 Xu khi đăng ký mới!</span>
+                </div>
+                <span className="text-[9px] bg-red-600 text-white font-black px-1.5 py-0.5 rounded-full">HOT</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileOpen(false)
+                  onOpenAuth('login')
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-bold border"
+                style={{ borderColor: 'rgba(0,99,104,0.35)', color: '#006368', background: 'rgba(0,99,104,0.05)' }}
+              >
+                <span>👤</span>
+                <span>Đăng nhập / Đăng ký</span>
+              </button>
+            </div>
+          )}
+          {c.nav.menu.map((item, i) => {
+            const isShop = anchors[i] === '#shop'
+            const isGame = anchors[i] === '#game'
+            if (isShop) {
+              return (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    onGoToPortal?.('shop')
+                  }}
+                  className="w-full text-left border-b py-2 text-base font-semibold cursor-pointer flex items-center justify-between"
+                  style={{ color: '#006368', borderColor: 'rgba(0,99,104,0.16)' }}
+                >
+                  <span>{item}</span>
+                  <span className="text-xs bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">🛍️ Vào Shop</span>
+                </button>
+              )
+            }
+            if (isGame) {
+              return (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    onGoToPortal?.('game')
+                  }}
+                  className="w-full text-left border-b py-2 text-base font-semibold cursor-pointer flex items-center justify-between"
+                  style={{ color: '#006368', borderColor: 'rgba(0,99,104,0.16)' }}
+                >
+                  <span>{item}</span>
+                  <span className="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">🎮 Vào Chơi</span>
+                </button>
+              )
+            }
+            return (
+              <a key={item} href={anchors[i]} onClick={() => setMobileOpen(false)}
+                className="border-b py-2 text-base font-semibold" style={{ color: '#006368', borderColor: 'rgba(0,99,104,0.16)' }}>
+                {item}
+              </a>
+            )
+          })}
           <div className="flex gap-3 pt-2">
             <div className="flex rounded-full overflow-hidden border" style={{ borderColor: 'rgba(0,99,104,0.55)' }}>
               {(['VIE', 'ENG'] as Lang[]).map((l) => (
@@ -2152,7 +2566,7 @@ function Publications({ c }: { c: typeof content.VIE }) {
           </h2>
           <DragonDivider />
           <p className="mt-6 text-base leading-8 lg:text-lg" style={{ color: 'rgba(0,75,80,0.78)' }}>
-            {c.publications.description}
+            {c.publications.sub}
           </p>
         </div>
 
@@ -2620,84 +3034,339 @@ function QRCode() {
   )
 }
 
-// ─── Footer ───────────────────────────────────────────────────────────────────
-function Footer({ c }: { c: typeof content.VIE }) {
+// ─── Footer (Đồng bộ nhận diện & 4 cột chuẩn theo phong cách Color Up 2026) ────
+function Footer({
+  c,
+  onOpenPolicy,
+  onNavigateSection,
+}: {
+  c: typeof content.VIE
+  onOpenPolicy: (policyId?: string) => void
+  onNavigateSection?: (sectionId: string) => void
+}) {
   const isVietnamese = c === content.VIE
-  const contacts = [
-    { icon: '@', label: 'th.txxngvan@gmail.com', href: 'mailto:th.txxngvan@gmail.com' },
-    
-    { icon: '☎', label: '0848180081', href: 'tel:+84378708376' },
-  ]
 
   return (
-    <footer style={{ background: 'rgba(231,241,241,0.78)', borderTop: '3px solid #408A8C', backdropFilter: 'blur(8px)' }}>
-      <div className="h-1" style={{ background: 'linear-gradient(90deg, #C44837, #006368, #C44837, #006368, #C44837)' }} />
+    <footer
+      className="relative text-white border-t-2 border-amber-300/40 overflow-hidden"
+      style={{
+        background: 'linear-gradient(180deg, #c8102e 0%, #a80c25 60%, #8b081d 100%)',
+        boxShadow: '0 -10px 40px rgba(139, 8, 29, 0.4)',
+      }}
+    >
+      {/* Họa tiết hoa văn truyền thống trang trí mờ phía nền */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-5 mix-blend-overlay"
+        style={{
+          backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
+      />
 
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14 lg:py-16">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.55fr_0.9fr_0.7fr] lg:gap-16">
-          <div data-reveal="left">
-            <div className="mb-6 flex h-16 w-20 items-center justify-start">
+      <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+          {/* CỘT 1: LOGO, MÔ TẢ DỰ ÁN & HUY HIỆU COLOR UP 2026 (Giống ảnh 3) */}
+          <div className="lg:col-span-4 space-y-4 text-left">
+            <div className="flex items-center gap-3">
               <img
                 src="/assets/choi-transparent.png"
-                alt="Logo Chòi"
-                className="h-full w-full object-contain object-left"
+                alt="Logo Bài Chòi"
+                className="h-14 sm:h-16 w-auto object-contain filter drop-shadow-sm"
               />
-            </div>
-            <p className="max-w-2xl text-sm leading-7 sm:text-base sm:leading-8" style={{ color: 'rgba(0,75,80,0.72)' }}>
-              {c.footer.desc}
-            </p>
-          </div>
-
-          <div data-reveal="up">
-            <h4 className="mb-6 text-sm font-bold uppercase tracking-[0.16em]" style={{ color: '#006368' }}>
-              {isVietnamese ? 'Liên hệ' : 'Contact'}
-            </h4>
-            <div className="flex flex-col gap-4">
-              {contacts.map((contact) => (
-                <a
-                  key={contact.label}
-                  href={contact.href}
-                  target={contact.href.startsWith('http') ? '_blank' : undefined}
-                  rel={contact.href.startsWith('http') ? 'noreferrer' : undefined}
-                  className="group flex items-center gap-3 text-sm transition hover:-translate-y-0.5"
-                  style={{ color: 'rgba(0,75,80,0.68)' }}
+              <div>
+                <h3
+                  className="text-2xl sm:text-3xl font-black tracking-widest text-white uppercase font-serif"
+                  style={{ fontFamily: 'var(--font-display, serif)' }}
                 >
-                  <span
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold"
-                    style={{ background: 'rgba(0,99,104,0.12)', border: '1px solid rgba(0,99,104,0.25)', color: '#006368' }}
-                  >
-                    {contact.icon}
-                  </span>
-                  <span className="break-all group-hover:underline">{contact.label}</span>
-                </a>
-              ))}
+                  BÀI CHÒI
+                </h3>
+                <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-amber-200">
+                  Di sản văn hóa phi vật thể UNESCO
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs sm:text-sm text-white/90 leading-relaxed max-w-md font-normal">
+              Dự án truyền thông & thiết kế văn hóa tôn vinh di sản nghệ thuật{' '}
+              <strong className="text-white font-bold">Bài Chòi Trung Bộ</strong> — Di sản văn hóa phi vật thể đại diện của nhân loại được UNESCO vinh danh.
+            </p>
+
+            {/* Huy hiệu tham dự Color Up 2026 (Giống y hệt ảnh 3) */}
+            <div>
+              <button
+                type="button"
+                onClick={() => onOpenPolicy('du-an')}
+                className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/10 hover:bg-white/20 px-4 py-2 text-xs text-white font-medium transition cursor-pointer backdrop-blur-xs shadow-sm group"
+              >
+                <span className="text-sm">🎖️</span>
+                <span>
+                  Dự án tham dự cuộc thi <strong className="font-bold underline-offset-2 group-hover:underline">Color Up 2026</strong>
+                </span>
+              </button>
             </div>
           </div>
 
-          <div data-reveal="right" className="flex flex-col items-start gap-4 sm:col-span-2 lg:col-span-1">
-            <h4 className="text-sm font-bold tracking-wider" style={{ color: '#006368' }}>{c.footer.qrLabel}</h4>
-            <a href="https://baichoi.id.vn" target="_blank" rel="noreferrer" className="rounded-xl bg-white p-2 shadow-sm">
-              <img
-                src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=https%3A%2F%2Fbaichoi.id.vn"
-                alt="Mã QR mở website baichoi.id.vn"
-                className="h-32 w-32 object-contain sm:h-36 sm:w-36"
-                loading="lazy"
-              />
-            </a>
-            <a href="https://baichoi.id.vn" target="_blank" rel="noreferrer" className="text-xs hover:underline" style={{ color: 'rgba(0,99,104,0.55)' }}>
-              https://baichoi.id.vn
+          {/* CỘT 2: KHÁM PHÁ (Giống ảnh 3) */}
+          <div className="lg:col-span-2 space-y-3 text-left">
+            <h4
+              className="text-sm sm:text-base font-black uppercase tracking-wider text-amber-200 font-serif"
+              style={{ fontFamily: 'var(--font-display, serif)' }}
+            >
+              {isVietnamese ? 'Khám Phá' : 'Explore'}
+            </h4>
+            <ul className="space-y-2 text-xs sm:text-[13px] text-white/85">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById('history') || document.getElementById('about')
+                    el?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                  className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer block"
+                >
+                  Câu chuyện văn hóa
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById('cards')
+                    el?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                  className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer block"
+                >
+                  Bộ bài 30 thẻ & 3 Pho
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById('rules')
+                    el?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                  className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer block"
+                >
+                  Luật chơi & Cách tham gia
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigateSection?.('game')}
+                  className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer block font-semibold text-amber-200"
+                >
+                  Hội chơi Bài Chòi & Game Online 🎮
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigateSection?.('shop')}
+                  className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer block font-semibold text-amber-100"
+                >
+                  Cửa hàng & Vé sự kiện 🎟️
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* CỘT 3: CHÍNH SÁCH & QUY ĐỊNH (8 MỤC ĐẦY ĐỦ NHẤP MỞ MODAL - Giống ảnh 1 & 3) */}
+          <div className="lg:col-span-3 space-y-3 text-left">
+            <h4
+              className="text-sm sm:text-base font-black uppercase tracking-wider text-amber-200 font-serif"
+              style={{ fontFamily: 'var(--font-display, serif)' }}
+            >
+              {isVietnamese ? 'Chính Sách & Quy Định' : 'Policies & Terms'}
+            </h4>
+            <ul className="space-y-1.5 text-xs sm:text-[13px] text-white/85">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onOpenPolicy('dieu-khoan')}
+                  className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left"
+                >
+                  <span className="text-amber-300">•</span>
+                  <span>Điều khoản sử dụng</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onOpenPolicy('bao-mat')}
+                  className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left"
+                >
+                  <span className="text-amber-300">•</span>
+                  <span>Chính sách bảo mật</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onOpenPolicy('cookie')}
+                  className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left"
+                >
+                  <span className="text-amber-300">•</span>
+                  <span>Chính sách Cookie & Lưu trữ</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onOpenPolicy('thanh-toan')}
+                  className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left"
+                >
+                  <span className="text-amber-300">•</span>
+                  <span>Chính sách thanh toán (COD)</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onOpenPolicy('giao-hang')}
+                  className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left"
+                >
+                  <span className="text-amber-300">•</span>
+                  <span>Chính sách giao hàng</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onOpenPolicy('doi-tra')}
+                  className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left"
+                >
+                  <span className="text-amber-300">•</span>
+                  <span>Chính sách đổi trả & hoàn tiền</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onOpenPolicy('khieu-nai')}
+                  className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left"
+                >
+                  <span className="text-amber-300">•</span>
+                  <span>Chính sách xử lý khiếu nại</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onOpenPolicy('du-an')}
+                  className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left font-semibold text-amber-200"
+                >
+                  <span className="text-amber-300">•</span>
+                  <span>Thông tin dự án & Giới thiệu</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* CỘT 4: LIÊN HỆ & KẾT NỐI (Giống ảnh 3) */}
+          <div className="lg:col-span-3 space-y-3.5 text-left">
+            <h4
+              className="text-sm sm:text-base font-black uppercase tracking-wider text-amber-200 font-serif"
+              style={{ fontFamily: 'var(--font-display, serif)' }}
+            >
+              {isVietnamese ? 'Liên Hệ & Kết Nối' : 'Contact & Connect'}
+            </h4>
+
+            <div className="space-y-2.5 text-xs sm:text-[13px] text-white/90">
+              <a
+                href="mailto:lienntk.ce190812@gmail.com"
+                className="flex items-center gap-2.5 hover:text-amber-200 transition group"
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white shrink-0 group-hover:bg-white/25">
+                  ✉️
+                </span>
+                <span className="break-all">lienntk.ce190812@gmail.com</span>
+              </a>
+
+              <a
+                href="tel:0848180081"
+                className="flex items-center gap-2.5 hover:text-amber-200 transition group"
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white shrink-0 group-hover:bg-white/25">
+                  📞
+                </span>
+                <span>0848 180 081 / 0905 123 456</span>
+              </a>
+
+              <div className="flex items-start gap-2.5">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white shrink-0 mt-0.5">
+                  📍
+                </span>
+                <span className="leading-relaxed">
+                  Quy Nhơn (Bình Định) & Phố cổ Hội An (Quảng Nam)
+                </span>
+              </div>
+            </div>
+
+            {/* Nút Theo dõi Fanpage dự án (Khớp chuẩn nút Facebook trong ảnh 3) */}
+            <a
+              href="https://facebook.com"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 flex items-center gap-3 rounded-2xl bg-white text-slate-900 p-2.5 sm:p-3 transition hover:bg-slate-50 shadow-md group"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1877F2] text-white font-black text-2xl shrink-0 shadow-xs">
+                f
+              </div>
+              <div className="text-left">
+                <div className="text-xs font-extrabold text-slate-900 group-hover:text-[#c8382b] transition">
+                  Theo dõi Fanpage dự án
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  Cập nhật tin tức & sự kiện mới nhất
+                </div>
+              </div>
             </a>
           </div>
         </div>
 
-        <div className="my-8 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(0,99,104,0.3), transparent)' }} />
+        {/* ── THANH BẢN QUYỀN ĐÁY (Giống ảnh 2 & 3) ── */}
+        <div className="mt-12 pt-6 border-t border-white/20 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/80">
+          <p className="text-center md:text-left">
+            © 2026 Bài Chòi — Dự án tham dự cuộc thi Color Up 2026. Mọi quyền được bảo lưu.
+          </p>
 
-        <div className="flex items-center justify-center gap-2 sm:justify-end">
-            <LotusOrnament size={14} color="rgba(0,99,104,0.5)" />
-            <span className="text-xs italic" style={{ color: 'rgba(0,99,104,0.5)', fontFamily: 'var(--font-display)' }}>
-              {isVietnamese ? 'Gìn giữ hồn dân tộc' : 'Preserving the nation’s cultural soul'}
-            </span>
-            <LotusOrnament size={14} color="rgba(0,99,104,0.5)" />
+          {/* Họa tiết hoa văn truyền thống tâm đáy (Giống ảnh 3) */}
+          <div className="flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-amber-400/20 border border-amber-300/40 rotate-45 flex items-center justify-center p-1 shadow-xs">
+              <div className="w-5 h-5 rounded-sm bg-amber-300/40 -rotate-45 flex items-center justify-center text-[10px] text-amber-200">
+                🎴
+              </div>
+            </div>
+          </div>
+
+          {/* Liên kết điều khoản bảo mật nhanh (Giống ảnh 2 & 3) */}
+          <div className="flex items-center gap-3 font-medium text-white/90">
+            <button
+              type="button"
+              onClick={() => onOpenPolicy('dieu-khoan')}
+              className="hover:text-amber-200 transition cursor-pointer"
+            >
+              Điều khoản
+            </button>
+            <span className="text-white/40">·</span>
+            <button
+              type="button"
+              onClick={() => onOpenPolicy('bao-mat')}
+              className="hover:text-amber-200 transition cursor-pointer"
+            >
+              Bảo mật & Cookie
+            </button>
+            <span className="text-white/40">·</span>
+            <button
+              type="button"
+              onClick={() => onOpenPolicy('du-an')}
+              className="hover:text-amber-200 transition cursor-pointer"
+            >
+              Thông tin dự án
+            </button>
+          </div>
         </div>
       </div>
     </footer>
@@ -2709,10 +3378,53 @@ export default function App() {
   const [lang, setLang] = useState<Lang>('VIE')
   const c = content[lang]
   
+  // ── Auth & Portal state ──
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => authService.getCurrentUser())
+  const [activePortal, setActivePortal] = useState<'site' | 'admin' | 'staff' | 'shop' | 'game'>('site')
+  const [gameInitialTab, setGameInitialTab] = useState<GamePortalTab>('arena')
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register' | 'reset'>('login')
+  const [coinModalOpen, setCoinModalOpen] = useState(false)
+
+  // ── Policy Modal state (8 danh mục chính sách) ──
+  const [policyModalOpen, setPolicyModalOpen] = useState(false)
+  const [selectedPolicyId, setSelectedPolicyId] = useState<string>('dieu-khoan')
+
+  const handleOpenPolicy = (id: string = 'dieu-khoan') => {
+    setSelectedPolicyId(id)
+    setPolicyModalOpen(true)
+  }
+
+  useEffect(() => {
+    return authService.subscribe((user) => {
+      setCurrentUser(user)
+    })
+  }, [])
+
+  // Tự động mở màn hình đặt lại mật khẩu khi người dùng bấm vào liên kết trong email
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, _session) => {
+      if (
+        event === 'PASSWORD_RECOVERY' ||
+        (event === 'SIGNED_IN' && (window.location.hash.includes('type=magiclink') || window.location.hash.includes('type=recovery')))
+      ) {
+        setAuthModalMode('reset')
+        setAuthModalOpen(true)
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+
   // ── Intro animation state ──
   const [introShown, setIntroShown] = useState(false)
   const [showContent, setShowContent] = useState(false)
   const [gameOpen, setGameOpen] = useState(false)
+  const [gameAudioMode, setGameAudioMode] = useState<'online' | 'offline'>('online')
 
   useEffect(() => {
     document.title = 'Chòi'
@@ -2731,10 +3443,24 @@ export default function App() {
     return () => window.clearTimeout(fallbackTimer)
   }, [handleIntroDone, introShown, showContent])
 
+  const handleBackToSite = useCallback(() => {
+    setActivePortal('site')
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [])
+
   useEffect(() => {
-    if (!showContent) return
+    if (!showContent || activePortal !== 'site') return
 
     const revealElements = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'))
+
+    // Kích hoạt hiển thị ngay các phần tử trong màn hình đầu, chống trắng trang
+    revealElements.forEach((element) => {
+      const rect = element.getBoundingClientRect()
+      if (rect.top < window.innerHeight + 120) {
+        element.classList.add('is-visible')
+      }
+    })
+
     if (!('IntersectionObserver' in window)) {
       revealElements.forEach((element) => element.classList.add('is-visible'))
       return
@@ -2743,15 +3469,164 @@ export default function App() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          entry.target.classList.toggle('is-visible', entry.isIntersecting)
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+          }
         })
       },
-      { threshold: 0.12, rootMargin: '-5% 0px -5% 0px' },
+      { threshold: 0.05, rootMargin: '60px 0px 60px 0px' },
     )
 
     revealElements.forEach((element) => observer.observe(element))
     return () => observer.disconnect()
-  }, [showContent])
+  }, [showContent, activePortal])
+
+  // Nếu đang ở cổng Quản trị viên (Admin)
+  if (activePortal === 'admin' && currentUser?.role === 'admin') {
+    return (
+      <AdminDashboard
+        currentUser={currentUser}
+        onBackToSite={handleBackToSite}
+        onLogout={() => {
+          authService.logout()
+          setCurrentUser(null)
+          handleBackToSite()
+        }}
+      />
+    )
+  }
+
+  // Nếu đang ở cổng Nhân viên Quầy vé (Staff)
+  if (activePortal === 'staff' && currentUser?.role === 'staff') {
+    return (
+      <StaffPortal
+        currentUser={currentUser}
+        onBackToSite={handleBackToSite}
+        onLogout={() => {
+          authService.logout()
+          setCurrentUser(null)
+          handleBackToSite()
+        }}
+      />
+    )
+  }
+
+  // Nếu đang ở trang Cửa Hàng & Vé Sự Kiện (Shop Portal)
+  if (activePortal === 'shop') {
+    return (
+      <>
+        <ShopPortal
+          lang={lang}
+          setLang={setLang}
+          currentUser={currentUser}
+          onBackToSite={handleBackToSite}
+          onOpenAuth={(mode = 'login') => {
+            setAuthModalMode(mode)
+            setAuthModalOpen(true)
+          }}
+          onLogout={() => {
+            authService.logout()
+            setCurrentUser(null)
+          }}
+          onGoToPortal={(portal) => setActivePortal(portal)}
+          onOpenPolicy={handleOpenPolicy}
+          onOpenCoins={() => setCoinModalOpen(true)}
+        />
+        <PolicyModal
+          isOpen={policyModalOpen}
+          onClose={() => setPolicyModalOpen(false)}
+          initialPolicyId={selectedPolicyId}
+        />
+        <AuthModal
+          isOpen={authModalOpen}
+          initialMode={authModalMode}
+          onClose={() => setAuthModalOpen(false)}
+          onSuccess={(user) => {
+            setCurrentUser(user)
+            setAuthModalOpen(false)
+            if (user.role === 'admin') {
+              setActivePortal('admin')
+            } else if (user.role === 'staff') {
+              setActivePortal('staff')
+            }
+          }}
+        />
+        <CoinTopupModal
+          isOpen={coinModalOpen}
+          onClose={() => setCoinModalOpen(false)}
+          currentUser={currentUser}
+          onOpenAuth={(mode = 'login') => {
+            setAuthModalMode(mode)
+            setAuthModalOpen(true)
+          }}
+          onSuccess={(newCoins) => {
+            if (currentUser) {
+              setCurrentUser({ ...currentUser, coins: newCoins })
+            }
+          }}
+        />
+      </>
+    )
+  }
+
+  // Nếu đang ở cổng Hội Chơi Bài Chòi (Game Portal)
+  if (activePortal === 'game') {
+    return (
+      <>
+        <GamePortal
+          lang={lang}
+          setLang={setLang}
+          currentUser={currentUser}
+          initialTab={gameInitialTab}
+          onBackToSite={handleBackToSite}
+          onGoToShop={() => setActivePortal('shop')}
+          onOpenAuth={(mode = 'login') => {
+            setAuthModalMode(mode)
+            setAuthModalOpen(true)
+          }}
+          onLogout={() => {
+            authService.logout()
+            setCurrentUser(null)
+          }}
+          onOpenPolicy={handleOpenPolicy}
+          onOpenCoins={() => setCoinModalOpen(true)}
+        />
+        <PolicyModal
+          isOpen={policyModalOpen}
+          onClose={() => setPolicyModalOpen(false)}
+          initialPolicyId={selectedPolicyId}
+        />
+        <AuthModal
+          isOpen={authModalOpen}
+          initialMode={authModalMode}
+          onClose={() => setAuthModalOpen(false)}
+          onSuccess={(user) => {
+            setCurrentUser(user)
+            setAuthModalOpen(false)
+            if (user.role === 'admin') {
+              setActivePortal('admin')
+            } else if (user.role === 'staff') {
+              setActivePortal('staff')
+            }
+          }}
+        />
+        <CoinTopupModal
+          isOpen={coinModalOpen}
+          onClose={() => setCoinModalOpen(false)}
+          currentUser={currentUser}
+          onOpenAuth={(mode = 'login') => {
+            setAuthModalMode(mode)
+            setAuthModalOpen(true)
+          }}
+          onSuccess={(newCoins) => {
+            if (currentUser) {
+              setCurrentUser({ ...currentUser, coins: newCoins })
+            }
+          }}
+        />
+      </>
+    )
+  }
 
   return (
     <>
@@ -2763,14 +3638,33 @@ export default function App() {
       <div
         className={showContent ? 'web-entered' : ''}
         style={{ 
-          fontFamily: 'var(--font-body)', 
-          background: '#408A8C', 
-          color: '#006368',
-          opacity: showContent ? 1 : 0,
-          transition: 'opacity 0.8s ease',
-        }}
+            fontFamily: 'var(--font-body)', 
+            background: '#408A8C', 
+            color: '#006368',
+            opacity: showContent ? 1 : 0,
+            transition: 'opacity 0.8s ease',
+          }}
       >
-        <Nav lang={lang} setLang={setLang} c={c} onPlay={() => setGameOpen(true)} />
+        <Nav
+          lang={lang}
+          setLang={setLang}
+          c={c}
+          currentUser={currentUser}
+          onOpenAuth={(mode = 'login') => {
+            setAuthModalMode(mode)
+            setAuthModalOpen(true)
+          }}
+          onLogout={() => {
+            authService.logout()
+            setCurrentUser(null)
+            handleBackToSite()
+          }}
+          onGoToPortal={(portal) => setActivePortal(portal)}
+          onPlay={() => {
+            setGameOpen(true)
+          }}
+          onOpenCoins={() => setCoinModalOpen(true)}
+        />
         <div className="relative isolate">
           <div
             aria-hidden="true"
@@ -2784,15 +3678,70 @@ export default function App() {
             }}
           />
           <div className={`relative z-10 ${showContent ? 'site-content-enter' : ''}`}>
-            <ReferenceLanding c={c} lang={lang} onPlay={() => setGameOpen(true)} />
+            <ReferenceLanding
+              c={c}
+              lang={lang}
+              onPlay={() => {
+                setGameOpen(true)
+              }}
+            />
             <Characters c={c} />
             <Rules c={c} />
-            <Publications c={c} />
-            <Footer c={c} />
+            <Footer
+              c={c}
+              onOpenPolicy={handleOpenPolicy}
+              onNavigateSection={(sec) => {
+                if (sec === 'shop') {
+                  setActivePortal('shop')
+                } else if (sec === 'play-offline' || sec === 'game') {
+                  setGameOpen(true)
+                }
+              }}
+            />
           </div>
         </div>
       </div>
-      {gameOpen && <BaiChoiGame onClose={() => setGameOpen(false)} />}
+      {gameOpen && (
+        <BaiChoiGame
+          onClose={() => setGameOpen(false)}
+          initialAudioMode={gameAudioMode}
+        />
+      )}
+      <AuthModal
+        isOpen={authModalOpen}
+        initialMode={authModalMode}
+        onClose={() => setAuthModalOpen(false)}
+        onSuccess={(user) => {
+          setCurrentUser(user)
+          if (user.role === 'admin') {
+            setActivePortal('admin')
+          } else if (user.role === 'staff') {
+            setActivePortal('staff')
+          } else {
+            setActivePortal('site')
+          }
+        }}
+      />
+      <PolicyModal
+        isOpen={policyModalOpen}
+        onClose={() => setPolicyModalOpen(false)}
+        initialPolicyId={selectedPolicyId}
+      />
+      <CoinTopupModal
+        isOpen={coinModalOpen}
+        onClose={() => setCoinModalOpen(false)}
+        currentUser={currentUser}
+        onOpenAuth={(mode = 'login') => {
+          setAuthModalMode(mode)
+          setAuthModalOpen(true)
+        }}
+        onSuccess={(newCoins) => {
+          if (currentUser) {
+            setCurrentUser({ ...currentUser, coins: newCoins })
+          }
+        }}
+      />
+      {showContent && <CookieBanner lang={lang} onOpenPolicy={handleOpenPolicy} />}
     </>
   )
 }

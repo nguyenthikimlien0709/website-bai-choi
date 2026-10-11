@@ -2,250 +2,254 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import './index.css';
 import BaiChoiPuzzle, { PuzzleLevel } from './BaiChoiPuzzle';
 import { getChantLyrics } from './chantLyrics';
+import { authService } from './lib/authService';
+import ChoiCoin from './components/ChoiCoin';
+import CoinTopupModal from './components/CoinTopupModal';
+import type { UserProfile } from './types/auth';
 
-type Screen = 'name' | 'mode' | 'matchmaking' | 'friend' | 'playing' | 'result'
+type Screen = 'name' | 'mode' | 'matchmaking' | 'card-picking' | 'friend' | 'playing' | 'result'
 type OnlinePlayer = { id: string; name: string; ready: boolean; flags: number }
 
-type Card = {
+export interface PlayerTree {
+  id: string
+  name: string
+  cards: Card[]
+  claimedCardIds: string[]
+}
+
+export type Card = {
   id: string
   name: string
   image: string
   sound: string
+  soundOffline?: string
 }
 
-const CARDS: Card[] = [
-
+export const CARDS: Card[] = [
   // =====================================================
   // PHÔ 01 — LÁ 01 → 10
   // =====================================================
-
   {
     id: 'nhat-tro',
     name: 'Nhất Trò',
     image: '/assets/the1.jpg',
-    sound: '/sound/Nhat-tro.mp3'
+    sound: '/sound-online/Nhat_Tro.mp3',
+    soundOffline: '/sound-offline/Nhat-tro.mp3'
   },
-
   {
     id: 'nhi-bi',
     name: 'Nhì Bí',
     image: '/assets/the2.jpg',
-    sound: '/sound/Nhi-Bi.mp3'
+    sound: '/sound-online/Nhi_Bi.mp3',
+    soundOffline: '/sound-offline/Nhi-Bi.mp3'
   },
-
   {
     id: 'tam-quan',
     name: 'Tam Quan',
     image: '/assets/the3.jpg',
-    sound: '/sound/Tam-Quan.mp3'
+    sound: '/sound-online/Tam_Quan.mp3',
+    soundOffline: '/sound-offline/Tam-Quan.mp3'
   },
-
   {
     id: 'tu-huong',
     name: 'Tứ Hương',
     image: '/assets/the4.jpg',
-    sound: '/sound/Tu-Huong.mp3'
+    sound: '/sound-online/Tu_Huong.mp3',
+    soundOffline: '/sound-offline/Tu-Huong.mp3'
   },
-
   {
     id: 'ngu-truot',
     name: 'Ngũ Trượt',
     image: '/assets/the5.jpg',
-    sound: '/sound/Ngu-trot.mp3'
+    sound: '/sound-online/Ngu_Trot.mp3',
+    soundOffline: '/sound-offline/Ngu-trot.mp3'
   },
-
   {
     id: 'luc-xo',
     name: 'Lục Xơ',
     image: '/assets/the6.jpg',
-    sound: '/sound/Luc-Xo.mp3'
+    sound: '/sound-online/Luc_Xo.mp3',
+    soundOffline: '/sound-offline/Luc-Xo.mp3'
   },
-
   {
     id: 'that-nhon',
     name: 'Thất Nhọn',
     image: '/assets/the7.jpg',
-    sound: '/sound/That-Nhon.mp3'
+    sound: '/sound-online/That_Nhon.mp3',
+    soundOffline: '/sound-offline/That-Nhon.mp3'
   },
-
   {
     id: 'bat-bong',
     name: 'Bát Bồng',
     image: '/assets/the8.jpg',
-    sound: '/sound/Bat-Bong.mp3'
+    sound: '/sound-online/Bat_Bong.mp3',
+    soundOffline: '/sound-offline/Bat-Bong.mp3'
   },
-
   {
     id: 'cuu-thay',
     name: 'Cửu Thầy',
     image: '/assets/the9.jpg',
-    sound: '/sound/Cuu-thay.mp3'
+    sound: '/sound-online/Cuu_Thay.mp3',
+    soundOffline: '/sound-offline/Cuu-thay.mp3'
   },
-
   {
     id: 'thai-tu',
     name: 'Thái Tử',
     image: '/assets/the10.jpg',
-    sound: '/sound/Thai-tu.mp3'
+    sound: '/sound-online/Thai_Tu.mp3',
+    soundOffline: '/sound-offline/Thai-tu.mp3'
   },
-
 
   // =====================================================
   // PHÔ 02 — LÁ 11 → 20
   // =====================================================
+  {
+    id: 'nhat-noc',
+    name: 'Nhất Nọc',
+    image: '/assets/the11.jpg',
+    sound: '/sound-online/Nhat_Noc.mp3',
+    soundOffline: '/sound-offline/Nhat-Noc.mp3'
+  },
+  {
+    id: 'nhi-ngheo',
+    name: 'Nhì Nghèo',
+    image: '/assets/the12.jpg',
+    sound: '/sound-online/Nhi_Ngheo.mp3',
+    soundOffline: '/sound-offline/Nhi-Ngheo.mp3'
+  },
+  {
+    id: 'ba-ga',
+    name: 'Ba Gà',
+    image: '/assets/the13.jpg',
+    sound: '/sound-online/Ba_Ga.mp3',
+    soundOffline: '/sound-offline/Ba-Ga.mp3'
+  },
+  {
+    id: 'tu-dong',
+    name: 'Tứ Dóng',
+    image: '/assets/the14.jpg',
+    sound: '/sound-online/Tu_Dong.mp3',
+    soundOffline: '/sound-offline/Tu-Dong.mp3'
+  },
+  {
+    id: 'ngu-dum',
+    name: 'Ngũ Đụm',
+    image: '/assets/the15.jpg',
+    sound: '/sound-online/Ngu_Dum.mp3',
+    soundOffline: '/sound-offline/Ngu-Dum.mp3'
+  },
+  {
+    id: 'sau-hot',
+    name: 'Sáu Hột',
+    image: '/assets/the16.jpg',
+    sound: '/sound-online/Sau_Hot.mp3',
+    soundOffline: '/sound-offline/Sau-Hot.mp3'
+  },
+  {
+    id: 'bay-thua',
+    name: 'Bảy Thưa',
+    image: '/assets/the17.jpg',
+    sound: '/sound-online/Bay_Thua.mp3',
+    soundOffline: '/sound-offline/Bay-Thua.mp3'
+  },
+  {
+    id: 'tam-day',
+    name: 'Tám Dầy',
+    image: '/assets/the18.jpg',
+    sound: '/sound-online/Tam_Day.mp3',
+    soundOffline: '/sound-offline/Tam-Day.mp3'
+  },
+  {
+    id: 'chin-goi',
+    name: 'Chín Gối',
+    image: '/assets/the19.jpg',
+    sound: '/sound-online/Chin_Goi.mp3',
+    soundOffline: '/sound-offline/Chin-Goi.mp3'
+  },
+  {
+    id: 'do-mo',
+    name: 'Đỏ Mỏ',
+    image: '/assets/the20.jpg',
+    sound: '/sound-online/Do_Mo.mp3',
+    soundOffline: '/sound-offline/Do-Mo.mp3'
+  },
 
   // =====================================================
-// PHÔ 02 — LÁ 11 → 20
-// =====================================================
-
-{
-  id: 'nhat-noc',
-  name: 'Nhất Nọc',
-  image: '/assets/the11.jpg',
-  sound: '/sound/Nhat-Noc.mp3'
-},
-
-{
-  id: 'nhi-ngheo',
-  name: 'Nhì Nghèo',
-  image: '/assets/the12.jpg',
-  sound: '/sound/Nhi-Ngheo.mp3'
-},
-
-{
-  id: 'ba-ga',
-  name: 'Ba Gà',
-  image: '/assets/the13.jpg',
-  sound: '/sound/Ba-Ga.mp3'
-},
-
-{
-  id: 'tu-dong',
-  name: 'Tứ Dóng',
-  image: '/assets/the14.jpg',
-  sound: '/sound/Tu-Dong.mp3'
-},
-
-{
-  id: 'ngu-dum',
-  name: 'Ngũ Đụm',
-  image: '/assets/the15.jpg',
-  sound: '/sound/Ngu-Dum.mp3'
-},
-
-{
-  id: 'sau-hot',
-  name: 'Sáu Hột',
-  image: '/assets/the16.jpg',
-  sound: '/sound/Sau-Hot.mp3'
-},
-
-{
-  id: 'bay-thua',
-  name: 'Bảy Thưa',
-  image: '/assets/the17.jpg',
-  sound: '/sound/Bay-Thua.mp3'
-},
-
-{
-  id: 'tam-day',
-  name: 'Tám Dầy',
-  image: '/assets/the18.jpg',
-  sound: '/sound/Tam-Day.mp3'
-},
-
-{
-  id: 'chin-goi',
-  name: 'Chín Gối',
-  image: '/assets/the19.jpg',
-  sound: '/sound/Chin-Goi.mp3'
-},
-
-{
-  id: 'do-mo',
-  name: 'Đỏ Mỏ',
-  image: '/assets/the20.jpg',
-  sound: '/sound/Do-Mo.mp3'
-},
-
-
-// =====================================================
-// PHÔ 03 — LÁ 21 → 30
-// =====================================================
-
-{
-  id: 'bach-hue',
-  name: 'Bạch Huê',
-  image: '/assets/the21.jpg',
-  sound: '/sound/Bach-Hue.mp3'
-},
-
-{
-  id: 'banh-hai',
-  name: 'Bành Hai',
-  image: '/assets/the22.jpg',
-  sound: '/sound/Banh-Hai.mp3'
-},
-
-{
-  id: 'banh-ba',
-  name: 'Bành Ba',
-  image: '/assets/the23.jpg',
-  sound: '/sound/Banh-Ba.mp3'
-},
-
-{
-  id: 'dai-doi',
-  name: 'Dái Doi',
-  image: '/assets/the24.jpg',
-  sound: '/sound/Dai-Doi.mp3'
-},
-
-{
-  id: 'nam-run',
-  name: 'Năm Rún',
-  image: '/assets/the25.jpg',
-  sound: '/sound/Nam-Run.mp3'
-},
-
-{
-  id: 'sau-tien',
-  name: 'Sáu Tiền',
-  image: '/assets/the26.jpg',
-  sound: '/sound/Sau-Tien.mp3'
-},
-
-{
-  id: 'that-lieu',
-  name: 'Thất Liễu',
-  image: '/assets/the27.jpg',
-  sound: '/sound/That-Lieu.mp3'
-},
-
-{
-  id: 'tam-tien',
-  name: 'Tám Tiền',
-  image: '/assets/the28.jpg',
-  sound: '/sound/Tam-Tien.mp3'
-},
-
-{
-  id: 'chin-ghe',
-  name: 'Chín Ghe',
-  image: '/assets/the29.jpg',
-  sound: '/sound/Chin-Ghe.mp3'
-},
-
-{
-  id: 'ong-am',
-  name: 'Ông Âm',
-  image: '/assets/the30.jpg',
-  sound: '/sound/Ong-Am.mp3'
-},
+  // PHÔ 03 — LÁ 21 → 30
+  // =====================================================
+  {
+    id: 'bach-hue',
+    name: 'Bạch Huê',
+    image: '/assets/the21.jpg',
+    sound: '/sound-online/Bach_Hue.mp3',
+    soundOffline: '/sound-offline/Bach-Hue.mp3'
+  },
+  {
+    id: 'banh-hai',
+    name: 'Bành Hai',
+    image: '/assets/the22.jpg',
+    sound: '/sound-online/Bach_Hai.mp3',
+    soundOffline: '/sound-offline/Banh-Hai.mp3'
+  },
+  {
+    id: 'banh-ba',
+    name: 'Bành Ba',
+    image: '/assets/the23.jpg',
+    sound: '/sound-online/Bach_Ba.mp3',
+    soundOffline: '/sound-offline/Banh-Ba.mp3'
+  },
+  {
+    id: 'dai-doi',
+    name: 'Dái Doi',
+    image: '/assets/the24.jpg',
+    sound: '/sound-online/Dai_Doi.mp3',
+    soundOffline: '/sound-offline/Dai-Doi.mp3'
+  },
+  {
+    id: 'nam-run',
+    name: 'Năm Rún',
+    image: '/assets/the25.jpg',
+    sound: '/sound-online/Nam_Run.mp3',
+    soundOffline: '/sound-offline/Nam-Run.mp3'
+  },
+  {
+    id: 'sau-tien',
+    name: 'Sáu Tiền',
+    image: '/assets/the26.jpg',
+    sound: '/sound-online/Sau_Tien.mp3',
+    soundOffline: '/sound-offline/Sau-Tien.mp3'
+  },
+  {
+    id: 'that-lieu',
+    name: 'Thất Liễu',
+    image: '/assets/the27.jpg',
+    sound: '/sound-online/That_Lieu.mp3',
+    soundOffline: '/sound-offline/That-Lieu.mp3'
+  },
+  {
+    id: 'tam-tien',
+    name: 'Tám Tiền',
+    image: '/assets/the28.jpg',
+    sound: '/sound-online/Tam_Tien.mp3',
+    soundOffline: '/sound-offline/Tam-Tien.mp3'
+  },
+  {
+    id: 'chin-ghe',
+    name: 'Chín Ghe',
+    image: '/assets/the29.jpg',
+    sound: '/sound-online/Chin_Ghe.mp3',
+    soundOffline: '/sound-offline/Chin-Ghe.mp3'
+  },
+  {
+    id: 'ong-am',
+    name: 'Ông Âm',
+    image: '/assets/the30.jpg',
+    sound: '/sound-online/Ong_Am.mp3',
+    soundOffline: '/sound-offline/Ong-Am.mp3'
+  },
 ]
 
-
-const showcaseCards = [...CARDS]
+export const showcaseCards = [...CARDS]
   .sort(() => Math.random() - 0.5)
   .slice(0, 5);
 
@@ -264,40 +268,56 @@ function cleanName(value: string) {
   return value.normalize('NFC').trim().replace(/\s+/g, ' ').slice(0, 16)
 }
 
-function generateDramaticDeck(playerHand: Card[], botHands: Card[][], allCards: Card[]): Card[] {
+export function getCardPho(cardIndex: number): { phoName: string; tagClass: string } {
+  if (cardIndex < 10) return { phoName: 'Pho Văn', tagClass: 'bg-amber-600/80 text-amber-100 border-amber-400/50' }
+  if (cardIndex < 20) return { phoName: 'Pho Vạn', tagClass: 'bg-emerald-600/80 text-emerald-100 border-emerald-400/50' }
+  return { phoName: 'Pho Hạch', tagClass: 'bg-rose-600/80 text-rose-100 border-rose-400/50' }
+}
+
+function generateDramaticDeck(
+  playerTreesOrHand: PlayerTree[] | Card[],
+  botHands: Card[][],
+  allCards: Card[]
+): Card[] {
+  const playerTrees: { id: string; cards: Card[] }[] =
+    Array.isArray(playerTreesOrHand) && playerTreesOrHand.length > 0 && 'cards' in playerTreesOrHand[0]
+      ? (playerTreesOrHand as PlayerTree[])
+      : [{ id: 'tree-1', cards: playerTreesOrHand as Card[] }]
+
+  const allPlayerCards = playerTrees.flatMap((t) => t.cards)
   const allOwnedIds = new Set([
-    ...playerHand.map((c) => c.id),
+    ...allPlayerCards.map((c) => c.id),
     ...botHands.flatMap((h) => h.map((c) => c.id))
   ])
   const blankCards = shuffle(allCards.filter((c) => !allOwnedIds.has(c.id)))
 
-  // 70% tỉ lệ người chơi thắng, 30% bot thắng để tạo tính ganh đua
-  const playerWins = Math.random() < 0.7
-  // Trận đấu kết thúc ở lượt thứ 6 hoặc 7 (khoảng 3 - 3.5 phút)
+  // Người chơi chọn nhiều cây thì cơ hội thắng càng cao
+  const winRate = playerTrees.length <= 1 ? 0.72 : playerTrees.length === 2 ? 0.86 : 0.95
+  const playerWins = Math.random() < winRate
   const targetTurns = Math.random() < 0.5 ? 6 : 7
 
   const drawnSequence: Card[] = []
   const usedCardIds = new Set<string>()
 
-  // Chọn 1 bot làm đối thủ chính (rival bot) để đua cờ sát nút với người chơi
+  // Chọn 1 cây bài của người chơi làm tâm điểm
+  const chosenTree = playerTrees[Math.floor(Math.random() * playerTrees.length)]
+  const shuffledTreeCards = shuffle([...chosenTree.cards])
+
+  // Chọn 1 bot làm đối thủ chính
   const rivalBotIndex = Math.floor(Math.random() * botHands.length)
   const rivalHand = shuffle([...botHands[rivalBotIndex]])
   const otherBots = botHands.filter((_, idx) => idx !== rivalBotIndex)
-  const shuffledPlayerHand = shuffle([...playerHand])
 
   if (playerWins) {
-    // Kịch bản Người chơi thắng ở lượt targetTurns (3 cờ)
-    const p0 = shuffledPlayerHand[0]
-    const p1 = shuffledPlayerHand[1]
-    const pWinner = shuffledPlayerHand[2]
+    const p0 = shuffledTreeCards[0]
+    const p1 = shuffledTreeCards[1]
+    const pWinner = shuffledTreeCards[2]
 
-    // Rival bot có 2 cờ tạo thế đối đầu kịch tính
     const r0 = rivalHand[0]
     const r1 = rivalHand[1]
 
-    // 1 bot khác có 1 cờ
     const otherBotCard = shuffle(otherBots.flatMap((b) => b))[0]
-    const blankCard = blankCards[0]
+    const blankCard = blankCards[0] || shuffle(allCards.filter((c) => c.id !== pWinner?.id))[0]
 
     if (targetTurns === 6) {
       drawnSequence.push(p0, r0, otherBotCard, p1, r1, pWinner)
@@ -305,17 +325,15 @@ function generateDramaticDeck(playerHand: Card[], botHands: Card[][], allCards: 
       drawnSequence.push(r0, p0, otherBotCard, p1, blankCard, r1, pWinner)
     }
   } else {
-    // Kịch bản Bot thắng ở lượt targetTurns (3 cờ)
     const r0 = rivalHand[0]
     const r1 = rivalHand[1]
     const rWinner = rivalHand[2]
 
-    // Người chơi vẫn đạt 2 cờ (tạo cảm giác suýt soát)
-    const p0 = shuffledPlayerHand[0]
-    const p1 = shuffledPlayerHand[1]
+    const p0 = shuffledTreeCards[0]
+    const p1 = shuffledTreeCards[1]
 
     const otherBotCard = shuffle(otherBots.flatMap((b) => b))[0]
-    const blankCard = blankCards[0]
+    const blankCard = blankCards[0] || shuffle(allCards.filter((c) => c.id !== rWinner?.id))[0]
 
     if (targetTurns === 6) {
       drawnSequence.push(p0, r0, p1, otherBotCard, r1, rWinner)
@@ -324,10 +342,12 @@ function generateDramaticDeck(playerHand: Card[], botHands: Card[][], allCards: 
     }
   }
 
-  drawnSequence.forEach((c) => usedCardIds.add(c.id))
+  drawnSequence.forEach((c) => {
+    if (c) usedCardIds.add(c.id)
+  })
   const remainingCards = shuffle(allCards.filter((c) => !usedCardIds.has(c.id)))
 
-  return [...drawnSequence, ...remainingCards]
+  return [...drawnSequence.filter(Boolean), ...remainingCards]
 }
 
 function FlyingClouds() {
@@ -341,7 +361,14 @@ function FlyingClouds() {
   )
 }
 
-export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
+export default function BaiChoiGame({
+  onClose,
+  initialAudioMode = 'online'
+}: {
+  onClose: () => void
+  initialAudioMode?: 'online' | 'offline'
+}) {
+  const [audioMode, setAudioMode] = useState<'online' | 'offline'>(initialAudioMode)
   const [screen, setScreen] = useState<Screen>('name')
   const [nameInput, setNameInput] = useState('')
   const [playerName, setPlayerName] = useState('')
@@ -354,7 +381,7 @@ export default function BaiChoiGame({ onClose }: { onClose: () => void }) {
   const [drawIndex, setDrawIndex] = useState(-1)
   const [claimed, setClaimed] = useState<string[]>([])
   const [botFlags, setBotFlags] = useState([0, 0, 0, 0])
-const [botHands, setBotHands] = useState<Card[][]>([])
+  const [botHands, setBotHands] = useState<Card[][]>([])
   const [message, setMessage] = useState('Anh Hiệu đang chuẩn bị ống thẻ…')
   const [winner, setWinner] = useState('')
   const [onlineMode, setOnlineMode] = useState(false)
@@ -377,6 +404,29 @@ const [botHands, setBotHands] = useState<Card[][]>([])
   const fallbackTimerRef = useRef<number | null>(null)
   const [chantLyricIndex, setChantLyricIndex] = useState(0)
 
+  // ==========================================
+  // QUẢN LÝ XU & ĐA CÂY BÀI (DATABASE & SUPABASE)
+  // ==========================================
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => authService.getCurrentUser())
+  const [userCoins, setUserCoins] = useState<number>(() => {
+    const user = authService.getCurrentUser()
+    return user?.coins ?? 50
+  })
+  const [isTopupModalOpen, setIsTopupModalOpen] = useState(false)
+
+  // Cây bài của người chơi trong ván đấu
+  const [playerTrees, setPlayerTrees] = useState<PlayerTree[]>([])
+
+  // State chọn thẻ bài (1 Cây = 3 Thẻ, 1 Thẻ = 1 Xu)
+  const [draftTrees, setDraftTrees] = useState<{ id: string; name: string; cards: Card[] }[]>([
+    { id: 'tree-1', name: 'Cây Bài #1', cards: [] }
+  ])
+  const [activeDraftTreeIndex, setActiveDraftTreeIndex] = useState(0)
+  const [phoFilter, setPhoFilter] = useState<'all' | 'van' | 'van2' | 'hach'>('all')
+  const [pickingError, setPickingError] = useState('')
+  const [showExitConfirmModal, setShowExitConfirmModal] = useState(false)
+  const [pendingExitAction, setPendingExitAction] = useState<'leave' | 'back' | null>(null)
+
   // Tự động chuyển câu hò mỗi ~7 giây khi Chị Hiệu đang hô
   useEffect(() => {
     if (!isCalling || !currentCallingCard) {
@@ -391,13 +441,34 @@ const [botHands, setBotHands] = useState<Card[][]>([])
   }, [isCalling, currentCallingCard?.id])
 
   const currentCard = revealedCard
-  const canClaim = Boolean(currentCard && hand.some((card) => card.id === currentCard.id) && !claimed.includes(currentCard.id))
+  const canClaim = Boolean(
+    currentCard &&
+      (onlineMode
+        ? hand.some((card) => card.id === currentCard.id) && !claimed.includes(currentCard.id)
+        : playerTrees.length > 0
+        ? playerTrees.some(
+            (tree) =>
+              tree.cards.some((c) => c.id === currentCard.id) &&
+              !tree.claimedCardIds.includes(currentCard.id)
+          )
+        : hand.some((card) => card.id === currentCard.id) && !claimed.includes(currentCard.id))
+  )
   const players = useMemo(() => onlineMode ? onlinePlayers.map((player) => player.name) : [playerName, ...BOT_NAMES], [onlineMode, onlinePlayers, playerName])
+
+  const goToCardPicking = () => {
+    const user = authService.getCurrentUser() || authService.getOrInitCurrentUser(playerName)
+    setCurrentUser(user)
+    setUserCoins(user.coins ?? 50)
+    setDraftTrees([{ id: 'tree-1', name: 'Cây Bài #1', cards: [] }])
+    setActiveDraftTreeIndex(0)
+    setPickingError('')
+    setScreen('card-picking')
+  }
 
   useEffect(() => {
     if (screen !== 'matchmaking') return
     if (countdown <= 0) {
-      startGame()
+      goToCardPicking()
       return
     }
     const timer = window.setTimeout(() => setCountdown((value) => value - 1), 1000)
@@ -422,7 +493,7 @@ const [botHands, setBotHands] = useState<Card[][]>([])
   }
 
 const unlockAudio = async () => {
-  const audio = new Audio('/sound/silent.mp3')
+  const audio = new Audio('/sound-online/silent.mp3')
   audio.volume = 0
   audio.preload = 'auto'
 
@@ -446,8 +517,8 @@ const [isMobilePortrait, setIsMobilePortrait] = useState(() => {
 })
 
 const introVideoSrc = isMobilePortrait
-  ? '/sound/video-daugame-dienthoai.mp4'
-  : '/sound/video-daugame.mp4'
+  ? '/sound-online/video-daugame-dienthoai.mp4'
+  : '/sound-online/video-daugame.mp4'
 
   useEffect(() => {
     const checkOrientation = () => {
@@ -520,32 +591,83 @@ useEffect(() => {
     setScreen('mode')
   }
 
+  const handleConfirmExit = () => {
+    setShowExitConfirmModal(false)
+    const action = pendingExitAction
+    setPendingExitAction(null)
+    if (action === 'leave') {
+      leaveGame()
+    } else {
+      backToMode()
+    }
+  }
 
-const goBack = () => {
-  stopAudio()
+  const handleCancelExit = () => {
+    setShowExitConfirmModal(false)
+    setPendingExitAction(null)
+  }
 
-  // Màn nhập tên → quay về website
-  if (screen === 'name') {
+  const handleRequestLeave = () => {
+    if (screen === 'playing') {
+      setPendingExitAction('leave')
+      setShowExitConfirmModal(true)
+      return
+    }
     leaveGame()
-    return
   }
 
-  // Màn chọn chế độ → quay lại nhập tên
-  if (screen === 'mode') {
-    setScreen('name')
-    return
+  const handleRequestBack = () => {
+    if (screen === 'playing') {
+      setPendingExitAction('back')
+      setShowExitConfirmModal(true)
+      return
+    }
+    goBack()
   }
 
-  // Các màn còn lại → quay lại chọn chế độ
-  if (
-    screen === 'matchmaking' ||
-    screen === 'friend' ||
-    screen === 'playing' ||
-    screen === 'result'
-  ) {
-    backToMode()
+  // Cảnh báo trình duyệt nếu tải lại trang hoặc đóng tab khi đang chơi ván đấu
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (screen === 'playing') {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [screen])
+
+  const goBack = () => {
+    stopAudio()
+
+    // Màn nhập tên → quay về website
+    if (screen === 'name') {
+      leaveGame()
+      return
+    }
+
+    // Màn chọn chế độ → quay lại nhập tên
+    if (screen === 'mode') {
+      setScreen('name')
+      return
+    }
+
+    // Màn chọn thẻ → quay lại chọn chế độ
+    if (screen === 'card-picking') {
+      setScreen('mode')
+      return
+    }
+
+    // Các màn còn lại → quay lại chọn chế độ
+    if (
+      screen === 'matchmaking' ||
+      screen === 'friend' ||
+      screen === 'playing' ||
+      screen === 'result'
+    ) {
+      backToMode()
+    }
   }
-}
 
 const playCall = async (card: Card) => {
   stopAudio(false)
@@ -557,9 +679,12 @@ const playCall = async (card: Card) => {
   setShowPuzzleModal(true) // Tự động mở popup xếp hình nổi khi bắt đầu hô
   setMessage('Lắng nghe Chị Hiệu hô & Xếp hình giải mã…')
 
+  const chosenSound = (audioMode === 'offline' && card.soundOffline) ? card.soundOffline : card.sound
+  const fallbackDuration = audioMode === 'offline' ? 32000 : 16000
+
   const audio = audioRef.current || new Audio()
 
-  audio.src = card.sound
+  audio.src = chosenSound
   audio.preload = 'auto'
   audio.volume = 1
   audio.currentTime = 0
@@ -602,9 +727,9 @@ const playCall = async (card: Card) => {
 
   audio.onended = revealCard
   audio.onerror = () => {
-    console.warn('Không thể tải file âm thanh:', card.sound)
+    console.warn('Không thể tải file âm thanh:', chosenSound)
     if (!fallbackTimerRef.current) {
-      fallbackTimerRef.current = window.setTimeout(revealCard, 20000)
+      fallbackTimerRef.current = window.setTimeout(revealCard, fallbackDuration)
     }
   }
 
@@ -612,10 +737,10 @@ const playCall = async (card: Card) => {
     await audio.play()
   } catch (error) {
     console.error('Không thể phát âm thanh:', error)
-    // Nếu trình duyệt chặn âm thanh, KHÔNG lật bài ngay lập tức mà duy trì thời gian hô 20s
+    // Nếu trình duyệt chặn âm thanh, duy trì thời gian hô
     setMessage('Đang hô… (Bấm "🔊 Bật âm thanh" nếu chưa nghe tiếng)')
     if (!fallbackTimerRef.current) {
-      fallbackTimerRef.current = window.setTimeout(revealCard, 20000)
+      fallbackTimerRef.current = window.setTimeout(revealCard, fallbackDuration)
     }
   }
 }
@@ -836,9 +961,17 @@ if (
   const finishGame = (winnerName: string) => {
     setWinner(winnerName)
     setMessage(winnerName === playerName ? 'TỚI! Ba cờ đã về chòi của bạn!' : `${winnerName} đã hô TỚI!`)
+    if (winnerName === playerName) {
+      try {
+        const updated = authService.addCoins(15, 'Thưởng thắng TỚI trong hội Bài Chòi')
+        setUserCoins(updated.coins ?? (userCoins + 15))
+      } catch (e) {
+        console.warn('Lỗi thưởng xu:', e)
+      }
+    }
     stopAudio(false)
     const audio = audioRef.current || new Audio()
-    audio.src = '/sound/Toi-Goi.mp3'
+    audio.src = '/sound-online/Toi-Goi.mp3'
     audio.volume = 1
     audioRef.current = audio
     void audio.play().catch(() => undefined)
@@ -854,10 +987,330 @@ if (
       setMessage('Ướm… thẻ này không có trong tay bạn.')
       return
     }
-    const nextClaimed = [...claimed, currentCard.id]
-    setClaimed(nextClaimed)
-    setMessage(`Có đây! Bạn nhận cờ thứ ${nextClaimed.length}.`)
-    if (nextClaimed.length === 3) window.setTimeout(() => finishGame(playerName), 500)
+
+    if (playerTrees.length > 0) {
+      let isAnyTreeWon = false
+      const updatedTrees = playerTrees.map((tree) => {
+        const hasCard = tree.cards.some((c) => c.id === currentCard.id)
+        if (hasCard && !tree.claimedCardIds.includes(currentCard.id)) {
+          const nextClaimedIds = [...tree.claimedCardIds, currentCard.id]
+          if (nextClaimedIds.length >= 3) {
+            isAnyTreeWon = true
+          }
+          return { ...tree, claimedCardIds: nextClaimedIds }
+        }
+        return tree
+      })
+
+      setPlayerTrees(updatedTrees)
+      const nextClaimed = [...claimed, currentCard.id]
+      setClaimed(nextClaimed)
+      setMessage(`Có đây! Thẻ ${currentCard.name} đã được cắm cờ.`)
+
+      if (isAnyTreeWon) {
+        window.setTimeout(() => finishGame(playerName), 500)
+      }
+    } else {
+      const nextClaimed = [...claimed, currentCard.id]
+      setClaimed(nextClaimed)
+      setMessage(`Có đây! Bạn nhận cờ thứ ${nextClaimed.length}.`)
+      if (nextClaimed.length === 3) window.setTimeout(() => finishGame(playerName), 500)
+    }
+  }
+
+  // =========================================================
+  // XỬ LÝ CHỌN 30 LÁ BÀI & MUA NHIỀU CÂY BÀI (1 THẺ = 1 XU)
+  // Cho phép chọn lại lá bài đã chọn ở cây khác, nhưng kiểm tra
+  // tổ hợp 3 lá của mỗi cây phải độc nhất (không trùng nhau).
+  // =========================================================
+  const getTreeSignature = (cards: Card[]): string => {
+    return [...cards].map((c) => c.id).sort().join('|')
+  }
+
+  const totalCardsPicked = useMemo(() => {
+    return draftTrees.reduce((sum, tree) => sum + tree.cards.length, 0)
+  }, [draftTrees])
+
+  const totalCostCoins = totalCardsPicked
+
+  const filteredCards = useMemo(() => {
+    if (phoFilter === 'van') return CARDS.slice(0, 10)
+    if (phoFilter === 'van2') return CARDS.slice(10, 20)
+    if (phoFilter === 'hach') return CARDS.slice(20, 30)
+    return CARDS
+  }, [phoFilter])
+
+  const handleToggleCardPick = (card: Card) => {
+    setPickingError('')
+    const activeTree = draftTrees[activeDraftTreeIndex]
+    if (!activeTree) return
+
+    // 1. Kiểm tra xem thẻ này đã có trong CÂY HIỆN TẠI chưa
+    const isAlreadyInActiveTree = activeTree.cards.some((c) => c.id === card.id)
+
+    if (isAlreadyInActiveTree) {
+      // Bỏ chọn: gỡ thẻ này ra khỏi cây hiện tại
+      setDraftTrees((prev) =>
+        prev.map((tree, idx) => {
+          if (idx !== activeDraftTreeIndex) return tree
+          return {
+            ...tree,
+            cards: tree.cards.filter((c) => c.id !== card.id)
+          }
+        })
+      )
+      return
+    }
+
+    // 2. Thẻ chưa có trong cây hiện tại -> Thêm thẻ vào cây hiện tại
+    if (activeTree.cards.length >= 3) {
+      // Tìm xem có cây nào khác chưa đủ 3 thẻ không
+      const incompleteTreeIndex = draftTrees.findIndex((t) => t.cards.length < 3)
+      if (incompleteTreeIndex >= 0) {
+        setActiveDraftTreeIndex(incompleteTreeIndex)
+        setPickingError(
+          `${activeTree.name} đã đủ 3 thẻ. Hệ thống đã chuyển sang ${draftTrees[incompleteTreeIndex].name} để bạn chọn tiếp.`
+        )
+      } else {
+        setPickingError(
+          `${activeTree.name} đã đủ 3 thẻ! Bạn có thể bấm "+ Mua Thêm Cây Mới (3 Xu)" nếu muốn lập thêm cây khác.`
+        )
+      }
+      return
+    }
+
+    // Kiểm tra số dư Xu (1 thẻ = 1 Xu)
+    if (totalCardsPicked + 1 > userCoins) {
+      setPickingError(
+        `Số dư Xu không đủ! Mỗi thẻ giá 1 Xu. Bạn đang có ${userCoins} Xu và đã chọn ${totalCardsPicked} thẻ. Vui lòng nạp thêm Xu.`
+      )
+      return
+    }
+
+    const nextCards = [...activeTree.cards, card]
+
+    // 3. Nếu thêm thẻ này mà cây đủ 3 thẻ -> CHECK TRÙNG TỔ HỢP VỚI CÂY KHÁC!
+    if (nextCards.length === 3) {
+      const newSignature = getTreeSignature(nextCards)
+      const duplicateTree = draftTrees.find(
+        (otherTree, idx) =>
+          idx !== activeDraftTreeIndex &&
+          otherTree.cards.length === 3 &&
+          getTreeSignature(otherTree.cards) === newSignature
+      )
+
+      if (duplicateTree) {
+        setPickingError(
+          `Tổ hợp 3 lá này (${nextCards.map((c) => c.name).join(', ')}) bị trùng hoàn toàn với ${duplicateTree.name}! Bạn được chọn lại thẻ đã có ở cây khác, nhưng tổ hợp 3 lá của mỗi cây phải khác nhau.`
+        )
+        return
+      }
+    }
+
+    // Hợp lệ -> Thêm thẻ vào cây hiện tại
+    setDraftTrees((prev) =>
+      prev.map((tree, idx) => {
+        if (idx !== activeDraftTreeIndex) return tree
+        return {
+          ...tree,
+          cards: nextCards
+        }
+      })
+    )
+  }
+
+  const handleAddNewTree = () => {
+    setPickingError('')
+
+    const coinsLeft = userCoins - totalCardsPicked
+    if (coinsLeft < 3) {
+      setPickingError(
+        `Bạn cần còn ít nhất 3 Xu để mua thêm 1 Cây Bài mới (Hiện còn: ${coinsLeft} Xu). Vui lòng nạp thêm Xu.`
+      )
+      return
+    }
+
+    const nextIndex = draftTrees.length
+    setDraftTrees((prev) => [
+      ...prev,
+      {
+        id: `tree-${nextIndex + 1}`,
+        name: `Cây Bài #${nextIndex + 1}`,
+        cards: []
+      }
+    ])
+    setActiveDraftTreeIndex(nextIndex)
+  }
+
+  const handleRemoveDraftTree = (treeIndex: number) => {
+    if (draftTrees.length <= 1) {
+      setPickingError('Bạn cần giữ lại ít nhất 1 Cây Bài.')
+      return
+    }
+    setDraftTrees((prev) => prev.filter((_, idx) => idx !== treeIndex))
+    setActiveDraftTreeIndex((prev) => Math.max(0, prev >= treeIndex ? prev - 1 : prev))
+    setPickingError('')
+  }
+
+  const handleAutoPickTree = (treeIndex: number) => {
+    setPickingError('')
+    const targetTree = draftTrees[treeIndex]
+    if (!targetTree) return
+
+    const neededCount = 3 - targetTree.cards.length
+    if (neededCount <= 0) return
+
+    const coinsLeft = userCoins - totalCardsPicked
+    if (coinsLeft < neededCount) {
+      setPickingError(`Số dư Xu không đủ! Cần thêm ${neededCount} Xu để hoàn thành cây này.`)
+      return
+    }
+
+    // Lấy các thẻ chưa có trong chính cây này
+    const availableForThisTree = CARDS.filter(
+      (c) => !targetTree.cards.some((existing) => existing.id === c.id)
+    )
+
+    // Tập hợp signature của các cây khác đã đủ 3 thẻ
+    const existingSignatures = new Set(
+      draftTrees
+        .filter((_, idx) => idx !== treeIndex && _.cards.length === 3)
+        .map((t) => getTreeSignature(t.cards))
+    )
+
+    let foundCandidate: Card[] | null = null
+    for (let attempt = 0; attempt < 100; attempt++) {
+      const randomCards = shuffle(availableForThisTree).slice(0, neededCount)
+      const combined = [...targetTree.cards, ...randomCards]
+      if (combined.length === 3) {
+        const sig = getTreeSignature(combined)
+        if (!existingSignatures.has(sig)) {
+          foundCandidate = combined
+          break
+        }
+      }
+    }
+
+    if (foundCandidate) {
+      setDraftTrees((prev) =>
+        prev.map((tree, idx) => {
+          if (idx !== treeIndex) return tree
+          return {
+            ...tree,
+            cards: foundCandidate!
+          }
+        })
+      )
+    } else {
+      setPickingError('Không thể tạo tổ hợp ngẫu nhiên mới không trùng. Hãy tự tay chọn các thẻ bài!')
+    }
+  }
+
+  const handleStartGameFromPicking = () => {
+    setPickingError('')
+
+    if (draftTrees.length === 0) {
+      setPickingError('Vui lòng chọn ít nhất 1 Cây Bài hoàn chỉnh để vào hội.')
+      return
+    }
+
+    for (let i = 0; i < draftTrees.length; i++) {
+      const tree = draftTrees[i]
+      if (tree.cards.length !== 3) {
+        setPickingError(
+          `${tree.name} mới có ${tree.cards.length}/3 thẻ. Hãy chọn đủ 3 thẻ (1 Xu/thẻ) hoặc xóa cây chưa xong.`
+        )
+        setActiveDraftTreeIndex(i)
+        return
+      }
+    }
+
+    // KIỂM TRA TRÙNG TỔ HỢP 3 LÁ GIỮA CÁC CÂY
+    const signatureMap = new Map<string, string>()
+    for (let i = 0; i < draftTrees.length; i++) {
+      const tree = draftTrees[i]
+      const sig = getTreeSignature(tree.cards)
+      if (signatureMap.has(sig)) {
+        const dupName = signatureMap.get(sig)
+        setPickingError(
+          `Cây "${tree.name}" có tổ hợp 3 lá trùng hoàn toàn với "${dupName}". Vui lòng đổi ít nhất 1 lá để tạo tổ hợp mới!`
+        )
+        setActiveDraftTreeIndex(i)
+        return
+      }
+      signatureMap.set(sig, tree.name)
+    }
+
+    const cost = draftTrees.length * 3
+    const spendResult = authService.spendCoins(
+      cost,
+      `Mua ${draftTrees.length} Cây Bài (${cost} thẻ) vào hội chơi với máy`
+    )
+
+    if (!spendResult.success) {
+      setPickingError(spendResult.message || 'Không thể trừ xu. Vui lòng nạp thêm Xu.')
+      return
+    }
+
+    setUserCoins(spendResult.user?.coins ?? (userCoins - cost))
+
+    // Chia bài cho 4 chòi máy sao cho các cây của máy không trùng với người chơi và không trùng nhau
+    const playerSignatures = new Set(Array.from(signatureMap.keys()))
+    const botSignatures = new Set<string>()
+    const nextBotHands: Card[][] = []
+
+    // Các thẻ mà người chơi chưa chọn ở bất kỳ cây nào
+    const playerChosenCardIds = new Set(draftTrees.flatMap((t) => t.cards.map((c) => c.id)))
+    const unchosenCards = CARDS.filter((c) => !playerChosenCardIds.has(c.id))
+
+    for (let b = 0; b < BOT_NAMES.length; b++) {
+      let botCards: Card[] = []
+      for (let attempt = 0; attempt < 100; attempt++) {
+        // Ưu tiên chia các lá người chơi chưa chọn nếu còn đủ
+        const pool = unchosenCards.length >= 3 ? unchosenCards : CARDS
+        const candidate = shuffle(pool).slice(0, 3)
+        if (candidate.length === 3) {
+          const sig = getTreeSignature(candidate)
+          if (!playerSignatures.has(sig) && !botSignatures.has(sig)) {
+            botCards = candidate
+            botSignatures.add(sig)
+            break
+          }
+        }
+      }
+      if (botCards.length < 3) {
+        botCards = shuffle(CARDS).slice(0, 3)
+      }
+      nextBotHands.push(botCards)
+    }
+
+    const initialPlayerTrees: PlayerTree[] = draftTrees.map((tree) => ({
+      id: tree.id,
+      name: tree.name,
+      cards: [...tree.cards],
+      claimedCardIds: []
+    }))
+
+    const nextDeck = generateDramaticDeck(initialPlayerTrees, nextBotHands, CARDS)
+
+    setOnlineMode(false)
+    setPlayerTrees(initialPlayerTrees)
+    setHand(initialPlayerTrees.flatMap((t) => t.cards))
+    setBotHands(nextBotHands)
+    setDeck(nextDeck)
+
+    setDrawIndex(-1)
+    setClaimed([])
+    setRevealedCard(null)
+    setCurrentCallingCard(null)
+    setPuzzleLevel(1)
+    puzzleCompletedManuallyRef.current = false
+    setIsCalling(false)
+    setBotFlags([0, 0, 0, 0])
+    setWinner('')
+
+    setMessage('Hội đã khai! Mời bạn lắng nghe câu hô đầu tiên của Chị Hiệu.')
+    setScreen('playing')
   }
 
   const createRoom = () => {
@@ -890,7 +1343,7 @@ if (
     w-full
 
     ${
-      screen === 'playing'
+      screen === 'playing' || screen === 'card-picking'
         ? 'overflow-y-auto overflow-x-hidden touch-pan-y overscroll-y-contain'
         : 'overflow-hidden touch-none'
     }
@@ -902,7 +1355,7 @@ if (
       <div className="pointer-events-none fixed inset-0 opacity-20" style={{ backgroundImage: 'url(/assets/Background-toan.jpg)', backgroundSize: 'cover' }} />
 
       <button
-  onClick={goBack}
+  onClick={handleRequestBack}
   className="
     fixed
     left-3
@@ -946,24 +1399,40 @@ if (
   <span className="text-xl leading-none">←</span>
   <span>Quay lại</span>
 </button>
-      <button onClick={leaveGame} className="fixed right-3 top-3 sm:right-5 sm:top-5 z-[80] grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-full border-2 border-white/70 bg-[#075f63]/80 text-2xl sm:text-3xl font-light leading-none text-white shadow-xl backdrop-blur-sm transition hover:scale-105 hover:bg-[#c44837]" aria-label="Đóng trò chơi">×</button>
-     <main
-  className={`
-    relative
-    mx-auto
-    flex
-    w-full
-    max-w-6xl
-    justify-center
-    p-0
 
-    ${
-      screen === 'playing'
-        ? 'min-h-full h-auto items-start overflow-visible py-6'
-        : 'h-full items-center overflow-hidden'
-    }
-  `}
->
+      {/* HUY HIỆU VÍ XU TRÊN ĐẦU (GÓC TRÊN BÊN PHẢI) */}
+      {(screen === 'card-picking' || screen === 'playing') && (
+        <div className="fixed right-16 top-3 sm:right-20 sm:top-5 z-[80] flex items-center gap-1.5 sm:gap-2 rounded-full border border-[#f6d274]/50 bg-[#073f43]/90 px-2.5 sm:px-3.5 py-1 sm:py-1.5 backdrop-blur-md shadow-xl transition-all">
+          <ChoiCoin size="sm" glow animate />
+          <span className="text-xs sm:text-sm font-bold text-[#fce893] whitespace-nowrap">{userCoins} Xu</span>
+          <button
+            type="button"
+            onClick={() => setIsTopupModalOpen(true)}
+            className="ml-0.5 sm:ml-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-2 py-0.5 text-[10px] sm:text-xs font-bold text-slate-900 shadow hover:brightness-110 active:scale-95 transition"
+          >
+            + Nạp
+          </button>
+        </div>
+      )}
+
+      <button onClick={handleRequestLeave} className="fixed right-3 top-3 sm:right-5 sm:top-5 z-[80] grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-full border-2 border-white/70 bg-[#075f63]/80 text-2xl sm:text-3xl font-light leading-none text-white shadow-xl backdrop-blur-sm transition hover:scale-105 hover:bg-[#c44837]" aria-label="Đóng trò chơi">×</button>
+      <main
+        className={`
+          relative
+          mx-auto
+          flex
+          w-full
+          justify-center
+          p-0
+          ${
+            screen === 'card-picking'
+              ? 'min-h-full h-auto items-start overflow-visible pt-16 sm:pt-20 pb-16 max-w-[1360px] px-3 sm:px-6'
+              : screen === 'playing'
+              ? 'min-h-full h-auto items-start overflow-visible py-4 sm:py-6 max-w-6xl'
+              : 'h-full items-center overflow-hidden max-w-6xl'
+          }
+        `}
+      >
   {screen === 'name' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#052f32] overflow-hidden">
             {/* Background video & stage */}
@@ -984,7 +1453,7 @@ if (
                 loop
                 preload="auto"
                 className="hidden landscape:block sm:block w-full h-full object-cover"
-                src="/sound/video-daugame.mp4"
+                src="/sound-online/video-daugame.mp4"
               /> */}
 
               {/* Video 9:16 đứng dành riêng cho Điện thoại / Màn hình dọc */}
@@ -1281,6 +1750,30 @@ if (
           Chọn một cách vào hội để bắt đầu
         </p>
 
+        <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-white/25 bg-black/30 p-1 text-[11px] sm:text-xs">
+          <button
+            type="button"
+            onClick={() => setAudioMode('online')}
+            className={`rounded-full px-3 py-1 font-semibold transition ${
+              audioMode === 'online'
+                ? 'bg-[#f29963] text-white shadow-md'
+                : 'text-white/70 hover:text-white'
+            }`}
+          >
+            ⚡ Hô Online (Gọn)
+          </button>
+          <button
+            type="button"
+            onClick={() => setAudioMode('offline')}
+            className={`rounded-full px-3 py-1 font-semibold transition ${
+              audioMode === 'offline'
+                ? 'bg-[#c44837] text-white shadow-md'
+                : 'text-white/70 hover:text-white'
+            }`}
+          >
+            🎙️ Hô Offline (Đầy đủ)
+          </button>
+        </div>
       </div>
 
 
@@ -1696,7 +2189,412 @@ sm:max-w-[160px]
             <div className="mx-auto mb-7 grid h-32 w-32 place-items-center rounded-full border-4 border-[#f29963]/30 bg-[#0b5558] text-5xl font-black text-[#f29963] shadow-[0_0_50px_rgba(242,153,99,.2)]">{countdown}</div>
             <h2 className="text-3xl font-black">Bạn đang tìm bạn chơi…</h2>
             <p className="mt-3 text-white/65">Hết thời gian chờ, hệ thống sẽ mời các chòi máy vào.</p>
-            <button onClick={startGame} className="mt-8 rounded-full border border-white/25 px-6 py-3 font-semibold hover:bg-white/10">Chơi với máy ngay</button>
+            <button onClick={goToCardPicking} className="mt-8 rounded-full border border-white/25 px-6 py-3 font-semibold hover:bg-white/10">Chơi với máy ngay</button>
+          </section>
+        )}
+
+        {screen === 'card-picking' && (
+          <section className="relative z-10 w-full max-w-[1360px] pb-24 lg:pb-12 animate-fadeIn">
+            <FlyingClouds />
+
+            {/* HEADER KHỐI CHỌN THẺ */}
+            <div className="text-center mb-5 sm:mb-7">
+              <span className="inline-block px-3.5 py-1 rounded-full bg-[#f6d274]/20 border border-[#f6d274]/40 text-[#fce893] text-xs font-bold uppercase tracking-[.2em] mb-2 shadow-sm">
+                🏮 Khai Canh Lập Cây • 1 Thẻ = 1 Xu
+              </span>
+              <h2
+                className="text-2xl sm:text-4xl font-black text-[#ffecb3] drop-shadow-md"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                CHỌN 30 LÁ BÀI • LẬP CÂY BÀI VÀO HỘI
+              </h2>
+              <p className="mt-1.5 text-xs sm:text-sm text-white/80 max-w-2xl mx-auto leading-relaxed">
+                Mỗi Cây Bài gồm đúng <strong>3 thẻ</strong> (<strong>3 Xu</strong>). Bạn được phép chọn lại thẻ đã chọn ở cây khác, miễn là <strong>tổ hợp 3 thẻ</strong> ghép lại của mỗi Cây không bị trùng lặp nhau!
+              </p>
+            </div>
+
+            {/* THÔNG BÁO LỖI NẾU CÓ */}
+            {pickingError && (
+              <div className="mb-5 mx-auto max-w-2xl rounded-xl border border-rose-500/60 bg-rose-950/90 p-3 sm:p-3.5 text-center text-xs sm:text-sm font-semibold text-rose-200 shadow-xl animate-shake">
+                ⚠️ {pickingError}
+              </div>
+            )}
+
+            {/* BỐ CỤC 2 CỘT: TRÁI = BÀI (30 QUÂN), PHẢI = CHỖ CHỌN (CÂY BÀI) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+              
+              {/* === CỘT TRÁI: BÀI (30 QUÂN BÀI CHÒI + BỘ LỌC PHO) === */}
+              <div className="lg:col-span-7 xl:col-span-7 flex flex-col rounded-2xl border border-white/15 bg-[#0b5558]/85 p-3.5 sm:p-5 backdrop-blur-md shadow-2xl">
+                {/* Header thanh lọc pho */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4 pb-3 border-b border-white/10">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🎴</span>
+                    <div>
+                      <h3 className="font-bold text-sm sm:text-base text-white">
+                        Toàn Bộ 30 Quân Bài Chòi
+                      </h3>
+                      <p className="text-[11px] text-white/60">
+                        Nhấp thẻ để gán vào cây đang chọn (hoặc bỏ chọn)
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* BỘ LỌC 3 PHO BÀI */}
+                  <div className="flex items-center gap-1 rounded-full border border-white/20 bg-black/30 p-1 text-[11px] sm:text-xs self-start sm:self-auto overflow-x-auto max-w-full">
+                    <button
+                      type="button"
+                      onClick={() => setPhoFilter('all')}
+                      className={`rounded-full px-2.5 sm:px-3 py-1 font-semibold transition whitespace-nowrap ${
+                        phoFilter === 'all'
+                          ? 'bg-[#f29963] text-white shadow-md'
+                          : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      Tất cả (30)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPhoFilter('van')}
+                      className={`rounded-full px-2 sm:px-2.5 py-1 font-semibold transition whitespace-nowrap ${
+                        phoFilter === 'van'
+                          ? 'bg-amber-600 text-white shadow-md'
+                          : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      Pho Văn (1-10)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPhoFilter('van2')}
+                      className={`rounded-full px-2 sm:px-2.5 py-1 font-semibold transition whitespace-nowrap ${
+                        phoFilter === 'van2'
+                          ? 'bg-emerald-600 text-white shadow-md'
+                          : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      Pho Vạn (11-20)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPhoFilter('hach')}
+                      className={`rounded-full px-2 sm:px-2.5 py-1 font-semibold transition whitespace-nowrap ${
+                        phoFilter === 'hach'
+                          ? 'bg-rose-600 text-white shadow-md'
+                          : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      Pho Hạch (21-30)
+                    </button>
+                  </div>
+                </div>
+
+                {/* LƯỚI 30 LÁ BÀI */}
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-2.5 max-h-[72vh] overflow-y-auto pr-1 scrollbar-thin">
+                  {filteredCards.map((card) => {
+                    const globalIndex = CARDS.findIndex((c) => c.id === card.id)
+                    const phoInfo = getCardPho(globalIndex)
+
+                    // Thẻ đã chọn trong CÂY HIỆN TẠI chưa
+                    const isPickedInCurrent = Boolean(
+                      draftTrees[activeDraftTreeIndex]?.cards.some((c) => c.id === card.id)
+                    )
+
+                    // Danh sách các cây KHÁC cũng có chọn thẻ này
+                    const otherTreesWithCard = draftTrees
+                      .map((t, idx) => ({ name: t.name, idx }))
+                      .filter(
+                        (item) =>
+                          item.idx !== activeDraftTreeIndex &&
+                          draftTrees[item.idx].cards.some((c) => c.id === card.id)
+                      )
+
+                    return (
+                      <button
+                        key={card.id}
+                        type="button"
+                        onClick={() => handleToggleCardPick(card)}
+                        className={`relative group flex flex-col rounded-xl p-1 transition-all text-left duration-200 border-2 select-none ${
+                          isPickedInCurrent
+                            ? 'bg-amber-400/25 border-[#f6d274] ring-2 ring-[#f6d274] scale-95 shadow-lg'
+                            : otherTreesWithCard.length > 0
+                            ? 'bg-emerald-950/40 border-emerald-400/60 hover:border-amber-300 hover:scale-105 shadow-md'
+                            : 'bg-white/10 border-white/15 hover:border-amber-300/80 hover:bg-white/20 hover:scale-105 shadow-md'
+                        }`}
+                      >
+                        {/* ẢNH THẺ BÀI */}
+                        <div className="overflow-hidden rounded-lg bg-white p-0.5">
+                          <img
+                            src={card.image}
+                            alt={card.name}
+                            className="aspect-[3/4] w-full rounded-md object-cover"
+                            draggable={false}
+                          />
+                        </div>
+
+                        {/* TÊN THẺ BÀI */}
+                        <span className="mt-1 block text-center text-[10px] sm:text-xs font-bold text-white truncate px-0.5">
+                          {card.name}
+                        </span>
+
+                        {/* TAG PHO & HUY HIỆU */}
+                        <div className="mt-0.5 flex items-center justify-between px-0.5">
+                          <span className={`text-[8px] font-semibold px-1 rounded border ${phoInfo.tagClass}`}>
+                            {phoInfo.phoName.replace('Pho ', '')}
+                          </span>
+
+                          {isPickedInCurrent ? (
+                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-[#f6d274] text-[#173a3a] shadow-sm">
+                              ✓ Đang chọn
+                            </span>
+                          ) : otherTreesWithCard.length > 0 ? (
+                            <span
+                              className="text-[8px] font-bold px-1 rounded bg-emerald-600/80 text-emerald-100"
+                              title={`Đã có ở ${otherTreesWithCard.map((t) => t.name).join(', ')} (Vẫn chọn được tiếp!)`}
+                            >
+                              Cây #{otherTreesWithCard.map((t) => t.idx + 1).join(',#')} +1x
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-[#fce893]">
+                              <ChoiCoin size={10} /> 1
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* === CỘT PHẢI: CHỖ CHỌN (CÁC CÂY BÀI CỦA BẠN & THAO TÁC) === */}
+              <div className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-20 flex flex-col gap-4">
+                <div className="rounded-2xl border border-[#f6d274]/35 bg-[#0b5558]/95 p-4 sm:p-5 backdrop-blur-md shadow-2xl">
+                  {/* HEADER CHỖ CHỌN */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-3 border-b border-white/10">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🎋</span>
+                      <div>
+                        <h3 className="font-bold text-sm sm:text-base text-white">
+                          Các Cây Bài Của Bạn
+                        </h3>
+                        <p className="text-[11px] text-[#ffda86]">
+                          {draftTrees.length} cây • {totalCardsPicked} thẻ đã chọn
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleAddNewTree}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#e69756] to-[#f29963] text-[#173a3a] font-bold text-xs shadow-md hover:brightness-110 active:scale-95 transition"
+                    >
+                      <span>+</span>
+                      <span>Mua Thêm Cây Mới (3 Xu)</span>
+                    </button>
+                  </div>
+
+                  {/* TABS DANH SÁCH CÁC CÂY BÀI */}
+                  <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none mb-3">
+                    {draftTrees.map((tree, idx) => {
+                      const isComplete = tree.cards.length === 3
+                      const isActive = activeDraftTreeIndex === idx
+                      return (
+                        <button
+                          key={tree.id}
+                          type="button"
+                          onClick={() => {
+                            setActiveDraftTreeIndex(idx)
+                            setPickingError('')
+                          }}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap border ${
+                            isActive
+                              ? 'bg-[#f6d274] text-[#173a3a] border-[#fff0a4] shadow-lg scale-105'
+                              : isComplete
+                              ? 'bg-emerald-900/60 text-emerald-200 border-emerald-500/40 hover:bg-emerald-800/60'
+                              : 'bg-white/10 text-white/80 border-white/15 hover:bg-white/20'
+                          }`}
+                        >
+                          <span>{tree.name}</span>
+                          <span
+                            className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                              isComplete ? 'bg-emerald-600 text-white' : 'bg-black/30 text-white/90'
+                            }`}
+                          >
+                            {tree.cards.length}/3
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* CHI TIẾT CÂY BÀI ĐANG ĐƯỢC CHỌN (SLOTS) */}
+                  {draftTrees[activeDraftTreeIndex] && (
+                    <div className="rounded-xl bg-black/30 border border-white/10 p-3 sm:p-4 mb-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="font-black text-sm text-[#ffda86]">
+                            {draftTrees[activeDraftTreeIndex].name}
+                          </span>
+                          <span className={`text-xs font-semibold ${
+                            draftTrees[activeDraftTreeIndex].cards.length === 3
+                              ? 'text-emerald-300'
+                              : 'text-amber-300/80'
+                          }`}>
+                            ({draftTrees[activeDraftTreeIndex].cards.length === 3
+                              ? '✓ Đã đủ 3 thẻ'
+                              : `Còn thiếu ${3 - draftTrees[activeDraftTreeIndex].cards.length} thẻ`})
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleAutoPickTree(activeDraftTreeIndex)}
+                            className="text-[11px] font-semibold px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[#fce893] transition flex items-center gap-1"
+                            title="Chọn nhanh ngẫu nhiên đủ 3 thẻ cho cây này"
+                          >
+                            <span>⚡</span>
+                            <span>Chọn 3 thẻ</span>
+                          </button>
+
+                          {draftTrees.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveDraftTree(activeDraftTreeIndex)}
+                              className="text-[11px] font-semibold px-2 py-1 rounded-lg bg-rose-900/40 hover:bg-rose-800 text-rose-300 transition"
+                              title="Hủy cây bài này"
+                            >
+                              ✕ Xóa cây
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 3 SLOTS CỦA CÂY NÀY */}
+                      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                        {[0, 1, 2].map((slotIdx) => {
+                          const card = draftTrees[activeDraftTreeIndex].cards[slotIdx]
+                          if (card) {
+                            return (
+                              <div
+                                key={card.id}
+                                className="relative group rounded-xl border-2 border-amber-300/80 bg-white p-1 shadow-md transition transform hover:-translate-y-0.5"
+                              >
+                                <img
+                                  src={card.image}
+                                  alt={card.name}
+                                  className="aspect-[3/4] w-full rounded-lg object-cover"
+                                />
+                                <div className="mt-1 text-center">
+                                  <span className="block text-[10px] sm:text-xs font-bold text-slate-800 truncate">
+                                    {card.name}
+                                  </span>
+                                </div>
+                                {/* Nút gỡ thẻ */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleCardPick(card)}
+                                  className="absolute -top-1.5 -right-1.5 grid h-5 w-5 place-items-center rounded-full bg-rose-600 text-white font-black text-[10px] shadow-lg hover:bg-rose-700 active:scale-95 transition"
+                                  title="Gỡ thẻ ra khỏi cây"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            )
+                          }
+                          return (
+                            <div
+                              key={`empty-slot-${slotIdx}`}
+                              className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#f6d274]/50 bg-white/5 aspect-[3/4] p-2 text-center text-white/50 hover:border-[#f6d274] hover:bg-white/10 transition"
+                            >
+                              <span className="text-xl sm:text-2xl text-[#f6d274]">+</span>
+                              <span className="text-[10px] sm:text-xs font-semibold mt-0.5 text-[#fce893]">
+                                Thẻ {slotIdx + 1}
+                              </span>
+                              <span className="text-[9px] text-white/50">1 Xu</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* KHỐI TỔNG KẾT CHI PHÍ VÀ SỐ DƯ */}
+                  <div className="rounded-xl bg-black/20 border border-white/10 p-3 sm:p-3.5 mb-4 space-y-2">
+                    <div className="flex items-center justify-between text-xs sm:text-sm">
+                      <span className="text-white/70">Tổng chi phí mua thẻ:</span>
+                      <span className="font-black text-[#ffda86] flex items-center gap-1">
+                        <ChoiCoin size={14} />
+                        {totalCostCoins} Xu
+                        <span className="text-[11px] font-normal text-white/60">
+                          ({draftTrees.length} cây • {totalCardsPicked} thẻ)
+                        </span>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs sm:text-sm pt-1.5 border-t border-white/10">
+                      <span className="text-white/70">Số dư sau khi mua:</span>
+                      <span className={`font-bold flex items-center gap-1 ${
+                        userCoins < totalCostCoins ? 'text-rose-400' : 'text-emerald-300'
+                      }`}>
+                        <ChoiCoin size={14} />
+                        {Math.max(0, userCoins - totalCostCoins)} Xu
+                      </span>
+                    </div>
+
+                    {userCoins < totalCostCoins && (
+                      <div className="pt-1 flex items-center justify-between text-[11px] text-rose-300">
+                        <span>Số dư không đủ!</span>
+                        <button
+                          type="button"
+                          onClick={() => setIsTopupModalOpen(true)}
+                          className="font-bold underline text-amber-300 hover:text-amber-200"
+                        >
+                          Nạp thêm Xu ngay →
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* NÚT VÀO HỘI KHAI CANH NGAY TRONG PANEL BÊN PHẢI */}
+                  <button
+                    type="button"
+                    onClick={handleStartGameFromPicking}
+                    className="w-full py-3 sm:py-3.5 px-5 rounded-xl bg-gradient-to-r from-[#e86a38] via-[#d34e3a] to-[#c44837] text-white font-black text-sm sm:text-base tracking-wide shadow-[0_4px_20px_rgba(232,106,56,0.5)] hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2"
+                  >
+                    <span>VÀO HỘI KHAI CANH</span>
+                    <span className="text-lg leading-none">→</span>
+                  </button>
+
+                  <p className="mt-2.5 text-center text-[10px] text-white/50 leading-relaxed">
+                    💡 Bạn được chọn lại thẻ đã chọn ở cây khác, miễn là tổ hợp 3 lá của mỗi cây không trùng nhau!
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* THANH ĐIỀU KHIỂN DƯỚI CÙNG TRÊN MOBILE (STICKY DÀNH CHO MÀN HÌNH NHỎ) */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#04282b]/95 border-t border-[#f6d274]/30 backdrop-blur-md px-3 sm:px-6 py-2.5 shadow-[0_-10px_25px_rgba(0,0,0,0.5)]">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <ChoiCoin size="sm" glow animate />
+                  <div>
+                    <div className="text-[10px] text-white/70">Tổng: {totalCostCoins} Xu</div>
+                    <div className="text-xs font-bold text-emerald-300">
+                      Còn: {Math.max(0, userCoins - totalCostCoins)} Xu
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleStartGameFromPicking}
+                  className="px-4 py-2 rounded-full bg-gradient-to-r from-[#e86a38] to-[#c44837] text-white font-black text-xs shadow-md hover:brightness-110 active:scale-95 transition"
+                >
+                  Vào Hội →
+                </button>
+              </div>
+            </div>
           </section>
         )}
 
@@ -1804,7 +2702,7 @@ sm:max-w-[160px]
   <section className="w-full px-3 pb-16 sm:px-4 sm:pb-12">
             <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div><p className="text-xs uppercase tracking-[.2em] text-[#f29963]">Hội Bài Chòi • 5 chòi</p><h2 className="text-2xl font-black">Ván đang diễn ra</h2></div>
-              <div className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm">Cờ của bạn: <strong className="text-[#f29963]">{claimed.length}/3</strong></div>
+              <div className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm">Cờ của bạn: <strong className="text-[#f29963]">{playerTrees.length > 0 ? Math.max(0, ...playerTrees.map(t => t.claimedCardIds.length)) : claimed.length}/3</strong></div>
             </header>
             <div className="grid gap-5 lg:grid-cols-[1fr_1.25fr]">
               <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
@@ -1956,53 +2854,88 @@ sm:max-w-[160px]
               </div>
               <div className="space-y-5">
                 <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
-                  <p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#f29963]">Ba thẻ trong chòi của bạn</p>
-                  <div className="grid grid-cols-3 gap-3">
-  {hand.map((card) => {
-    const isClaimed = claimed.includes(card.id)
+                  <p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#f29963]">
+                    {playerTrees.length > 1
+                      ? `Các cây bài của bạn (${playerTrees.length} Cây • ${hand.length} Thẻ)`
+                      : 'Ba thẻ trong chòi của bạn'}
+                  </p>
 
-    // Chỉ sáng + nhấp nhô SAU KHI hò xong
-    // và quân vừa hô trùng với lá này
-    const isHit =
-      !isCalling &&
-      currentCard?.id === card.id &&
-      !isClaimed
+                  {playerTrees.length > 1 ? (
+                    <div className="space-y-4">
+                      {playerTrees.map((tree) => (
+                        <div key={tree.id} className="rounded-2xl bg-black/25 border border-white/10 p-3 sm:p-4">
+                          <div className="flex items-center justify-between mb-2.5">
+                            <span className="text-xs sm:text-sm font-bold text-[#ffda86] flex items-center gap-1.5">
+                              <span>🎋</span>
+                              <span>{tree.name}</span>
+                            </span>
+                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
+                              tree.claimedCardIds.length >= 3
+                                ? 'bg-amber-500 text-slate-900 border-amber-300 font-black'
+                                : 'bg-[#f29963]/20 text-[#f29963] border-[#f29963]/30'
+                            }`}>
+                              ⚑ {tree.claimedCardIds.length}/3 Cờ
+                            </span>
+                          </div>
 
-    return (
-      <div
-        key={card.id}
-        className={`
-          hand-card
-          ${isHit ? 'hand-card-hit' : ''}
-          ${isClaimed ? 'hand-card-claimed' : ''}
-        `}
-      >
-        <div className="hand-card-image">
-          <img
-            src={card.image}
-            alt={card.name}
-            draggable={false}
-          />
-        </div>
-
-        <p className="hand-card-name">
-          {isClaimed ? '⚑ ' : ''}
-          {card.name}
-        </p>
-
-        {isHit && (
-          <>
-            <span className="hit-spark hit-spark-1">✦</span>
-            <span className="hit-spark hit-spark-2">✦</span>
-          </>
-        )}
-      </div>
-    )
-  })}
-</div>
+                          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                            {tree.cards.map((card) => {
+                              const isClaimed = tree.claimedCardIds.includes(card.id)
+                              const isHit = !isCalling && currentCard?.id === card.id && !isClaimed
+                              return (
+                                <div
+                                  key={card.id}
+                                  className={`hand-card ${isHit ? 'hand-card-hit' : ''} ${isClaimed ? 'hand-card-claimed' : ''}`}
+                                >
+                                  <div className="hand-card-image">
+                                    <img src={card.image} alt={card.name} draggable={false} />
+                                  </div>
+                                  <p className="hand-card-name">
+                                    {isClaimed ? '⚑ ' : ''}{card.name}
+                                  </p>
+                                  {isHit && (
+                                    <>
+                                      <span className="hit-spark hit-spark-1">✦</span>
+                                      <span className="hit-spark hit-spark-2">✦</span>
+                                    </>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-3">
+                      {hand.map((card) => {
+                        const isClaimed = claimed.includes(card.id)
+                        const isHit = !isCalling && currentCard?.id === card.id && !isClaimed
+                        return (
+                          <div
+                            key={card.id}
+                            className={`hand-card ${isHit ? 'hand-card-hit' : ''} ${isClaimed ? 'hand-card-claimed' : ''}`}
+                          >
+                            <div className="hand-card-image">
+                              <img src={card.image} alt={card.name} draggable={false} />
+                            </div>
+                            <p className="hand-card-name">
+                              {isClaimed ? '⚑ ' : ''}{card.name}
+                            </p>
+                            {isHit && (
+                              <>
+                                <span className="hit-spark hit-spark-1">✦</span>
+                                <span className="hit-spark hit-spark-2">✦</span>
+                              </>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-                  {players.map((player, index) => <div key={`${player}-${index}`} className={`rounded-2xl border p-3 text-center ${(onlineMode ? onlinePlayers[index]?.id === playerId : index === 0) ? 'border-[#f29963] bg-[#c44837]/25' : 'border-white/15 bg-[#0b5558]/80'}`}><div className="mx-auto mb-2 grid h-9 w-9 place-items-center rounded-full bg-white/10">{onlineMode ? '☺' : index === 0 ? '☺' : '⚙'}</div><p className="truncate text-xs font-bold">{player}</p><p className="mt-1 text-[11px] text-[#f29963]">⚑ {onlineMode ? onlinePlayers[index]?.flags || 0 : index === 0 ? claimed.length : botFlags[index - 1]}/3</p></div>)}
+                  {players.map((player, index) => <div key={`${player}-${index}`} className={`rounded-2xl border p-3 text-center ${(onlineMode ? onlinePlayers[index]?.id === playerId : index === 0) ? 'border-[#f29963] bg-[#c44837]/25' : 'border-white/15 bg-[#0b5558]/80'}`}><div className="mx-auto mb-2 grid h-9 w-9 place-items-center rounded-full bg-white/10">{onlineMode ? '☺' : index === 0 ? '☺' : '⚙'}</div><p className="truncate text-xs font-bold">{player}</p><p className="mt-1 text-[11px] text-[#f29963]">⚑ {onlineMode ? onlinePlayers[index]?.flags || 0 : index === 0 ? (playerTrees.length > 0 ? Math.max(0, ...playerTrees.map(t => t.claimedCardIds.length)) : claimed.length) : botFlags[index - 1]}/3</p></div>)}
                 </div>
               </div>
             </div>
@@ -2054,10 +2987,105 @@ sm:max-w-[160px]
             <p className="mt-5 text-xs font-bold uppercase tracking-[.25em] text-[#f29963]">Kết thúc ván</p>
             <h2 className="mt-2 text-4xl font-black" style={{ fontFamily: 'var(--font-display)' }}>{winner === playerName ? 'Bạn đã hô TỚI!' : `${winner} chiến thắng!`}</h2>
             <p className="mt-4 text-white/65">Cảm ơn {playerName} đã cùng vào hội.</p>
-            <div className="mt-8 grid grid-cols-2 gap-3"><button onClick={() => { stopAudio(); onlineMode ? backToMode() : startGame() }} className="rounded-xl bg-[#c44837] px-4 py-3 font-bold">{onlineMode ? 'Về phòng hội' : 'Chơi ván nữa'}</button><button onClick={backToMode} className="rounded-xl border border-white/20 px-4 py-3 font-bold hover:bg-white/10">Về sảnh hội</button></div>
+            {winner === playerName && (
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/15 px-4 py-2 text-sm font-bold text-[#ffda86]">
+                <ChoiCoin size="sm" glow animate />
+                <span>Thưởng thắng cuộc: +15 Xu Chòi (Số dư: {userCoins} Xu)</span>
+              </div>
+            )}
+            <div className="mt-8 grid grid-cols-2 gap-3"><button onClick={() => { stopAudio(); onlineMode ? backToMode() : goToCardPicking() }} className="rounded-xl bg-[#c44837] px-4 py-3 font-bold">{onlineMode ? 'Về phòng hội' : 'Chơi ván nữa'}</button><button onClick={backToMode} className="rounded-xl border border-white/20 px-4 py-3 font-bold hover:bg-white/10">Về sảnh hội</button></div>
           </section>
         )}
       </main>
+
+      {/* MODAL NẠP XU (ĐỒNG BỘ SUPABASE DATABASE) */}
+      <CoinTopupModal
+        isOpen={isTopupModalOpen}
+        onClose={() => setIsTopupModalOpen(false)}
+        currentUser={currentUser}
+        onSuccess={(newCoins) => {
+          setUserCoins(newCoins)
+          const updated = authService.getCurrentUser()
+          setCurrentUser(updated)
+        }}
+      />
+
+      {/* MODAL CẢNH BÁO THOÁT VÁN CHƠI (KHÔNG HOÀN XU) */}
+      {showExitConfirmModal && (
+        <div
+          className="fixed inset-0 z-[600] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fadeIn"
+          role="alertdialog"
+          aria-modal="true"
+        >
+          <div className="relative w-full max-w-md rounded-3xl border-2 border-[#f6d274]/60 bg-gradient-to-b from-[#0b5558] via-[#073f43] to-[#04282b] p-6 text-center shadow-[0_20px_60px_rgba(0,0,0,0.8)] text-white">
+            {/* NÚT ĐÓNG X */}
+            <button
+              type="button"
+              onClick={handleCancelExit}
+              className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition"
+              aria-label="Đóng cảnh báo"
+            >
+              ✕
+            </button>
+
+            {/* ICON CẢNH BÁO */}
+            <div className="mx-auto mb-3.5 grid h-16 w-16 place-items-center rounded-full border-2 border-amber-400/60 bg-amber-500/20 text-3xl shadow-[0_0_30px_rgba(245,158,11,0.3)] animate-pulse">
+              ⚠️
+            </div>
+
+            {/* TIÊU ĐỀ */}
+            <h3
+              className="text-xl sm:text-2xl font-black text-[#ffecb3] tracking-wide"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              RỜI KHỎI VÁN CHƠI?
+            </h3>
+
+            {/* NỘI DUNG CẢNH BÁO */}
+            <div className="mt-3.5 space-y-2.5 text-xs sm:text-sm text-white/85 leading-relaxed">
+              <p>
+                Ván chơi đang diễn ra sôi nổi! Nếu bạn tự ý thoát ra lúc này:
+              </p>
+
+              <div className="rounded-2xl border border-rose-500/40 bg-rose-950/70 p-3.5 text-rose-200 font-semibold shadow-inner text-left">
+                <div className="flex items-center gap-2 text-rose-300 font-black text-sm mb-1">
+                  <span>⛔</span>
+                  <span>KHÔNG ĐƯỢC HOÀN XU</span>
+                </div>
+                <p className="text-xs text-rose-200/90 leading-relaxed">
+                  Số Xu bạn đã bỏ ra để mua thẻ/cây bài vào hội{' '}
+                  <strong className="text-[#ffda86]">
+                    ({(playerTrees.length > 0 ? playerTrees.length * 3 : (draftTrees.length * 3 || 3))} Xu)
+                  </strong>{' '}
+                  sẽ bị mất và <strong>không được hoàn lại</strong>!
+                </p>
+              </div>
+
+              <p className="font-semibold text-[#fce893] pt-1">
+                Bạn có đồng ý thoát không?
+              </p>
+            </div>
+
+            {/* CÁC NÚT LỰA CHỌN */}
+            <div className="mt-6 flex flex-col-reverse sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={handleConfirmExit}
+                className="w-full rounded-xl border border-rose-500/50 bg-rose-900/40 hover:bg-rose-800 text-rose-200 font-bold py-3 px-4 text-xs sm:text-sm transition active:scale-95 shadow-md"
+              >
+                Đồng ý thoát
+              </button>
+              <button
+                type="button"
+                onClick={handleCancelExit}
+                className="w-full rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-110 text-white font-black py-3 px-4 text-xs sm:text-sm transition active:scale-95 shadow-[0_4px_20px_rgba(16,185,129,0.35)]"
+              >
+                Ở lại chơi tiếp ✦
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
