@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+
 -- Tự động thêm cột payment_method và coins_paid nếu bảng orders đã tồn tại
 DO $$
 BEGIN
