@@ -3230,7 +3230,6 @@ function Footer({
                   Cập nhật tin tức & sự kiện mới nhất
                 </div>
               </div>
-
             </a>
           </div>
         </div>
