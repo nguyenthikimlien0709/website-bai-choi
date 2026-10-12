@@ -987,22 +987,24 @@ function IntroScreens({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
                 'linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.18) 22%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.02) 60%, rgba(0,0,0,0.18) 78%, rgba(0,0,0,0.55) 100%)',
             }}
           >
-            {/* Huy hiệu UNESCO */}
-            <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1 text-[11px] font-semibold tracking-wider text-amber-200 backdrop-blur-md border border-white/20 uppercase shadow-md">
-              <span>🏛️</span>
-              <span>{isVietnamese ? 'Di sản văn hóa phi vật thể UNESCO' : 'UNESCO Intangible Cultural Heritage'}</span>
+            {/* Huy hiệu UNESCO - Chữ trắng, bự lên, in đậm */}
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm lg:text-base font-bold tracking-wider text-white backdrop-blur-md border border-white/30 uppercase shadow-md">
+              <span className="text-sm sm:text-base">🏛️</span>
+              <span className="font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]">
+                {isVietnamese ? 'Di sản văn hóa phi vật thể UNESCO' : 'UNESCO Intangible Cultural Heritage'}
+              </span>
             </div>
 
-            {/* Đoạn 1: Lời giới thiệu chính - Chữ nhỏ gọn, trang nhã */}
-            <p className="text-sm leading-7 sm:text-base sm:leading-8 lg:text-lg lg:leading-9 font-medium text-white/95 max-w-2xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+            {/* Đoạn 1: Lời giới thiệu chính */}
+            <p className="text-base leading-8 sm:text-xl sm:leading-9 lg:text-2xl lg:leading-10 font-bold text-white max-w-2xl mx-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
               {c.hero.body}
             </p>
 
             {/* Vạch ngăn cách trang nhã */}
             <div className="mx-auto my-4 sm:my-5 h-px w-20 sm:w-28 bg-gradient-to-r from-transparent via-amber-300/80 to-transparent" />
 
-            {/* Đoạn 2: Thông tin vinh danh UNESCO - Chữ nhỏ gọn */}
-            <p className="text-xs leading-5 sm:text-sm sm:leading-6 text-emerald-100/90 font-normal max-w-xl mx-auto drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+            {/* Đoạn 2: Thông tin vinh danh UNESCO */}
+            <p className="text-xs leading-6 sm:text-sm sm:leading-7 lg:text-base text-emerald-100/90 font-medium max-w-xl mx-auto drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
               {overview}
             </p>
           </div>
