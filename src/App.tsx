@@ -878,19 +878,22 @@ function ReferenceScreen({
   )
 }
 
-function ReferenceLanding({ c, lang, onPlay }: { c: typeof content.VIE; lang: Lang; onPlay: () => void }) {
+function HeroScreen({ c, lang, onPlay }: { c: typeof content.VIE; lang: Lang; onPlay: () => void }) {
   const isVietnamese = lang === 'VIE'
-  const overview = isVietnamese
-    ? 'Ngày 07/12/2017, Bài Chòi Trung Bộ Việt Nam được UNESCO ghi danh là Di sản văn hóa phi vật thể đại diện của nhân loại, tôn vinh giá trị nghệ thuật và tinh thần cộng đồng.'
-    : 'On December 7, 2017, Central Vietnamese Bài Chòi was inscribed by UNESCO on the Representative List of the Intangible Cultural Heritage of Humanity, honoring its artistic and communal values.'
-  const longIntroduction = isVietnamese
-    ? 'Bài Chòi không chỉ là một trò chơi dân gian mà còn là một loại hình nghệ thuật và di sản văn hóa đặc sắc của miền Trung Việt Nam. Giá trị của Bài Chòi được thể hiện qua sự kết hợp hài hòa giữa nghệ thuật diễn xướng, âm nhạc dân gian và tính gắn kết cộng đồng. Những câu hô, lời hát ứng tác của anh Hiệu, chị Hiệu cùng tiếng trống, tiếng mõ tạo nên không gian biểu diễn sinh động, giàu bản sắc. Thông qua các cuộc chơi, người dân có cơ hội giao lưu, sẻ chia và gìn giữ những giá trị văn hóa truyền thống được lưu truyền qua nhiều thế hệ.'
-    : 'Bài Chòi is not only a folk game but also a distinctive performing art and cultural heritage of Central Vietnam. Its value lies in the harmony of improvised performance, folk music and community connection. The chants of the callers, accompanied by drums and wooden clappers, create a vivid cultural space where people meet, share and preserve traditions passed down through generations.'
 
   return (
-    <main>
-        {/* Screen 1: visual opening */}
-        <ReferenceScreen id="home">
+    <section
+      id="home"
+      className="relative flex min-h-[100svh] scroll-mt-20 items-center overflow-x-clip px-4 pb-12 pt-24 sm:px-8 sm:pb-14 sm:pt-28 lg:px-12"
+      style={{
+        backgroundColor: '#EEF6F1',
+        backgroundImage: 'linear-gradient(rgba(255,255,255,0.12), rgba(255,255,255,0.12)), url("/assets/Background-toan.jpg")',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+      }}
+    >
+      <div className="relative z-10 mx-auto w-full max-w-7xl">
         <div data-reveal="up" className="mx-auto w-full max-w-[900px] xl:max-w-[980px]">
           <div className="home-hero-stage relative -translate-y-7 overflow-hidden sm:-translate-y-9 lg:-translate-y-12">
             <img
@@ -902,15 +905,16 @@ function ReferenceLanding({ c, lang, onPlay }: { c: typeof content.VIE; lang: La
             <div className="absolute bottom-[31%] left-[51%] right-[4%] z-30 hidden text-center lg:block">
               <div className="grid grid-cols-2 gap-4">
                 <button
+                  type="button"
                   onClick={onPlay}
-                  className="rounded-2xl border border-white/25 px-4 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 xl:text-base"
+                  className="rounded-2xl border border-white/25 px-4 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 xl:text-base cursor-pointer"
                   style={{ background: 'rgba(196,72,55,0.94)', boxShadow: '0 10px 28px rgba(0,28,48,0.3)' }}
                 >
                   {isVietnamese ? 'Chơi Ngay' : 'Play Now'}
                 </button>
                 <a
                   href="#rules"
-                  className="rounded-2xl border border-white/25 px-4 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 xl:text-base"
+                  className="rounded-2xl border border-white/25 px-4 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 xl:text-base cursor-pointer"
                   style={{ background: 'rgba(4,55,79,0.84)', boxShadow: '0 10px 28px rgba(0,28,48,0.3)' }}
                 >
                   {isVietnamese ? 'Luật Chơi' : 'Game Rules'}
@@ -920,103 +924,114 @@ function ReferenceLanding({ c, lang, onPlay }: { c: typeof content.VIE; lang: La
 
             <div className="absolute bottom-[26%] left-[48%] right-[3%] z-30 text-center lg:hidden">
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
-              <button
-                onClick={onPlay}
-                className="rounded-lg border border-white/25 px-2 py-2 text-[10px] font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 min-[420px]:text-xs sm:rounded-xl sm:px-3 sm:py-2.5 sm:text-sm"
-                style={{ background: 'rgba(196,72,55,0.94)', boxShadow: '0 6px 18px rgba(0,28,48,0.26)' }}
-              >
-                {isVietnamese ? 'Chơi Ngay' : 'Play Now'}
-              </button>
-              <a
-                href="#rules"
-                className="rounded-lg border border-white/25 px-2 py-2 text-[10px] font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 min-[420px]:text-xs sm:rounded-xl sm:px-3 sm:py-2.5 sm:text-sm"
-                style={{ background: 'rgba(4,55,79,0.82)', boxShadow: '0 6px 18px rgba(0,28,48,0.26)' }}
-              >
-                {isVietnamese ? 'Luật Chơi' : 'Game Rules'}
-              </a>
+                <button
+                  type="button"
+                  onClick={onPlay}
+                  className="rounded-lg border border-white/25 px-2 py-2 text-[10px] font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 min-[420px]:text-xs sm:rounded-xl sm:px-3 sm:py-2.5 sm:text-sm cursor-pointer"
+                  style={{ background: 'rgba(196,72,55,0.94)', boxShadow: '0 6px 18px rgba(0,28,48,0.26)' }}
+                >
+                  {isVietnamese ? 'Chơi Ngay' : 'Play Now'}
+                </button>
+                <a
+                  href="#rules"
+                  className="rounded-lg border border-white/25 px-2 py-2 text-[10px] font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 min-[420px]:text-xs sm:rounded-xl sm:px-3 sm:py-2.5 sm:text-sm cursor-pointer"
+                  style={{ background: 'rgba(4,55,79,0.82)', boxShadow: '0 6px 18px rgba(0,28,48,0.26)' }}
+                >
+                  {isVietnamese ? 'Luật Chơi' : 'Game Rules'}
+                </a>
               </div>
             </div>
           </div>
         </div>
-        </ReferenceScreen>
+      </div>
+    </section>
+  )
+}
 
-      {/* Screen 2: home introduction */}
-        <ReferenceScreen id="overview">
+function IntroScreens({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
+  const isVietnamese = lang === 'VIE'
+  const overview = isVietnamese
+    ? 'Ngày 07/12/2017, Bài Chòi Trung Bộ Việt Nam được UNESCO ghi danh là Di sản văn hóa phi vật thể đại diện của nhân loại, tôn vinh giá trị nghệ thuật và tinh thần cộng đồng.'
+    : 'On December 7, 2017, Central Vietnamese Bài Chòi was inscribed by UNESCO on the Representative List of the Intangible Cultural Heritage of Humanity, honoring its artistic and communal values.'
+  const longIntroduction = isVietnamese
+    ? 'Bài Chòi không chỉ là một trò chơi dân gian mà còn là một loại hình nghệ thuật và di sản văn hóa đặc sắc của miền Trung Việt Nam. Giá trị của Bài Chòi được thể hiện qua sự kết hợp hài hòa giữa nghệ thuật diễn xướng, âm nhạc dân gian và tính gắn kết cộng đồng. Những câu hô, lời hát ứng tác của anh Hiệu, chị Hiệu cùng tiếng trống, tiếng mõ tạo nên không gian biểu diễn sinh động, giàu bản sắc. Thông qua các cuộc chơi, người dân có cơ hội giao lưu, sẻ chia và gìn giữ những giá trị văn hóa truyền thống được lưu truyền qua nhiều thế hệ.'
+    : 'Bài Chòi is not only a folk game but also a distinctive performing art and cultural heritage of Central Vietnam. Its value lies in the harmony of improvised performance, folk music and community connection. The chants of the callers, accompanied by drums and wooden clappers, create a vivid cultural space where people meet, share and preserve traditions passed down through generations.'
+
+  return (
+    <>
+      {/* Screen 2: home introduction (UNESCO) */}
+      <ReferenceScreen id="overview">
         <div className="mx-auto w-full max-w-5xl">
-          <p
-            data-reveal="up"
-            className="mx-auto max-w-4xl text-base leading-8 sm:text-lg sm:leading-9 lg:text-xl lg:leading-9"
-            style={{ color: '#172D27' }}
-          >
-            {c.hero.body}
-          </p>
+          <div data-reveal="up" className="mx-auto max-w-4xl rounded-3xl bg-white/85 p-6 sm:p-8 backdrop-blur-md shadow-xl border border-white/50">
+            <p className="text-base leading-8 sm:text-lg sm:leading-9 lg:text-xl lg:leading-9 font-medium text-[#172D27]">
+              {c.hero.body}
+            </p>
+          </div>
 
-          <figure data-reveal="up" className="mx-auto mt-5 w-full max-w-3xl sm:mt-7">
-            <div className="overflow-hidden border-[5px] border-white/75 bg-white/80 p-1 shadow-[0_18px_42px_rgba(39,91,80,0.18)] sm:border-[8px]">
-            <img
-              src="/assets/trangchu2.jpg"
-              alt="Lễ đón bằng UNESCO ghi danh Nghệ thuật Bài Chòi Trung Bộ Việt Nam"
-              className="aspect-[16/10] w-full object-cover"
-            />
+          <figure data-reveal="up" className="mx-auto mt-6 w-full max-w-3xl sm:mt-8">
+            <div className="overflow-hidden rounded-2xl border-[5px] border-white/80 bg-white/85 p-1.5 shadow-[0_18px_42px_rgba(39,91,80,0.22)] sm:border-[8px]">
+              <img
+                src="/assets/trangchu2.jpg"
+                alt="Lễ đón bằng UNESCO ghi danh Nghệ thuật Bài Chòi Trung Bộ Việt Nam"
+                className="aspect-[16/10] w-full object-cover rounded-xl"
+              />
             </div>
-            <figcaption
-              className="mx-auto mt-3 max-w-[92%] text-left text-xs leading-6 sm:text-sm sm:leading-7 lg:text-base"
-              style={{ color: '#294A40' }}
-            >
+            <figcaption className="mx-auto mt-3.5 max-w-[94%] text-left rounded-2xl bg-white/85 p-4 sm:p-5 backdrop-blur-md text-xs leading-6 sm:text-sm sm:leading-7 lg:text-base font-medium text-[#203A32] shadow-md border border-white/50">
               {overview}
             </figcaption>
           </figure>
-          </div>
-        </ReferenceScreen>
+        </div>
+      </ReferenceScreen>
 
-      {/* Screen 3: card introduction */}
-        <ReferenceScreen id="history">
+      {/* Screen 3: card introduction (Thẻ bài) */}
+      <ReferenceScreen id="history">
         <div className="grid items-start gap-7 sm:gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
-          <div>
+          <div className="rounded-3xl bg-white/85 p-6 sm:p-8 backdrop-blur-md shadow-xl border border-white/50">
             <h2
               data-reveal="up"
               className="mb-6 flex items-center gap-3 text-2xl sm:mb-8 sm:gap-4 sm:text-4xl lg:text-5xl"
-              style={{ fontFamily: 'var(--font-section)', color: '#466858' }}
+              style={{ fontFamily: 'var(--font-section)', color: '#006368' }}
             >
-              <span className="h-3 w-3 shrink-0 rounded-full sm:h-4 sm:w-4" style={{ background: '#527867' }} />
+              <span className="h-3 w-3 shrink-0 rounded-full sm:h-4 sm:w-4" style={{ background: '#006368' }} />
               {isVietnamese ? 'GIỚI THIỆU' : 'INTRODUCTION'}
             </h2>
-            <p data-reveal="left" className="text-base leading-8 sm:text-lg sm:leading-9 lg:pl-5" style={{ color: '#203A32' }}>
+            <p data-reveal="left" className="text-base leading-8 sm:text-lg sm:leading-9 lg:pl-2 text-[#203A32]">
               {c.history.description}
             </p>
           </div>
 
           <div data-reveal="right" className="overflow-hidden lg:pt-1">
+            <div className="rounded-3xl bg-white/80 p-3 backdrop-blur-md shadow-xl border border-white/50">
               <img
                 src="/assets/gioithieu1.jpg"
                 alt="Bộ thẻ bài Chòi"
-                className="artwork-blend artwork-blend-cards aspect-[16/10] w-full object-contain"
+                className="aspect-[16/10] w-full object-contain rounded-2xl"
               />
+            </div>
           </div>
         </div>
-        </ReferenceScreen>
+      </ReferenceScreen>
 
-      {/* Screen 4: cultural introduction */}
-        <ReferenceScreen>
-        <div>
+      {/* Screen 4: cultural introduction (Di sản văn hóa) */}
+      <ReferenceScreen>
+        <div className="mx-auto max-w-5xl rounded-3xl bg-white/85 p-7 sm:p-10 backdrop-blur-md shadow-xl border border-white/50">
           <h2
             data-reveal="up"
-            className="mb-8 flex items-center gap-3 text-2xl sm:mb-14 sm:gap-4 sm:text-4xl lg:text-5xl"
-            style={{ fontFamily: 'var(--font-section)', color: '#466858' }}
+            className="mb-6 flex items-center gap-3 text-2xl sm:mb-8 sm:gap-4 sm:text-4xl lg:text-5xl"
+            style={{ fontFamily: 'var(--font-section)', color: '#006368' }}
           >
-            <span className="h-3 w-3 shrink-0 rounded-full sm:h-4 sm:w-4" style={{ background: '#527867' }} />
+            <span className="h-3 w-3 shrink-0 rounded-full sm:h-4 sm:w-4" style={{ background: '#006368' }} />
             {isVietnamese ? 'GIỚI THIỆU' : 'INTRODUCTION'}
           </h2>
           <p
             data-reveal="up"
-            className="mx-auto max-w-5xl text-base leading-8 sm:text-lg sm:leading-9 lg:text-xl lg:leading-10"
-            style={{ color: '#203A32' }}
+            className="mx-auto max-w-5xl text-base leading-8 sm:text-lg sm:leading-9 lg:text-xl lg:leading-10 text-[#203A32]"
           >
             {longIntroduction}
           </p>
         </div>
-        </ReferenceScreen>
-    </main>
+      </ReferenceScreen>
+    </>
   )
 }
 
@@ -1246,20 +1261,22 @@ function Rules({ c }: { c: typeof content.VIE }) {
     <section id="rules" className="flex min-h-[100svh] scroll-mt-20 items-center px-4 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
       <div className="mx-auto w-full max-w-7xl">
         <div data-reveal="up" className="mb-9 text-center sm:mb-12 lg:mb-14">
-          <div className="mb-4 inline-flex items-center gap-2">
-            <LotusOrnament size={20} />
-            <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#006368' }}>
-              {c.rules.sub}
-            </span>
-            <LotusOrnament size={20} />
+          <div className="inline-block rounded-3xl bg-white/85 px-8 py-5 backdrop-blur-md shadow-xl border border-white/60">
+            <div className="mb-3 inline-flex items-center gap-2">
+              <LotusOrnament size={20} />
+              <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#006368' }}>
+                {c.rules.sub}
+              </span>
+              <LotusOrnament size={20} />
+            </div>
+            <h2
+              className="mb-3 text-3xl font-bold sm:text-4xl lg:text-5xl"
+              style={{ fontFamily: 'var(--font-section)', color: '#006368' }}
+            >
+              {c.rules.title}
+            </h2>
+            <DragonDivider />
           </div>
-          <h2
-            className="mb-5 text-3xl font-bold sm:text-4xl lg:text-6xl"
-            style={{ fontFamily: 'var(--font-section)', color: '#006368' }}
-          >
-            {c.rules.title}
-          </h2>
-          <DragonDivider />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
@@ -1497,182 +1514,121 @@ function Characters({ c }: { c: typeof content.VIE }) {
 
 
   return (
-    <section
-      id="characters"
-      className="
-        scroll-mt-24
-        px-4
-        py-20
+    <div id="characters" className="w-full">
+      {phoGroups.map((pho, phoIndex) => {
+        const activeIndex =
+          activeCards[phoIndex] ?? 0
 
-        sm:px-8
+        const card =
+          pho.cards[activeIndex]
 
-        lg:px-12
-        lg:py-28
-      "
-    >
-      <div className="mx-auto max-w-7xl">
+        if (!card) return null
 
-        {/* ================================================= */}
-        {/* TIÊU ĐỀ */}
-        {/* ================================================= */}
+        const prevIndex =
+          (activeIndex - 1 + pho.cards.length) %
+          pho.cards.length
 
-        <div
-          data-reveal="up"
-          className="mb-12 text-center lg:mb-16"
-        >
+        const nextIndex =
+          (activeIndex + 1) %
+          pho.cards.length
 
-          <div className="mb-4 inline-flex items-center gap-2">
+        const prevCard = pho.cards[prevIndex]
+        const nextCard = pho.cards[nextIndex]
 
-            <LotusOrnament size={20} />
+        const cardIndex =
+          pho.startIndex + activeIndex
 
-            <span
-              className="
-                text-xs
-                font-semibold
-                uppercase
-                tracking-widest
-              "
-              style={{ color: '#006368' }}
-            >
-              {c.characters.sub}
-            </span>
+        const cardInfo =
+          c.characters.cards[cardIndex]
 
-            <LotusOrnament size={20} />
+        const isFlipped =
+          flippedCards.has(cardIndex)
 
-          </div>
-
-
-          <h2
-            className="
-              mb-4
-              text-3xl
-              font-bold
-
-              sm:text-4xl
-              lg:text-5xl
-            "
-            style={{
-              fontFamily: 'var(--font-section)',
-              color: '#006368',
-            }}
+        return (
+          <section
+            key={pho.id}
+            id={phoIndex === 0 ? 'characters-showcase' : undefined}
+            data-reveal="up"
+            className="relative flex min-h-[100svh] scroll-mt-20 items-center justify-center px-4 py-10 sm:px-8 sm:py-14 lg:px-12"
           >
-            {c.characters.title}
-          </h2>
+            <div className="mx-auto w-full max-w-7xl">
+              {phoIndex === 0 && (
+                <div
+                  data-reveal="up"
+                  className="mb-6 text-center sm:mb-8"
+                >
+                  <div className="inline-block rounded-3xl bg-white/85 px-6 py-3.5 backdrop-blur-md shadow-xl border border-white/60">
+                    <div className="mb-1.5 inline-flex items-center gap-2">
+                      <LotusOrnament size={18} />
+                      <span
+                        className="text-xs font-semibold uppercase tracking-widest"
+                        style={{ color: '#006368' }}
+                      >
+                        {c.characters.sub}
+                      </span>
+                      <LotusOrnament size={18} />
+                    </div>
+                    <h2
+                      className="text-2xl font-bold sm:text-3xl lg:text-4xl"
+                      style={{
+                        fontFamily: 'var(--font-section)',
+                        color: '#006368',
+                      }}
+                    >
+                      {c.characters.title}
+                    </h2>
+                  </div>
+                </div>
+              )}
 
+              {/* =========================== */}
+              {/* TÊN PHÔ */}
+              {/* =========================== */}
 
-          <DragonDivider />
+              <div className="mb-6 text-center sm:mb-8">
+                <span
+                  className="
+                    inline-flex
+                    items-center
+                    gap-3
+                    rounded-full
+                    bg-white/90
+                    px-6
+                    py-2
+                    text-sm
+                    font-black
+                    uppercase
+                    tracking-[0.28em]
+                    shadow-md
+                    backdrop-blur-md
+                    sm:text-base
+                    border
+                    border-white/60
+                  "
+                  style={{
+                    color: '#006368',
+                    fontFamily: 'var(--font-display)',
+                  }}
+                >
+                  <span
+                    className="h-px w-6 sm:w-12"
+                    style={{
+                      background:
+                        'linear-gradient(90deg, transparent, #006368)',
+                    }}
+                  />
 
-        </div>
-
-
-        {/* ================================================= */}
-        {/* CÁC PHÔ */}
-        {/* ================================================= */}
-
-        <div className="space-y-20 lg:space-y-28">
-
-          {phoGroups.map((pho, phoIndex) => {
-
-            const activeIndex =
-              activeCards[phoIndex] ?? 0
-
-            const card =
-              pho.cards[activeIndex]
-
-            if (!card) return null
-
-            const prevIndex =
-  (activeIndex - 1 + pho.cards.length) %
-  pho.cards.length
-
-const nextIndex =
-  (activeIndex + 1) %
-  pho.cards.length
-
-const prevCard = pho.cards[prevIndex]
-const nextCard = pho.cards[nextIndex]
-
-
-            /*
-              cardIndex là index thực trong toàn bộ CARD_ASSETS.
-
-              PHÔ 1:
-              0 → 9
-
-              PHÔ 2:
-              10 → 19
-
-              PHÔ 3:
-              20 → 29
-            */
-            const cardIndex =
-              pho.startIndex + activeIndex
-
-
-            /*
-              Hiện tại content.characters.cards mới có 10 phần tử.
-
-              Khi thêm 20 lá sau bạn cũng thêm description tương ứng.
-            */
-            const cardInfo =
-              c.characters.cards[cardIndex]
-
-
-            const isFlipped =
-              flippedCards.has(cardIndex)
-
-
-            return (
-              <div
-                key={pho.id}
-                data-reveal="up"
-                className="pho-section"
-              >
-
-                {/* =========================== */}
-                {/* TÊN PHÔ */}
-                {/* =========================== */}
-
-                <div className="mb-7 text-center sm:mb-9">
+                  {pho.title}
 
                   <span
-                    className="
-                      inline-flex
-                      items-center
-                      gap-3
-
-                      text-sm
-                      font-black
-                      uppercase
-                      tracking-[0.32em]
-
-                      sm:text-base
-                    "
+                    className="h-px w-6 sm:w-12"
                     style={{
-                      color: '#006368',
-                      fontFamily: 'var(--font-display)',
+                      background:
+                        'linear-gradient(90deg, #006368, transparent)',
                     }}
-                  >
-                    <span
-                      className="h-px w-10 sm:w-20"
-                      style={{
-                        background:
-                          'linear-gradient(90deg, transparent, #006368)',
-                      }}
-                    />
-
-                    {pho.title}
-
-                    <span
-                      className="h-px w-10 sm:w-20"
-                      style={{
-                        background:
-                          'linear-gradient(90deg, #006368, transparent)',
-                      }}
-                    />
-                  </span>
-
-                </div>
+                  />
+                </span>
+              </div>
 
 
                 {/* =========================== */}
@@ -2410,37 +2366,31 @@ const nextCard = pho.cards[nextIndex]
                 </div>
 
 
+                {phoIndex === phoGroups.length - 1 && (
+                  <p
+                    className="
+                      mt-8
+                      text-center
+                      text-xs
+                      font-semibold
+                      italic
+                      opacity-75
+                    "
+                    style={{
+                      color: '#006368',
+                      fontFamily: 'var(--font-body)',
+                    }}
+                  >
+                    {isVietnamese
+                      ? `${CARD_ASSETS.length} thẻ bài hiện có`
+                      : `${CARD_ASSETS.length} cards currently available`}
+                  </p>
+                )}
               </div>
-            )
-          })}
-
-        </div>
-
-
-        {/* ================================================= */}
-        {/* CHÚ THÍCH */}
-        {/* ================================================= */}
-
-        <p
-          className="
-            mt-12
-            text-center
-            text-xs
-            italic
-            opacity-60
-          "
-          style={{
-            color: '#006368',
-            fontFamily: 'var(--font-body)',
-          }}
-        >
-          {isVietnamese
-            ? `${CARD_ASSETS.length} thẻ bài hiện có`
-            : `${CARD_ASSETS.length} cards currently available`}
-        </p>
-
-      </div>
-    </section>
+            </section>
+          )
+        })}
+    </div>
   )
 }
 // ─── Publications ─────────────────────────────────────────────────────────────
@@ -3665,40 +3615,34 @@ export default function App() {
           }}
           onOpenCoins={() => setCoinModalOpen(true)}
         />
-        <div className="relative isolate">
-          <div
-            aria-hidden="true"
-            className={`pointer-events-none fixed inset-0 z-0 ${showContent ? 'site-background-enter' : ''}`}
-            style={{
-              backgroundColor: '#EEF6F1',
-              backgroundImage: 'linear-gradient(rgba(255,255,255,0.12), rgba(255,255,255,0.12)), url("/assets/Background-toan.jpg")',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: 'cover',
+        <div className={`relative isolate ${showContent ? 'site-content-enter' : ''}`}>
+          {/* Lướt 1: Trang chủ giữ nguyên ảnh và hình nền cũ (Background-toan.jpg) */}
+          <HeroScreen
+            c={c}
+            lang={lang}
+            onPlay={() => {
+              setGameOpen(true)
             }}
           />
-          <div className={`relative z-10 ${showContent ? 'site-content-enter' : ''}`}>
-            <ReferenceLanding
-              c={c}
-              lang={lang}
-              onPlay={() => {
-                setGameOpen(true)
-              }}
-            />
+
+          {/* Dưới trang chủ: 7 lướt cuộn liền mạch với tranh cuộn nền.jpg */}
+          <div className="relative w-full overflow-hidden scroll-panorama-bg">
+            <IntroScreens c={c} lang={lang} />
             <Characters c={c} />
             <Rules c={c} />
-            <Footer
-              c={c}
-              onOpenPolicy={handleOpenPolicy}
-              onNavigateSection={(sec) => {
-                if (sec === 'shop') {
-                  setActivePortal('shop')
-                } else if (sec === 'play-offline' || sec === 'game') {
-                  setGameOpen(true)
-                }
-              }}
-            />
           </div>
+
+          <Footer
+            c={c}
+            onOpenPolicy={handleOpenPolicy}
+            onNavigateSection={(sec) => {
+              if (sec === 'shop') {
+                setActivePortal('shop')
+              } else if (sec === 'play-offline' || sec === 'game') {
+                setGameOpen(true)
+              }
+            }}
+          />
         </div>
       </div>
       {gameOpen && (
