@@ -861,16 +861,21 @@ function Nav({
 // ─── Reference landing screens ───────────────────────────────────────────────
 function ReferenceScreen({
   id,
+  className = '',
+  overlay,
   children,
 }: {
   id?: string
+  className?: string
+  overlay?: ReactNode
   children: ReactNode
 }) {
   return (
     <section
       id={id}
-      className="relative flex min-h-[100svh] scroll-mt-20 items-center overflow-x-clip px-4 pb-12 pt-24 sm:px-8 sm:pb-14 sm:pt-28 lg:px-12"
+      className={`relative flex min-h-[100svh] scroll-mt-20 items-center overflow-x-clip px-4 pb-12 pt-24 sm:px-8 sm:pb-14 sm:pt-28 lg:px-12 ${className}`}
     >
+      {overlay}
       <div className="relative z-10 mx-auto w-full max-w-7xl">
         {children}
       </div>
@@ -959,27 +964,48 @@ function IntroScreens({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
 
   return (
     <>
-      {/* Screen 2: home introduction (UNESCO) */}
-      <ReferenceScreen id="overview">
-        <div className="mx-auto w-full max-w-5xl">
-          <div data-reveal="up" className="mx-auto max-w-4xl rounded-3xl bg-white/85 p-6 sm:p-8 backdrop-blur-md shadow-xl border border-white/50">
-            <p className="text-base leading-8 sm:text-lg sm:leading-9 lg:text-xl lg:leading-9 font-medium text-[#172D27]">
+      {/* Screen 2: home introduction (UNESCO) - Nền trong suốt, 2 bên loang loang đen, gộp chữ */}
+      <ReferenceScreen
+        id="overview"
+        overlay={
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-0"
+            style={{
+              background:
+                'linear-gradient(90deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) 16%, rgba(0,0,0,0.05) 35%, transparent 45%, transparent 55%, rgba(0,0,0,0.05) 65%, rgba(0,0,0,0.45) 84%, rgba(0,0,0,0.82) 100%)',
+            }}
+          />
+        }
+      >
+        <div className="relative z-10 mx-auto w-full max-w-4xl text-center">
+          <div
+            data-reveal="up"
+            className="mx-auto rounded-3xl px-6 py-10 sm:px-12 sm:py-16"
+            style={{
+              background:
+                'linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.18) 22%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.02) 60%, rgba(0,0,0,0.18) 78%, rgba(0,0,0,0.55) 100%)',
+            }}
+          >
+            {/* Huy hiệu UNESCO */}
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-amber-200 backdrop-blur-md border border-white/20 uppercase shadow-md">
+              <span>🏛️</span>
+              <span>{isVietnamese ? 'Di sản văn hóa phi vật thể UNESCO' : 'UNESCO Intangible Cultural Heritage'}</span>
+            </div>
+
+            {/* Đoạn 1: Lời giới thiệu chính */}
+            <p className="text-lg leading-relaxed sm:text-2xl sm:leading-loose lg:text-3xl font-medium text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
               {c.hero.body}
             </p>
-          </div>
 
-          <figure data-reveal="up" className="mx-auto mt-6 w-full max-w-3xl sm:mt-8">
-            <div className="overflow-hidden rounded-2xl border-[5px] border-white/80 bg-white/85 p-1.5 shadow-[0_18px_42px_rgba(39,91,80,0.22)] sm:border-[8px]">
-              <img
-                src="/assets/trangchu2.jpg"
-                alt="Lễ đón bằng UNESCO ghi danh Nghệ thuật Bài Chòi Trung Bộ Việt Nam"
-                className="aspect-[16/10] w-full object-cover rounded-xl"
-              />
-            </div>
-            <figcaption className="mx-auto mt-3.5 max-w-[94%] text-left rounded-2xl bg-white/85 p-4 sm:p-5 backdrop-blur-md text-xs leading-6 sm:text-sm sm:leading-7 lg:text-base font-medium text-[#203A32] shadow-md border border-white/50">
+            {/* Vạch ngăn cách trang nhã */}
+            <div className="mx-auto my-6 sm:my-8 h-px w-28 sm:w-44 bg-gradient-to-r from-transparent via-amber-300/80 to-transparent" />
+
+            {/* Đoạn 2: Thông tin vinh danh UNESCO */}
+            <p className="text-sm leading-relaxed sm:text-base sm:leading-8 lg:text-lg text-emerald-100 font-normal max-w-3xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
               {overview}
-            </figcaption>
-          </figure>
+            </p>
+          </div>
         </div>
       </ReferenceScreen>
 
