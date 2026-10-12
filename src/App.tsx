@@ -1011,52 +1011,55 @@ function IntroScreens({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
         </div>
       </ReferenceScreen>
 
-      {/* Screen 3: card introduction (Thẻ bài) */}
+      {/* Screen 3: card introduction (Thẻ bài) - Bỏ ảnh phải, chuyển văn bản qua phải, khung loang đen */}
       <ReferenceScreen id="history">
-        <div className="grid items-start gap-7 sm:gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
-          <div className="rounded-3xl bg-white/85 p-6 sm:p-8 backdrop-blur-md shadow-xl border border-white/50">
+        <div className="flex w-full justify-end">
+          <div
+            data-reveal="up"
+            className="w-full max-w-xl lg:max-w-2xl rounded-3xl px-6 py-8 sm:px-10 sm:py-12"
+            style={{
+              background:
+                'linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.18) 22%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.02) 60%, rgba(0,0,0,0.18) 78%, rgba(0,0,0,0.55) 100%)',
+            }}
+          >
             <h2
-              data-reveal="up"
-              className="mb-6 flex items-center gap-3 text-2xl sm:mb-8 sm:gap-4 sm:text-4xl lg:text-5xl"
-              style={{ fontFamily: 'var(--font-section)', color: '#006368' }}
+              className="mb-5 flex items-center gap-3 text-2xl sm:text-3xl lg:text-4xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
+              style={{ fontFamily: 'var(--font-section)' }}
             >
-              <span className="h-3 w-3 shrink-0 rounded-full sm:h-4 sm:w-4" style={{ background: '#006368' }} />
+              <span className="h-3 w-3 shrink-0 rounded-full bg-amber-300 shadow-[0_0_8px_#FCD34D]" />
               {isVietnamese ? 'GIỚI THIỆU' : 'INTRODUCTION'}
             </h2>
-            <p data-reveal="left" className="text-base leading-8 sm:text-lg sm:leading-9 lg:pl-2 text-[#203A32]">
+            <p className="text-sm leading-7 sm:text-base sm:leading-8 lg:text-lg lg:leading-9 font-medium text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
               {c.history.description}
             </p>
-          </div>
-
-          <div data-reveal="right" className="overflow-hidden lg:pt-1">
-            <div className="rounded-3xl bg-white/80 p-3 backdrop-blur-md shadow-xl border border-white/50">
-              <img
-                src="/assets/gioithieu1.jpg"
-                alt="Bộ thẻ bài Chòi"
-                className="aspect-[16/10] w-full object-contain rounded-2xl"
-              />
-            </div>
           </div>
         </div>
       </ReferenceScreen>
 
       {/* Screen 4: cultural introduction (Di sản văn hóa) */}
       <ReferenceScreen>
-        <div className="mx-auto max-w-5xl rounded-3xl bg-white/85 p-7 sm:p-10 backdrop-blur-md shadow-xl border border-white/50">
-          <h2
+        <div className="mx-auto max-w-4xl text-center">
+          <div
             data-reveal="up"
-            className="mb-6 flex items-center gap-3 text-2xl sm:mb-8 sm:gap-4 sm:text-4xl lg:text-5xl"
-            style={{ fontFamily: 'var(--font-section)', color: '#006368' }}
+            className="mx-auto rounded-3xl px-6 py-8 sm:px-10 sm:py-12"
+            style={{
+              background:
+                'linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.18) 22%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.02) 60%, rgba(0,0,0,0.18) 78%, rgba(0,0,0,0.55) 100%)',
+            }}
           >
-            <span className="h-3 w-3 shrink-0 rounded-full sm:h-4 sm:w-4" style={{ background: '#006368' }} />
-            {isVietnamese ? 'GIỚI THIỆU' : 'INTRODUCTION'}
-          </h2>
-          <p
-            data-reveal="up"
-            className="mx-auto max-w-5xl text-base leading-8 sm:text-lg sm:leading-9 lg:text-xl lg:leading-10 text-[#203A32]"
-          >
-            {longIntroduction}
-          </p>
+            <h2
+              className="mb-5 inline-flex items-center gap-3 text-2xl sm:text-3xl lg:text-4xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
+              style={{ fontFamily: 'var(--font-section)' }}
+            >
+              <span className="h-3 w-3 shrink-0 rounded-full bg-amber-300 shadow-[0_0_8px_#FCD34D]" />
+              {isVietnamese ? 'GIỚI THIỆU' : 'INTRODUCTION'}
+            </h2>
+            <p
+              className="mx-auto max-w-3xl text-sm leading-7 sm:text-base sm:leading-8 lg:text-lg lg:leading-9 font-medium text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
+            >
+              {longIntroduction}
+            </p>
+          </div>
         </div>
       </ReferenceScreen>
     </>
@@ -3655,9 +3658,20 @@ export default function App() {
 
           {/* Dưới trang chủ: 7 lướt cuộn liền mạch với tranh cuộn nền.jpg */}
           <div className="relative w-full overflow-hidden scroll-panorama-bg">
-            <IntroScreens c={c} lang={lang} />
-            <Characters c={c} />
-            <Rules c={c} />
+            {/* Lớp phủ đen loang 2 bên từ đầu đến cuối (Edge vignette) */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-0"
+              style={{
+                background:
+                  'linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.48) 14%, rgba(0,0,0,0.08) 28%, transparent 38%, transparent 62%, rgba(0,0,0,0.08) 72%, rgba(0,0,0,0.48) 86%, rgba(0,0,0,0.85) 100%)',
+              }}
+            />
+            <div className="relative z-10">
+              <IntroScreens c={c} lang={lang} />
+              <Characters c={c} />
+              <Rules c={c} />
+            </div>
           </div>
 
           <Footer
