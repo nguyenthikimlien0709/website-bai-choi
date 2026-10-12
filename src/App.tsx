@@ -128,31 +128,31 @@ const content = {
 
 
         // PHÔ 02 — LÁ 11 → 20
-{ name: 'Nhất Nọc', symbol: '', meaning: 'Gốc rễ & Cột trụ – Tượng trưng cho điểm tựa chắc chắn, nền tảng vững vàng và sự khởi đầu.' },
-{ name: 'Nhì Nghèo', symbol: '', meaning: ' Thử thách & Vượt khó – Tượng trưng cho giai đoạn gian khó, nhắc nhở sự kiên trì để vượt qua thiếu sót.' },
-{ name: 'Ba Gà', symbol: '', meaning: 'Siêng năng & Báo tin – Tượng trưng cho sự chăm chỉ, thức khuya dậy sớm và khởi đầu một ngày mới/tin vui.' },
-{ name: 'Tứ Dóng', symbol: '', meaning: 'Gắn kết & Gánh vác – Tượng trưng cho sự kết nối, chịu khó gánh vác trách nhiệm và công việc.' },
-{ name: 'Ngũ Đụm', symbol: '', meaning: 'Hội tụ & Tích lũy – Tượng trưng cho điểm trung tâm, sự cân bằng và gom góp thành quả.' },
-{ name: 'Sáu Hột', symbol: '', meaning: 'Dẻo dai & Tích trữ – Tượng trưng cho thành quả lao động, sự tích lũy nhỏ tạo nên giá trị lớn.' },
-{ name: 'Bảy Thưa', symbol: '', meaning: 'Tượng trưng cho sự thưa thớt, buông bớt rắc rối, linh hoạt thả lỏng và canh giữ thành quả (hình ảnh bù nhìn giữ ruộng lúa đã thu hoạch).' },
-{ name: 'Tám Dầy', symbol: '', meaning: 'Tượng trưng cho sự dày dặn, đắt giá, khắt khe chuẩn mực và tình cảm/tài lộc gắn kết bền chặt (hình ảnh nút thắt may mắn đồng tâm).' },
-{ name: 'Chín Gối', symbol: '', meaning: 'Tâm an & Bình yên – Tượng trưng cho sự nghỉ ngơi, thư thái nội tại và an ổn tinh thần.' },
-{ name: 'Đỏ Mỏ', symbol: '', meaning: 'May mắn & Tỏa sáng – Tượng trưng cho cơ hội tốt lành, tin vui, tài lộc và sự khởi sắc rực rỡ.' },
+        { name: 'Nhất Nọc', symbol: '', meaning: 'Gốc rễ & Cột trụ – Tượng trưng cho điểm tựa chắc chắn, nền tảng vững vàng và sự khởi đầu.' },
+        { name: 'Nhì Nghèo', symbol: '', meaning: ' Thử thách & Vượt khó – Tượng trưng cho giai đoạn gian khó, nhắc nhở sự kiên trì để vượt qua thiếu sót.' },
+        { name: 'Ba Gà', symbol: '', meaning: 'Siêng năng & Báo tin – Tượng trưng cho sự chăm chỉ, thức khuya dậy sớm và khởi đầu một ngày mới/tin vui.' },
+        { name: 'Tứ Dóng', symbol: '', meaning: 'Gắn kết & Gánh vác – Tượng trưng cho sự kết nối, chịu khó gánh vác trách nhiệm và công việc.' },
+        { name: 'Ngũ Đụm', symbol: '', meaning: 'Hội tụ & Tích lũy – Tượng trưng cho điểm trung tâm, sự cân bằng và gom góp thành quả.' },
+        { name: 'Sáu Hột', symbol: '', meaning: 'Dẻo dai & Tích trữ – Tượng trưng cho thành quả lao động, sự tích lũy nhỏ tạo nên giá trị lớn.' },
+        { name: 'Bảy Thưa', symbol: '', meaning: 'Tượng trưng cho sự thưa thớt, buông bớt rắc rối, linh hoạt thả lỏng và canh giữ thành quả (hình ảnh bù nhìn giữ ruộng lúa đã thu hoạch).' },
+        { name: 'Tám Dầy', symbol: '', meaning: 'Tượng trưng cho sự dày dặn, đắt giá, khắt khe chuẩn mực và tình cảm/tài lộc gắn kết bền chặt (hình ảnh nút thắt may mắn đồng tâm).' },
+        { name: 'Chín Gối', symbol: '', meaning: 'Tâm an & Bình yên – Tượng trưng cho sự nghỉ ngơi, thư thái nội tại và an ổn tinh thần.' },
+        { name: 'Đỏ Mỏ', symbol: '', meaning: 'May mắn & Tỏa sáng – Tượng trưng cho cơ hội tốt lành, tin vui, tài lộc và sự khởi sắc rực rỡ.' },
 
 
 
 
-// PHÔ 03 — LÁ 21 → 30
-{ name: 'Bạch Huê', symbol: '', meaning: 'Tượng trưng cho sự thuần khiết, tâm trong sáng và con đường học vấn rộng mở.' },
-{ name: 'Bành Hai', symbol: '', meaning: 'Tượng trưng cho sự đầy đủ, vẹn toàn, gắn kết tình cảm và thành quả lao động.' },
-{ name: 'Bành Ba', symbol: '', meaning: 'Tượng trưng cho sự kiên định, thế chân kiềng vững chắc, cùng sự phong phú và nhiều cơ hội lựa chọn.' },
-{ name: 'Dái Doi', symbol: '', meaning: 'Tượng trưng cho sự dẻo dai, tài lộc hanh thông và những giá trị gắn kết lâu dài theo thời gian.' },
-{ name: 'Năm Rún', symbol: '', meaning: 'Tượng trưng cho sự hội tụ, điểm tựa vững chắc và sự hài hòa trong cuộc sống.' },
-{ name: 'Sáu Tiền', symbol: '', meaning: 'Tượng trưng cho dòng chảy tài chính nhỏ bắt đầu sinh lời, mang lại niềm vui.' },
-{ name: 'Thất Liễu', symbol: '', meaning: 'Tượng trưng cho sự linh hoạt thích ứng và giải tỏa mọi áp lực, phiền muộn.' },
-{ name: 'Tám Tiền', symbol: '', meaning: 'Tượng trưng cho sự sung túc, tài chính dồi dào và may mắn lớn về tiền bạc.' },
-{ name: 'Chín Ghe', symbol: '', meaning: 'Tượng trưng cho sự chuyển động, đồng lòng tiến về phía trước, công việc thuận buồm xuôi gió.' },
-{ name: 'Ông Âm', symbol: '', meaning: 'Tượng trưng cho sức mạnh, sự bừng tỉnh, cơ hội tạo nên tiếng vang và danh tiếng lớn.' },
+        // PHÔ 03 — LÁ 21 → 30
+        { name: 'Bạch Huê', symbol: '', meaning: 'Tượng trưng cho sự thuần khiết, tâm trong sáng và con đường học vấn rộng mở.' },
+        { name: 'Bành Hai', symbol: '', meaning: 'Tượng trưng cho sự đầy đủ, vẹn toàn, gắn kết tình cảm và thành quả lao động.' },
+        { name: 'Bành Ba', symbol: '', meaning: 'Tượng trưng cho sự kiên định, thế chân kiềng vững chắc, cùng sự phong phú và nhiều cơ hội lựa chọn.' },
+        { name: 'Dái Doi', symbol: '', meaning: 'Tượng trưng cho sự dẻo dai, tài lộc hanh thông và những giá trị gắn kết lâu dài theo thời gian.' },
+        { name: 'Năm Rún', symbol: '', meaning: 'Tượng trưng cho sự hội tụ, điểm tựa vững chắc và sự hài hòa trong cuộc sống.' },
+        { name: 'Sáu Tiền', symbol: '', meaning: 'Tượng trưng cho dòng chảy tài chính nhỏ bắt đầu sinh lời, mang lại niềm vui.' },
+        { name: 'Thất Liễu', symbol: '', meaning: 'Tượng trưng cho sự linh hoạt thích ứng và giải tỏa mọi áp lực, phiền muộn.' },
+        { name: 'Tám Tiền', symbol: '', meaning: 'Tượng trưng cho sự sung túc, tài chính dồi dào và may mắn lớn về tiền bạc.' },
+        { name: 'Chín Ghe', symbol: '', meaning: 'Tượng trưng cho sự chuyển động, đồng lòng tiến về phía trước, công việc thuận buồm xuôi gió.' },
+        { name: 'Ông Âm', symbol: '', meaning: 'Tượng trưng cho sức mạnh, sự bừng tỉnh, cơ hội tạo nên tiếng vang và danh tiếng lớn.' },
 
 
 
@@ -304,11 +304,11 @@ const content = {
 function LotusOrnament({ size = 28, color = '#006368' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M14 3C14 3 10 8 10 13C10 15.2 11.8 17 14 17C16.2 17 18 15.2 18 13C18 8 14 3 14 3Z" fill={color} opacity="0.8"/>
-      <path d="M14 25C14 25 10 20 10 15C10 12.8 11.8 11 14 11C16.2 11 18 12.8 18 15C18 20 14 25 14 25Z" fill={color} opacity="0.5"/>
-      <path d="M3 14C3 14 8 10 13 10C15.2 10 17 11.8 17 14C17 16.2 15.2 18 13 18C8 18 3 14 3 14Z" fill={color} opacity="0.5"/>
-      <path d="M25 14C25 14 20 10 15 10C12.8 10 11 11.8 11 14C11 16.2 12.8 18 15 18C20 18 25 14 25 14Z" fill={color} opacity="0.8"/>
-      <circle cx="14" cy="14" r="3" fill={color}/>
+      <path d="M14 3C14 3 10 8 10 13C10 15.2 11.8 17 14 17C16.2 17 18 15.2 18 13C18 8 14 3 14 3Z" fill={color} opacity="0.8" />
+      <path d="M14 25C14 25 10 20 10 15C10 12.8 11.8 11 14 11C16.2 11 18 12.8 18 15C18 20 14 25 14 25Z" fill={color} opacity="0.5" />
+      <path d="M3 14C3 14 8 10 13 10C15.2 10 17 11.8 17 14C17 16.2 15.2 18 13 18C8 18 3 14 3 14Z" fill={color} opacity="0.5" />
+      <path d="M25 14C25 14 20 10 15 10C12.8 10 11 11.8 11 14C11 16.2 12.8 18 15 18C20 18 25 14 25 14Z" fill={color} opacity="0.8" />
+      <circle cx="14" cy="14" r="3" fill={color} />
     </svg>
   )
 }
@@ -687,7 +687,7 @@ function Nav({
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
-            {[0,1,2].map(i => (
+            {[0, 1, 2].map(i => (
               <span key={i} className="block w-5 h-0.5 transition-all" style={{ background: '#006368' }} />
             ))}
           </button>
@@ -964,29 +964,10 @@ function IntroScreens({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
 
   return (
     <>
-      {/* Screen 2: home introduction (UNESCO) - Nền trong suốt, 2 bên loang loang đen, gộp chữ */}
-      <ReferenceScreen
-        id="overview"
-        overlay={
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-0"
-            style={{
-              background:
-                'linear-gradient(90deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) 16%, rgba(0,0,0,0.05) 35%, transparent 45%, transparent 55%, rgba(0,0,0,0.05) 65%, rgba(0,0,0,0.45) 84%, rgba(0,0,0,0.82) 100%)',
-            }}
-          />
-        }
-      >
+      {/* Screen 2: home introduction (UNESCO) - Liền mạch, mượt mà không bị cắt */}
+      <ReferenceScreen id="overview">
         <div className="relative z-10 mx-auto w-full max-w-3xl text-center">
-          <div
-            data-reveal="up"
-            className="mx-auto rounded-3xl px-5 py-6 sm:px-8 sm:py-10"
-            style={{
-              background:
-                'linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.18) 22%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.02) 60%, rgba(0,0,0,0.18) 78%, rgba(0,0,0,0.55) 100%)',
-            }}
-          >
+          <div data-reveal="up" className="mx-auto px-5 py-6 sm:px-8 sm:py-8">
             {/* Huy hiệu UNESCO - Chữ trắng, bự lên, in đậm */}
             <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm lg:text-base font-bold tracking-wider text-white backdrop-blur-md border border-white/30 uppercase shadow-md">
               <span className="text-sm sm:text-base">🏛️</span>
@@ -995,7 +976,7 @@ function IntroScreens({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
               </span>
             </div>
 
-            {/* Đoạn 1: Lời giới thiệu chính - Giữ nguyên nhỏ gọn, trang nhã như trước */}
+            {/* Đoạn 1: Lời giới thiệu chính */}
             <p className="text-sm leading-7 sm:text-base sm:leading-8 lg:text-lg lg:leading-9 font-medium text-white/95 max-w-2xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
               {c.hero.body}
             </p>
@@ -1087,7 +1068,7 @@ function Hero({ c }: { c: typeof content.VIE }) {
         <svg className="absolute inset-0 w-full h-full opacity-[0.025]" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="grid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#006368" strokeWidth="0.5"/>
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#006368" strokeWidth="0.5" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid)" />
@@ -1101,7 +1082,7 @@ function Hero({ c }: { c: typeof content.VIE }) {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 self-start">
               <div className="flex gap-1">
-                {[0,1,2].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: i === 0 ? '#C44837' : i === 1 ? '#F29963' : '#006368', opacity: 1 - i * 0.18 }} />)}
+                {[0, 1, 2].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: i === 0 ? '#C44837' : i === 1 ? '#F29963' : '#006368', opacity: 1 - i * 0.18 }} />)}
               </div>
               <span className="text-xs font-semibold tracking-widest uppercase px-4 py-1.5 rounded-full border"
                 style={{ color: '#174F51', borderColor: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.78)', fontFamily: 'var(--font-body)' }}>
@@ -1187,13 +1168,13 @@ function Hero({ c }: { c: typeof content.VIE }) {
             {/* Gold corner ornament */}
             <div className="absolute -top-4 -right-4 w-16 h-16 opacity-60">
               <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0 0 L64 0 L64 64" fill="none" stroke="#006368" strokeWidth="2"/>
-                <path d="M8 0 L64 0 L64 56" fill="none" stroke="#006368" strokeWidth="1" opacity="0.5"/>
+                <path d="M0 0 L64 0 L64 64" fill="none" stroke="#006368" strokeWidth="2" />
+                <path d="M8 0 L64 0 L64 56" fill="none" stroke="#006368" strokeWidth="1" opacity="0.5" />
               </svg>
             </div>
             <div className="absolute -bottom-4 -left-4 w-16 h-16 opacity-60 rotate-180">
               <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0 0 L64 0 L64 64" fill="none" stroke="#006368" strokeWidth="2"/>
+                <path d="M0 0 L64 0 L64 64" fill="none" stroke="#006368" strokeWidth="2" />
               </svg>
             </div>
           </div>
@@ -1203,7 +1184,7 @@ function Hero({ c }: { c: typeof content.VIE }) {
       {/* Bottom wave */}
       <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none">
         <svg viewBox="0 0 1440 64" preserveAspectRatio="none" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0 64 L0 32 Q360 0 720 32 Q1080 64 1440 32 L1440 64 Z" fill="#E7F1F1"/>
+          <path d="M0 64 L0 32 Q360 0 720 32 Q1080 64 1440 32 L1440 64 Z" fill="#E7F1F1" />
         </svg>
       </div>
     </section>
@@ -1292,17 +1273,17 @@ function Rules({ c }: { c: typeof content.VIE }) {
     <section id="rules" className="flex min-h-[100svh] scroll-mt-20 items-center px-4 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
       <div className="mx-auto w-full max-w-7xl">
         <div data-reveal="up" className="mb-9 text-center sm:mb-12 lg:mb-14">
-          <div className="inline-block rounded-3xl bg-white/85 px-8 py-5 backdrop-blur-md shadow-xl border border-white/60">
+          <div className="inline-block rounded-3xl bg-white px-8 py-5 shadow-2xl border border-white">
             <div className="mb-3 inline-flex items-center gap-2">
               <LotusOrnament size={20} />
-              <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#006368' }}>
+              <span className="text-xs font-semibold uppercase tracking-widest text-amber-800">
                 {c.rules.sub}
               </span>
               <LotusOrnament size={20} />
             </div>
             <h2
-              className="mb-3 text-3xl font-bold sm:text-4xl lg:text-5xl"
-              style={{ fontFamily: 'var(--font-section)', color: '#006368' }}
+              className="mb-3 text-3xl font-bold sm:text-4xl lg:text-5xl text-[#04374f]"
+              style={{ fontFamily: 'var(--font-section)' }}
             >
               {c.rules.title}
             </h2>
@@ -1316,8 +1297,7 @@ function Rules({ c }: { c: typeof content.VIE }) {
               key={step.num}
               data-reveal="up"
               data-reveal-delay={Math.min(index, 2)}
-              className="relative flex h-full flex-col rounded-2xl bg-white/95 p-5 shadow-[0_10px_28px_rgba(0,42,45,0.16)] sm:p-7 lg:p-8"
-              style={{ border: '1.5px solid rgba(0,99,104,0.34)', backdropFilter: 'blur(8px)' }}
+              className="relative flex h-full flex-col rounded-3xl bg-white/20 backdrop-blur-md p-5 sm:p-7 lg:p-8 shadow-2xl border border-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(0,0,0,0.18)] hover:border-amber-400/50"
             >
               <div
                 className="mb-5 flex h-12 w-12 items-center justify-center rounded-full text-sm font-black sm:mb-6 sm:h-14 sm:w-14 sm:text-base"
@@ -1330,11 +1310,11 @@ function Rules({ c }: { c: typeof content.VIE }) {
               >
                 {step.num}
               </div>
-              <h3 className="text-lg font-bold leading-snug sm:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-display)', color: '#006368' }}>
+              <h3 className="text-lg font-bold leading-snug sm:text-xl lg:text-2xl text-[#04374f]" style={{ fontFamily: 'var(--font-display)' }}>
                 {step.title}
               </h3>
-              <div className="my-5 h-0.5 w-10" style={{ background: '#F29963' }} />
-              <p className="flex-1 text-sm leading-7 sm:text-base sm:leading-8" style={{ color: 'rgba(0,99,104,0.78)' }}>
+              <div className="my-5 h-0.5 w-10 bg-amber-500" />
+              <p className="flex-1 text-sm leading-7 sm:text-base sm:leading-8 text-stone-700">
                 {step.body}
               </p>
             </article>
@@ -1588,22 +1568,20 @@ function Characters({ c }: { c: typeof content.VIE }) {
                   data-reveal="up"
                   className="mb-6 text-center sm:mb-8"
                 >
-                  <div className="inline-block rounded-3xl bg-white/85 px-6 py-3.5 backdrop-blur-md shadow-xl border border-white/60">
+                  <div className="inline-block text-center">
                     <div className="mb-1.5 inline-flex items-center gap-2">
                       <LotusOrnament size={18} />
                       <span
-                        className="text-xs font-semibold uppercase tracking-widest"
-                        style={{ color: '#006368' }}
+                        className="text-xs font-semibold uppercase tracking-widest text-amber-200 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]"
                       >
                         {c.characters.sub}
                       </span>
                       <LotusOrnament size={18} />
                     </div>
                     <h2
-                      className="text-2xl font-bold sm:text-3xl lg:text-4xl"
+                      className="text-2xl font-bold sm:text-3xl lg:text-4xl text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
                       style={{
                         fontFamily: 'var(--font-section)',
-                        color: '#006368',
                       }}
                     >
                       {c.characters.title}
@@ -1622,81 +1600,68 @@ function Characters({ c }: { c: typeof content.VIE }) {
                     inline-flex
                     items-center
                     gap-3
-                    rounded-full
-                    bg-white/90
                     px-6
                     py-2
                     text-sm
                     font-black
                     uppercase
                     tracking-[0.28em]
-                    shadow-md
-                    backdrop-blur-md
                     sm:text-base
-                    border
-                    border-white/60
+                    text-white
+                    drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]
                   "
                   style={{
-                    color: '#006368',
                     fontFamily: 'var(--font-display)',
                   }}
                 >
                   <span
-                    className="h-px w-6 sm:w-12"
-                    style={{
-                      background:
-                        'linear-gradient(90deg, transparent, #006368)',
-                    }}
+                    className="h-px w-6 sm:w-12 bg-gradient-to-r from-transparent to-amber-300"
                   />
 
                   {pho.title}
 
                   <span
-                    className="h-px w-6 sm:w-12"
-                    style={{
-                      background:
-                        'linear-gradient(90deg, #006368, transparent)',
-                    }}
+                    className="h-px w-6 sm:w-12 bg-gradient-to-r from-amber-300 to-transparent"
                   />
                 </span>
               </div>
 
 
-                {/* =========================== */}
-                {/* CAROUSEL */}
-                {/* =========================== */}
+              {/* =========================== */}
+              {/* CAROUSEL */}
+              {/* =========================== */}
 
-                <div
-  className="
-    relative
-    mx-auto
+              <div
+                className="
+                    relative
+                    mx-auto
 
-    flex
-    w-full
-    max-w-6xl
-    items-center
-    justify-center
+                    flex
+                    w-full
+                    max-w-6xl
+                    items-center
+                    justify-center
 
-    gap-1
-    sm:gap-3
-    lg:gap-5
-  "
->
+                    gap-1
+                    sm:gap-3
+                    lg:gap-5
+                  "
+              >
 
-                  {/* ========================= */}
-                  {/* MŨI TÊN TRÁI */}
-                  {/* ========================= */}
+                {/* ========================= */}
+                {/* MŨI TÊN TRÁI */}
+                {/* ========================= */}
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      changeCard(
-                        phoIndex,
-                        -1,
-                        pho.cards.length
-                      )
-                    }
-                    className="
+                <button
+                  type="button"
+                  onClick={() =>
+                    changeCard(
+                      phoIndex,
+                      -1,
+                      pho.cards.length
+                    )
+                  }
+                  className="
                       pho-arrow
 
                       flex
@@ -1711,6 +1676,9 @@ function Characters({ c }: { c: typeof content.VIE }) {
 
                       text-3xl
                       font-light
+                      text-white/80
+                      hover:text-white
+                      drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]
 
                       transition
                       duration-300
@@ -1724,124 +1692,105 @@ function Characters({ c }: { c: typeof content.VIE }) {
                       sm:w-16
                       sm:text-5xl
                     "
-                    aria-label={
-                      isVietnamese
-                        ? 'Lá trước'
-                        : 'Previous card'
-                    }
-                  >
-                    ‹
-                  </button>
+                  aria-label={
+                    isVietnamese
+                      ? 'Lá trước'
+                      : 'Previous card'
+                  }
+                >
+                  ‹
+                </button>
 
-{/* ========================= */}
-{/* LÁ NHỎ BÊN TRÁI */}
-{/* ========================= */}
+                {/* ========================= */}
+                {/* LÁ NHỎ BÊN TRÁI */}
+                {/* ========================= */}
 
-<button
-  type="button"
-  onClick={() =>
-    changeCard(
-      phoIndex,
-      -1,
-      pho.cards.length
-    )
-  }
-  className="
+                <button
+                  type="button"
+                  onClick={() =>
+                    changeCard(
+                      phoIndex,
+                      -1,
+                      pho.cards.length
+                    )
+                  }
+                  className="
     relative
     shrink-0
 
-    w-[18vw]
-    min-w-[68px]
-    max-w-[165px]
+    w-[15vw]
+    min-w-[65px]
+    max-w-[120px]
 
     scale-[0.86]
-    opacity-60
+    opacity-100
 
     transition-all
     duration-300
 
     hover:scale-[0.92]
-    hover:opacity-100
   "
-  aria-label={
-    isVietnamese
-      ? 'Xem lá trước'
-      : 'View previous card'
-  }
->
-  <div
-    className="
-      overflow-hidden
-      rounded-xl
-      bg-white/90
-      p-1.5
-    "
-    style={{
-      border:
-        '1.5px solid rgba(0,99,104,0.22)',
-      boxShadow:
-        '0 12px 28px rgba(0,42,45,0.12)',
-    }}
-  >
-    <div
-      className="
-        w-full
-        overflow-hidden
-        rounded-lg
-      "
-      style={{
-        aspectRatio: '1 / 2',
-        background: '#FFFDEB',
-      }}
-    >
-      <img
-        src={prevCard.src}
-        alt={prevCard.alt}
-        loading="lazy"
-        className="
-          h-full
-          w-full
-          object-contain
-        "
-      />
-    </div>
-  </div>
-</button>
-
-
-
-
-                  {/* ========================= */}
-                  {/* LÁ BÀI CHÍNH */}
-                  {/* ========================= */}
-
+                  aria-label={
+                    isVietnamese
+                      ? 'Xem lá trước'
+                      : 'View previous card'
+                  }
+                >
+                  <div className="absolute -inset-1 rounded-2xl bg-black/40 blur-md pointer-events-none -z-10" />
                   <div
                     className="
+      w-full
+      overflow-hidden
+      rounded-xl
+      shadow-[0_16px_36px_rgba(0,0,0,0.7)]
+      ring-1
+      ring-white/20
+    "
+                    style={{
+                      aspectRatio: '510 / 1417',
+                    }}
+                  >
+                    <img
+                      src={prevCard.src}
+                      alt={prevCard.alt}
+                      loading="lazy"
+                      className="
+        h-full
+        w-full
+        object-cover
+      "
+                    />
+                  </div>
+                </button>
+
+
+
+
+                {/* ========================= */}
+                {/* LÁ BÀI CHÍNH */}
+                {/* ========================= */}
+
+                <div
+                  className="
                       relative
 
-                      w-[55vw]
-                      max-w-[290px]
+                      w-[36vw]
+                      max-w-[165px]
 
-                      sm:w-[260px]
-                      lg:w-[300px]
+                      sm:w-[150px]
+                      lg:w-[165px]
                     "
-                  >
+                >
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        toggleCard(cardIndex)
-                      }
-                      className="
+                  <button
+                    type="button"
+                    onClick={() =>
+                      toggleCard(cardIndex)
+                    }
+                    className="
                         group
                         block
                         w-full
-
-                        rounded-2xl
-
-                        bg-white/95
-
-                        p-2
 
                         text-left
 
@@ -1851,87 +1800,83 @@ function Characters({ c }: { c: typeof content.VIE }) {
                         hover:-translate-y-2
 
                         focus-visible:outline-none
-                        focus-visible:ring-4
-                        focus-visible:ring-[#F29963]/45
                       "
-                      style={{
-                        border:
-                          '1.5px solid rgba(0,99,104,0.3)',
+                  >
 
-                        boxShadow:
-                          '0 18px 42px rgba(0,42,45,0.18)',
-                      }}
-                    >
+                    {/* ===================== */}
+                    {/* FLIP CARD */}
+                    {/* ===================== */}
 
-                      {/* ===================== */}
-                      {/* FLIP CARD */}
-                      {/* ===================== */}
+                    {/* Ambient shadow behind main card */}
+                    <div className="absolute -inset-2.5 rounded-3xl bg-black/45 blur-xl pointer-events-none -z-10" />
 
-                      <div
-                        className="
+                    <div
+                      className="
                           card-flip-scene
                           relative
                           w-full
-                          rounded-xl
+                          overflow-hidden
+                          rounded-2xl
+                          shadow-[0_24px_50px_rgba(0,0,0,0.8),0_8px_18px_rgba(0,0,0,0.6)]
+                          ring-1
+                          ring-white/30
                         "
-                        style={{
-                          aspectRatio: '1 / 2',
-                          background: '#FFFDEB',
-                        }}
+                      style={{
+                        aspectRatio: '510 / 1417',
+                      }}
+                    >
+
+                      <div
+                        className={`
+                            card-flip-inner
+                            ${isFlipped
+                            ? 'is-flipped'
+                            : ''
+                          }
+                          `}
                       >
 
+                        {/* MẶT TRƯỚC */}
+
                         <div
-                          className={`
-                            card-flip-inner
-                            ${
-                              isFlipped
-                                ? 'is-flipped'
-                                : ''
-                            }
-                          `}
-                        >
-
-                          {/* MẶT TRƯỚC */}
-
-                          <div
-                            className="
+                          className="
                               card-flip-face
                               card-flip-front
 
                               overflow-hidden
                               rounded-xl
                             "
-                          >
+                        >
 
-                            <img
-                              src={card.src}
-                              alt={card.alt}
-                              loading="lazy"
-                              className="
+                          <img
+                            src={card.src}
+                            alt={card.alt}
+                            loading="lazy"
+                            className="
                                 h-full
                                 w-full
 
-                                object-contain
+                                object-cover
 
                                 transition-transform
                                 duration-500
 
                                 group-hover:scale-[1.025]
                               "
-                            />
+                          />
 
 
-                            
-
-                          </div>
 
 
-                          {/* ===================== */}
-                          {/* MẶT SAU */}
-                          {/* ===================== */}
+                        </div>
+
+
+                        {/* ===================== */}
+                        {/* MẶT SAU */}
+                        {/* ===================== */}
 
                         <div
-  className="
+                          className="
     card-flip-face
     card-flip-back
 
@@ -1955,16 +1900,16 @@ function Characters({ c }: { c: typeof content.VIE }) {
     sm:px-4
     sm:py-5
   "
-  style={{
-    WebkitOverflowScrolling: 'touch',
-  }}
->
+                          style={{
+                            WebkitOverflowScrolling: 'touch',
+                          }}
+                        >
 
-                            {cardInfo ? (
-                              <>
+                          {cardInfo ? (
+                            <>
 
-                                <div
-                                  className="
+                              <div
+                                className="
                                     absolute
 
                                     inset-x-5
@@ -1977,11 +1922,11 @@ function Characters({ c }: { c: typeof content.VIE }) {
                                     via-[#E2BC5B]
                                     to-transparent
                                   "
-                                />
+                              />
 
 
-                               <span
-  className="
+                              <span
+                                className="
     text-xl
     font-black
     leading-none
@@ -1989,15 +1934,15 @@ function Characters({ c }: { c: typeof content.VIE }) {
 
     sm:text-4xl
   "
-  style={{
-    fontFamily: 'var(--font-display)',
-  }}
->
-  {cardInfo.symbol}
-</span>
+                                style={{
+                                  fontFamily: 'var(--font-display)',
+                                }}
+                              >
+                                {cardInfo.symbol}
+                              </span>
 
-<span
-  className="
+                              <span
+                                className="
     mt-1
 
     text-[7px]
@@ -2011,14 +1956,14 @@ function Characters({ c }: { c: typeof content.VIE }) {
     sm:mt-2
     sm:text-[9px]
   "
->
-  {isVietnamese
-    ? 'Ý nghĩa lá bài'
-    : 'Card meaning'}
-</span>
+                              >
+                                {isVietnamese
+                                  ? 'Ý nghĩa lá bài'
+                                  : 'Card meaning'}
+                              </span>
 
-<h3
-  className="
+                              <h3
+                                className="
     mt-1
 
     text-base
@@ -2030,15 +1975,15 @@ function Characters({ c }: { c: typeof content.VIE }) {
     sm:mt-2
     sm:text-xl
   "
-  style={{
-    fontFamily: 'var(--font-display)',
-  }}
->
-  {cardInfo.name}
-</h3>
+                                style={{
+                                  fontFamily: 'var(--font-display)',
+                                }}
+                              >
+                                {cardInfo.name}
+                              </h3>
 
-<div
-  className="
+                              <div
+                                className="
     my-2
     h-px
     w-10
@@ -2048,11 +1993,11 @@ function Characters({ c }: { c: typeof content.VIE }) {
     sm:my-3
     sm:w-12
   "
-/>
+                              />
 
 
                               <p
-  className="
+                                className="
     w-full
     px-1
     pb-4
@@ -2068,44 +2013,44 @@ function Characters({ c }: { c: typeof content.VIE }) {
     lg:text-sm
     lg:leading-6
   "
-  style={{
-    WebkitTextSizeAdjust: '100%',
-    textSizeAdjust: '100%',
-  }}
->
-  {cardInfo.meaning}  
-</p>
-
-                              </>
-                            ) : (
-
-                              <p className="text-sm text-white/70">
-                                {isVietnamese
-                                  ? 'Nội dung lá bài đang được cập nhật.'
-                                  : 'Card information is being updated.'}
+                                style={{
+                                  WebkitTextSizeAdjust: '100%',
+                                  textSizeAdjust: '100%',
+                                }}
+                              >
+                                {cardInfo.meaning}
                               </p>
 
-                            )}
+                            </>
+                          ) : (
+
+                            <p className="text-sm text-white/70">
+                              {isVietnamese
+                                ? 'Nội dung lá bài đang được cập nhật.'
+                                : 'Card information is being updated.'}
+                            </p>
+
+                          )}
 
 
-                          
 
-                          </div>
 
                         </div>
 
                       </div>
 
-                    </button>
+                    </div>
 
-{/* NÚT NẰM DƯỚI LÁ BÀI */} 
+                  </button>
 
-<button
-  type="button"
-  onClick={() =>
-    toggleCard(cardIndex)
-  }
-  className="
+                  {/* NÚT NẰM DƯỚI LÁ BÀI */}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      toggleCard(cardIndex)
+                    }
+                    className="
     mx-auto
     mt-3
     block
@@ -2113,13 +2058,13 @@ function Characters({ c }: { c: typeof content.VIE }) {
     whitespace-nowrap
     rounded-full
 
-    px-3
+    px-4
     py-1.5
 
-    text-[7px]
+    text-[8px]
     font-bold
     uppercase
-    tracking-[0.04em]
+    tracking-wider
 
     transition-all
     duration-300
@@ -2129,177 +2074,157 @@ function Characters({ c }: { c: typeof content.VIE }) {
 
     sm:px-5
     sm:py-2
-    sm:text-[10px]
+    sm:text-xs
 
-    lg:px-6
-    lg:text-xs
+    bg-black/40
+    hover:bg-black/60
+    text-white
+    backdrop-blur-md
+    border
+    border-white/30
+    shadow-lg
   "
-  style={{
-    background:
-      'rgba(0,65,70,0.88)',
-    color: '#FFF8D8',
-  }}
->
-  {isVietnamese
-    ? 'Chạm để xem ý nghĩa'
-    : 'Tap to see the meaning'}
-</button>
+                  >
+                    {isVietnamese
+                      ? 'Chạm để xem ý nghĩa'
+                      : 'Tap to see the meaning'}
+                  </button>
 
 
-                    {/* ========================= */}
-                    {/* TÊN + SỐ LÁ */}
-                    {/* ========================= */}
+                  {/* ========================= */}
+                  {/* TÊN + SỐ LÁ */}
+                  {/* ========================= */}
 
-                    <div className="mt-4 text-center">
+                  <div className="mt-4 text-center">
 
-                      <p
-                        className="
-                          text-xs
-                          font-semibold
+                    <p
+                      className="
+                          text-sm
+                          font-bold
                           uppercase
-                          tracking-[0.14em]
-
-                          sm:text-sm
+                          tracking-[0.16em]
+                          sm:text-base
+                          text-white
+                          drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]
                         "
-                        style={{
-                          color:
-                            'rgba(0,99,104,0.7)',
-                        }}
-                      >
-                        {String(cardIndex + 1).padStart(
-                          2,
-                          '0'
-                        )}
+                    >
+                      {String(cardIndex + 1).padStart(
+                        2,
+                        '0'
+                      )}
 
-                        {' · '}
+                      {' · '}
 
-                        {cardInfo?.name ?? card.alt}
-                      </p>
+                      {cardInfo?.name ?? card.alt}
+                    </p>
 
 
-                      <p
-                        className="
+                    <p
+                      className="
                           mt-1
-                          text-[10px]
+                          text-xs
                           font-bold
                           tracking-[0.2em]
-
-                          sm:text-xs
+                          text-amber-300
+                          drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]
                         "
-                        style={{
-                          color:
-                            'rgba(0,99,104,0.45)',
-                        }}
-                      >
-                        {String(activeIndex + 1).padStart(
-                          2,
-                          '0'
-                        )}
+                    >
+                      {String(activeIndex + 1).padStart(
+                        2,
+                        '0'
+                      )}
 
-                        {' / '}
+                      {' / '}
 
-                        {String(
-                          pho.cards.length
-                        ).padStart(2, '0')}
-                      </p>
-
-                    </div>
+                      {String(
+                        pho.cards.length
+                      ).padStart(2, '0')}
+                    </p>
 
                   </div>
 
+                </div>
 
 
-{/* ========================= */}
-{/* LÁ NHỎ BÊN PHẢI */}
-{/* ========================= */}
 
-<button
-  type="button"
-  onClick={() =>
-    changeCard(
-      phoIndex,
-      1,
-      pho.cards.length
-    )
-  }
-  className="
+                {/* ========================= */}
+                {/* LÁ NHỎ BÊN PHẢI */}
+                {/* ========================= */}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    changeCard(
+                      phoIndex,
+                      1,
+                      pho.cards.length
+                    )
+                  }
+                  className="
     relative
     shrink-0
 
-    w-[18vw]
-    min-w-[68px]
-    max-w-[165px]
+    w-[15vw]
+    min-w-[65px]
+    max-w-[120px]
 
     scale-[0.86]
-    opacity-60
+    opacity-100
 
     transition-all
     duration-300
 
     hover:scale-[0.92]
-    hover:opacity-100
   "
-  aria-label={
-    isVietnamese
-      ? 'Xem lá tiếp theo'
-      : 'View next card'
-  }
->
-  <div
-    className="
+                  aria-label={
+                    isVietnamese
+                      ? 'Xem lá tiếp theo'
+                      : 'View next card'
+                  }
+                >
+                  <div className="absolute -inset-1 rounded-2xl bg-black/40 blur-md pointer-events-none -z-10" />
+                  <div
+                    className="
+      w-full
       overflow-hidden
       rounded-xl
-      bg-white/90
-      p-1.5
+      shadow-[0_16px_36px_rgba(0,0,0,0.7)]
+      ring-1
+      ring-white/20
     "
-    style={{
-      border:
-        '1.5px solid rgba(0,99,104,0.22)',
-      boxShadow:
-        '0 12px 28px rgba(0,42,45,0.12)',
-    }}
-  >
-    <div
-      className="
+                    style={{
+                      aspectRatio: '510 / 1417',
+                    }}
+                  >
+                    <img
+                      src={nextCard.src}
+                      alt={nextCard.alt}
+                      loading="lazy"
+                      className="
+        h-full
         w-full
-        overflow-hidden
-        rounded-lg
+        object-cover
       "
-      style={{
-        aspectRatio: '1 / 2',
-        background: '#FFFDEB',
-      }}
-    >
-      <img
-        src={nextCard.src}
-        alt={nextCard.alt}
-        loading="lazy"
-        className="
-          h-full
-          w-full
-          object-contain
-        "
-      />
-    </div>
-  </div>
-</button>
+                    />
+                  </div>
+                </button>
 
 
 
-                  {/* ========================= */}
-                  {/* MŨI TÊN PHẢI */}
-                  {/* ========================= */}
+                {/* ========================= */}
+                {/* MŨI TÊN PHẢI */}
+                {/* ========================= */}
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      changeCard(
-                        phoIndex,
-                        1,
-                        pho.cards.length
-                      )
-                    }
-                    className="
+                <button
+                  type="button"
+                  onClick={() =>
+                    changeCard(
+                      phoIndex,
+                      1,
+                      pho.cards.length
+                    )
+                  }
+                  className="
                       pho-arrow
 
                       flex
@@ -2314,6 +2239,9 @@ function Characters({ c }: { c: typeof content.VIE }) {
 
                       text-3xl
                       font-light
+                      text-white/80
+                      hover:text-white
+                      drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]
 
                       transition
                       duration-300
@@ -2327,24 +2255,24 @@ function Characters({ c }: { c: typeof content.VIE }) {
                       sm:w-16
                       sm:text-5xl
                     "
-                    aria-label={
-                      isVietnamese
-                        ? 'Lá tiếp theo'
-                        : 'Next card'
-                    }
-                  >
-                    ›
-                  </button>
+                  aria-label={
+                    isVietnamese
+                      ? 'Lá tiếp theo'
+                      : 'Next card'
+                  }
+                >
+                  ›
+                </button>
 
-                </div>
+              </div>
 
 
-                {/* =========================== */}
-                {/* CHẤM CHỌN LÁ */}
-                {/* =========================== */}
+              {/* =========================== */}
+              {/* CHẤM CHỌN LÁ */}
+              {/* =========================== */}
 
-                <div
-                  className="
+              <div
+                className="
                     mt-7
 
                     flex
@@ -2355,72 +2283,73 @@ function Characters({ c }: { c: typeof content.VIE }) {
 
                     gap-2
                   "
-                >
+              >
 
-                  {pho.cards.map((_, index) => (
+                {pho.cards.map((_, index) => (
 
-                    <button
-                      type="button"
-                      key={index}
-                      onClick={() => {
-                        setActiveCards((current) => {
-                          const next = [...current]
+                  <button
+                    type="button"
+                    key={index}
+                    onClick={() => {
+                      setActiveCards((current) => {
+                        const next = [...current]
 
-                          next[phoIndex] = index
+                        next[phoIndex] = index
 
-                          return next
-                        })
-                      }}
-                      aria-label={`Card ${index + 1}`}
-                      className="
+                        return next
+                      })
+                    }}
+                    aria-label={`Card ${index + 1}`}
+                    className="
                         h-2
                         rounded-full
 
                         transition-all
                         duration-300
                       "
-                      style={{
-                        width:
-                          index === activeIndex
-                            ? 28
-                            : 8,
+                    style={{
+                      width:
+                        index === activeIndex
+                          ? 28
+                          : 8,
 
-                        background:
-                          index === activeIndex
-                            ? '#C44837'
-                            : 'rgba(0,99,104,0.25)',
-                      }}
-                    />
+                      background:
+                        index === activeIndex
+                          ? '#F29963'
+                          : 'rgba(255,255,255,0.4)',
+                    }}
+                  />
 
-                  ))}
+                ))}
 
-                </div>
+              </div>
 
 
-                {phoIndex === phoGroups.length - 1 && (
-                  <p
-                    className="
+              {phoIndex === phoGroups.length - 1 && (
+                <p
+                  className="
                       mt-8
                       text-center
                       text-xs
                       font-semibold
                       italic
-                      opacity-75
+                      opacity-85
+                      text-white/85
+                      drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]
                     "
-                    style={{
-                      color: '#006368',
-                      fontFamily: 'var(--font-body)',
-                    }}
-                  >
-                    {isVietnamese
-                      ? `${CARD_ASSETS.length} thẻ bài hiện có`
-                      : `${CARD_ASSETS.length} cards currently available`}
-                  </p>
-                )}
-              </div>
-            </section>
-          )
-        })}
+                  style={{
+                    fontFamily: 'var(--font-body)',
+                  }}
+                >
+                  {isVietnamese
+                    ? `${CARD_ASSETS.length} thẻ bài hiện có`
+                    : `${CARD_ASSETS.length} cards currently available`}
+                </p>
+              )}
+            </div>
+          </section>
+        )
+      })}
     </div>
   )
 }
@@ -2430,69 +2359,69 @@ function Publications({ c }: { c: typeof content.VIE }) {
   const isVietnamese = c === content.VIE
   const showcases = isVietnamese
     ? [
-        {
-          eyebrow: '01 · Bao bì bộ bài',
-          title: 'Hộp Đựng Bài',
-          description: 'Hộp đựng bài được thiết kế như một vật phẩm lưu giữ trọn vẹn tinh thần Bài Chòi. Cấu trúc chắc chắn giúp bảo vệ bộ thẻ, trong khi hệ màu vàng kem, xanh ngọc cùng họa tiết mây và sóng tạo nên diện mạo trang nhã, gần gũi với bản sắc miền Trung.',
-        },
-        {
-          eyebrow: '02 · Quà tặng sự kiện',
-          title: 'Bộ Quà Tặng Chòi',
-          description: 'Từ áo, lịch để bàn, móc khóa đến bộ gốm, mỗi món quà đều mang một mảnh ký ức của nghệ thuật Bài Chòi. Các vật phẩm được phát triển đồng bộ về màu sắc và họa tiết, phù hợp làm quà lưu niệm tại triển lãm, lễ hội và những hoạt động kết nối văn hóa.',
-        },
-        {
-          eyebrow: '03 · Bao bì ứng dụng',
-          title: 'Túi Giấy & Tote Bag',
-          description: 'Túi giấy và túi tote đưa nhận diện Chòi bước ra đời sống thường ngày bằng một hình thức tiện dụng và thân thiện. Logo mái chòi kết hợp cùng hoa văn dân gian tạo điểm nhấn rõ ràng, giúp mỗi chiếc túi trở thành một phương tiện lan tỏa câu chuyện di sản.',
-        },
-        {
-          eyebrow: '04 · Ấn phẩm sự kiện',
-          title: 'Vé Tham Gia & Vé Mời',
-          description: 'Hệ thống vé tham gia và vé mời được xây dựng như lời mở đầu cho hành trình trải nghiệm Bài Chòi. Bố cục trang trọng, thông tin dễ đọc và các chi tiết đồ họa lấy cảm hứng từ mây, núi, hoa văn truyền thống giúp sự kiện có một dấu ấn nhất quán ngay từ điểm chạm đầu tiên.',
-        },
-        {
-          eyebrow: '05 · Không gian trải nghiệm',
-          title: 'Booth Sự Kiện',
-          description: 'Booth sự kiện tái hiện tinh thần mái chòi trong một không gian trưng bày hiện đại. Hệ nhận diện được triển khai xuyên suốt từ cổng chào, quầy tiếp đón đến khu vực giới thiệu sản phẩm, tạo nên điểm gặp gỡ nổi bật để khách tham quan khám phá, chụp ảnh và kết nối với văn hóa Bài Chòi.',
-        },
-        {
-          eyebrow: '06 · Truyền thông thị giác',
-          title: 'Poster Bài Chòi',
-          description: 'Poster cô đọng không khí một đêm hội Bài Chòi qua hình ảnh mái chòi, người hiệu, khán giả, ánh trăng và những rặng tre miền Trung. Sắc xanh đậm kết hợp xanh ngọc tạo chiều sâu thị giác, giúp ấn phẩm vừa mang hơi thở truyền thống, vừa đủ nổi bật để sử dụng trong triển lãm, sự kiện và các chiến dịch truyền thông văn hóa.',
-        },
-      ]
+      {
+        eyebrow: '01 · Bao bì bộ bài',
+        title: 'Hộp Đựng Bài',
+        description: 'Hộp đựng bài được thiết kế như một vật phẩm lưu giữ trọn vẹn tinh thần Bài Chòi. Cấu trúc chắc chắn giúp bảo vệ bộ thẻ, trong khi hệ màu vàng kem, xanh ngọc cùng họa tiết mây và sóng tạo nên diện mạo trang nhã, gần gũi với bản sắc miền Trung.',
+      },
+      {
+        eyebrow: '02 · Quà tặng sự kiện',
+        title: 'Bộ Quà Tặng Chòi',
+        description: 'Từ áo, lịch để bàn, móc khóa đến bộ gốm, mỗi món quà đều mang một mảnh ký ức của nghệ thuật Bài Chòi. Các vật phẩm được phát triển đồng bộ về màu sắc và họa tiết, phù hợp làm quà lưu niệm tại triển lãm, lễ hội và những hoạt động kết nối văn hóa.',
+      },
+      {
+        eyebrow: '03 · Bao bì ứng dụng',
+        title: 'Túi Giấy & Tote Bag',
+        description: 'Túi giấy và túi tote đưa nhận diện Chòi bước ra đời sống thường ngày bằng một hình thức tiện dụng và thân thiện. Logo mái chòi kết hợp cùng hoa văn dân gian tạo điểm nhấn rõ ràng, giúp mỗi chiếc túi trở thành một phương tiện lan tỏa câu chuyện di sản.',
+      },
+      {
+        eyebrow: '04 · Ấn phẩm sự kiện',
+        title: 'Vé Tham Gia & Vé Mời',
+        description: 'Hệ thống vé tham gia và vé mời được xây dựng như lời mở đầu cho hành trình trải nghiệm Bài Chòi. Bố cục trang trọng, thông tin dễ đọc và các chi tiết đồ họa lấy cảm hứng từ mây, núi, hoa văn truyền thống giúp sự kiện có một dấu ấn nhất quán ngay từ điểm chạm đầu tiên.',
+      },
+      {
+        eyebrow: '05 · Không gian trải nghiệm',
+        title: 'Booth Sự Kiện',
+        description: 'Booth sự kiện tái hiện tinh thần mái chòi trong một không gian trưng bày hiện đại. Hệ nhận diện được triển khai xuyên suốt từ cổng chào, quầy tiếp đón đến khu vực giới thiệu sản phẩm, tạo nên điểm gặp gỡ nổi bật để khách tham quan khám phá, chụp ảnh và kết nối với văn hóa Bài Chòi.',
+      },
+      {
+        eyebrow: '06 · Truyền thông thị giác',
+        title: 'Poster Bài Chòi',
+        description: 'Poster cô đọng không khí một đêm hội Bài Chòi qua hình ảnh mái chòi, người hiệu, khán giả, ánh trăng và những rặng tre miền Trung. Sắc xanh đậm kết hợp xanh ngọc tạo chiều sâu thị giác, giúp ấn phẩm vừa mang hơi thở truyền thống, vừa đủ nổi bật để sử dụng trong triển lãm, sự kiện và các chiến dịch truyền thông văn hóa.',
+      },
+    ]
     : [
-        {
-          eyebrow: '01 · Card packaging',
-          title: 'Card Boxes',
-          description: 'Designed as a keepsake for the complete Bài Chòi card set, these sturdy boxes combine practical protection with a refined palette of cream, jade, cloud and wave motifs inspired by Central Vietnam.',
-        },
-        {
-          eyebrow: '02 · Event gifts',
-          title: 'Chòi Gift Collection',
-          description: 'From shirts and desk calendars to key rings and ceramics, every item carries a fragment of Bài Chòi culture. The coordinated collection is designed for exhibitions, festivals and meaningful cultural gifts.',
-        },
-        {
-          eyebrow: '03 · Branded packaging',
-          title: 'Paper & Tote Bags',
-          description: 'Paper and tote bags bring the Chòi identity into everyday life. The pavilion logo and folk-inspired patterns turn each practical object into a small, mobile story about Vietnamese heritage.',
-        },
-        {
-          eyebrow: '04 · Event stationery',
-          title: 'Tickets & Invitations',
-          description: 'The ticket and invitation system introduces the Bài Chòi experience with clear information, ceremonial balance and graphic details inspired by clouds, mountains and traditional ornament.',
-        },
-        {
-          eyebrow: '05 · Experience space',
-          title: 'Event Booth',
-          description: 'The booth reinterprets the traditional pavilion as a contemporary exhibition environment, carrying the identity from the entrance and welcome desk to displays where visitors can discover and engage with Bài Chòi culture.',
-        },
-        {
-          eyebrow: '06 · Visual communication',
-          title: 'Bài Chòi Poster',
-          description: 'The poster distills the atmosphere of a Bài Chòi evening through the pavilion, caller, audience, moonlight and Central Vietnamese bamboo. Deep navy and jade create a striking visual suitable for exhibitions, events and cultural communication campaigns.',
-        },
-      ]
+      {
+        eyebrow: '01 · Card packaging',
+        title: 'Card Boxes',
+        description: 'Designed as a keepsake for the complete Bài Chòi card set, these sturdy boxes combine practical protection with a refined palette of cream, jade, cloud and wave motifs inspired by Central Vietnam.',
+      },
+      {
+        eyebrow: '02 · Event gifts',
+        title: 'Chòi Gift Collection',
+        description: 'From shirts and desk calendars to key rings and ceramics, every item carries a fragment of Bài Chòi culture. The coordinated collection is designed for exhibitions, festivals and meaningful cultural gifts.',
+      },
+      {
+        eyebrow: '03 · Branded packaging',
+        title: 'Paper & Tote Bags',
+        description: 'Paper and tote bags bring the Chòi identity into everyday life. The pavilion logo and folk-inspired patterns turn each practical object into a small, mobile story about Vietnamese heritage.',
+      },
+      {
+        eyebrow: '04 · Event stationery',
+        title: 'Tickets & Invitations',
+        description: 'The ticket and invitation system introduces the Bài Chòi experience with clear information, ceremonial balance and graphic details inspired by clouds, mountains and traditional ornament.',
+      },
+      {
+        eyebrow: '05 · Experience space',
+        title: 'Event Booth',
+        description: 'The booth reinterprets the traditional pavilion as a contemporary exhibition environment, carrying the identity from the entrance and welcome desk to displays where visitors can discover and engage with Bài Chòi culture.',
+      },
+      {
+        eyebrow: '06 · Visual communication',
+        title: 'Bài Chòi Poster',
+        description: 'The poster distills the atmosphere of a Bài Chòi evening through the pavilion, caller, audience, moonlight and Central Vietnamese bamboo. Deep navy and jade create a striking visual suitable for exhibitions, events and cultural communication campaigns.',
+      },
+    ]
 
   const stepSelectedImage = (direction: number) => {
     setSelectedImage((current) => {
@@ -2568,11 +2497,9 @@ function Publications({ c }: { c: typeof content.VIE }) {
               >
                 <div
                   data-reveal={imageOnRight ? 'right' : 'left'}
-                  className={`relative grid aspect-[4/3] w-full gap-2 overflow-hidden rounded-[18px] p-2 sm:gap-3 sm:rounded-[24px] sm:p-3 ${
-                    imageOnRight ? 'lg:order-2' : 'lg:order-1'
-                  } ${group.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'} ${
-                    group.images.length === 4 ? 'grid-rows-2' : 'grid-rows-1'
-                  }`}
+                  className={`relative grid aspect-[4/3] w-full gap-2 overflow-hidden rounded-[18px] p-2 sm:gap-3 sm:rounded-[24px] sm:p-3 ${imageOnRight ? 'lg:order-2' : 'lg:order-1'
+                    } ${group.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'} ${group.images.length === 4 ? 'grid-rows-2' : 'grid-rows-1'
+                    }`}
                   style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.98), rgba(229,241,237,0.95))' }}
                 >
                   {group.images.map((image, imageIndex) => (
@@ -2876,7 +2803,7 @@ function AudioPlayer({ c }: { c: typeof content.VIE }) {
             onClick={() => skipBy(-10)}
             className="opacity-50 hover:opacity-100 transition-opacity"
             style={{ color: '#006368' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" /></svg>
           </button>
           {/* Play/Pause */}
           <button
@@ -2886,9 +2813,9 @@ function AudioPlayer({ c }: { c: typeof content.VIE }) {
             className="w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
             style={{ background: 'linear-gradient(135deg, #C44837 0%, #7C2421 100%)', color: '#FFFFFF', boxShadow: '0 4px 16px rgba(196,72,55,0.5)' }}>
             {playing ? (
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
             ) : (
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: 3 }}><path d="M8 5v14l11-7z"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: 3 }}><path d="M8 5v14l11-7z" /></svg>
             )}
           </button>
           {/* Next */}
@@ -2898,13 +2825,13 @@ function AudioPlayer({ c }: { c: typeof content.VIE }) {
             onClick={() => skipBy(10)}
             className="opacity-50 hover:opacity-100 transition-opacity"
             style={{ color: '#006368' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2.5-6l5.5 3.89V8.11L8.5 12zM16 6h2v12h-2z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2.5-6l5.5 3.89V8.11L8.5 12zM16 6h2v12h-2z" /></svg>
           </button>
         </div>
 
         {/* Volume */}
         <div className="flex items-center gap-2">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(0,99,104,0.7)"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(0,99,104,0.7)"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" /></svg>
           <div className="w-20 h-1.5 rounded-full cursor-pointer" style={{ background: 'rgba(0,99,104,0.12)' }}
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect()
@@ -2994,22 +2921,22 @@ function AudioGallerySection({ c }: { c: typeof content.VIE }) {
 function QRCode() {
   return (
     <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="80" height="80" rx="6" fill="rgba(0,99,104,0.08)" stroke="rgba(0,99,104,0.3)" strokeWidth="1"/>
+      <rect width="80" height="80" rx="6" fill="rgba(0,99,104,0.08)" stroke="rgba(0,99,104,0.3)" strokeWidth="1" />
       {/* QR finder pattern TL */}
-      <rect x="8" y="8" width="22" height="22" rx="2" fill="none" stroke="rgba(0,99,104,0.7)" strokeWidth="2"/>
-      <rect x="13" y="13" width="12" height="12" rx="1" fill="rgba(0,99,104,0.7)"/>
+      <rect x="8" y="8" width="22" height="22" rx="2" fill="none" stroke="rgba(0,99,104,0.7)" strokeWidth="2" />
+      <rect x="13" y="13" width="12" height="12" rx="1" fill="rgba(0,99,104,0.7)" />
       {/* QR finder pattern TR */}
-      <rect x="50" y="8" width="22" height="22" rx="2" fill="none" stroke="rgba(0,99,104,0.7)" strokeWidth="2"/>
-      <rect x="55" y="13" width="12" height="12" rx="1" fill="rgba(0,99,104,0.7)"/>
+      <rect x="50" y="8" width="22" height="22" rx="2" fill="none" stroke="rgba(0,99,104,0.7)" strokeWidth="2" />
+      <rect x="55" y="13" width="12" height="12" rx="1" fill="rgba(0,99,104,0.7)" />
       {/* QR finder pattern BL */}
-      <rect x="8" y="50" width="22" height="22" rx="2" fill="none" stroke="rgba(0,99,104,0.7)" strokeWidth="2"/>
-      <rect x="13" y="55" width="12" height="12" rx="1" fill="rgba(0,99,104,0.7)"/>
+      <rect x="8" y="50" width="22" height="22" rx="2" fill="none" stroke="rgba(0,99,104,0.7)" strokeWidth="2" />
+      <rect x="13" y="55" width="12" height="12" rx="1" fill="rgba(0,99,104,0.7)" />
       {/* Data dots */}
-      {[36,40,44,48,52,56,60,64].map(x => [36,40,44,48,52,56,60,64].map(y =>
-        Math.sin(x * y) > 0.3 ? <rect key={`${x}-${y}`} x={x} y={y} width="3" height="3" rx="0.5" fill="rgba(0,99,104,0.5)"/> : null
+      {[36, 40, 44, 48, 52, 56, 60, 64].map(x => [36, 40, 44, 48, 52, 56, 60, 64].map(y =>
+        Math.sin(x * y) > 0.3 ? <rect key={`${x}-${y}`} x={x} y={y} width="3" height="3" rx="0.5" fill="rgba(0,99,104,0.5)" /> : null
       ))}
-      {[36,40,44,48].map(y => [8,12,16,20,24,28].map(x =>
-        Math.cos(x + y) > 0.2 ? <rect key={`d${x}-${y}`} x={x} y={y} width="3" height="3" rx="0.5" fill="rgba(0,99,104,0.5)"/> : null
+      {[36, 40, 44, 48].map(y => [8, 12, 16, 20, 24, 28].map(x =>
+        Math.cos(x + y) > 0.2 ? <rect key={`d${x}-${y}`} x={x} y={y} width="3" height="3" rx="0.5" fill="rgba(0,99,104,0.5)" /> : null
       ))}
     </svg>
   )
@@ -3031,8 +2958,8 @@ function Footer({
     <footer
       className="relative text-white border-t-2 border-amber-300/40 overflow-hidden"
       style={{
-        background: 'linear-gradient(180deg, #c8102e 0%, #a80c25 60%, #8b081d 100%)',
-        boxShadow: '0 -10px 40px rgba(139, 8, 29, 0.4)',
+        background: 'linear-gradient(180deg, #182e4b 0%, #112239 60%, #0a1524 100%)',
+        boxShadow: '0 -10px 40px rgba(10, 21, 36, 0.45)',
       }}
     >
       {/* Họa tiết hoa văn truyền thống trang trí mờ phía nền */}
@@ -3296,7 +3223,7 @@ function Footer({
                 f
               </div>
               <div className="text-left">
-                <div className="text-xs font-extrabold text-slate-900 group-hover:text-[#c8382b] transition">
+                <div className="text-xs font-extrabold text-slate-900 group-hover:text-[#182e4b] transition">
                   Theo dõi Fanpage dự án
                 </div>
                 <div className="text-[10px] text-slate-500">
@@ -3358,7 +3285,7 @@ function Footer({
 export default function App() {
   const [lang, setLang] = useState<Lang>('VIE')
   const c = content[lang]
-  
+
   // ── Auth & Portal state ──
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => authService.getCurrentUser())
   const [activePortal, setActivePortal] = useState<'site' | 'admin' | 'staff' | 'shop' | 'game'>('site')
@@ -3618,13 +3545,13 @@ export default function App() {
       )}
       <div
         className={showContent ? 'web-entered' : ''}
-        style={{ 
-            fontFamily: 'var(--font-body)', 
-            background: '#408A8C', 
-            color: '#006368',
-            opacity: showContent ? 1 : 0,
-            transition: 'opacity 0.8s ease',
-          }}
+        style={{
+          fontFamily: 'var(--font-body)',
+          background: '#408A8C',
+          color: '#006368',
+          opacity: showContent ? 1 : 0,
+          transition: 'opacity 0.8s ease',
+        }}
       >
         <Nav
           lang={lang}

@@ -166,7 +166,7 @@ a {
 }
 
 .card-flip-front {
-  background: #fffdeb;
+  background: transparent;
 }
 
 .card-flip-back {
