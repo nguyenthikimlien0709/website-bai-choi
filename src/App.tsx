@@ -995,8 +995,8 @@ function IntroScreens({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
               </span>
             </div>
 
-            {/* Đoạn 1: Lời giới thiệu chính */}
-            <p className="text-base leading-8 sm:text-xl sm:leading-9 lg:text-2xl lg:leading-10 font-bold text-white max-w-2xl mx-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
+            {/* Đoạn 1: Lời giới thiệu chính - Giữ nguyên nhỏ gọn, trang nhã như trước */}
+            <p className="text-sm leading-7 sm:text-base sm:leading-8 lg:text-lg lg:leading-9 font-medium text-white/95 max-w-2xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
               {c.hero.body}
             </p>
 
