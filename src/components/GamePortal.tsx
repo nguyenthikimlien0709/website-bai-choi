@@ -65,11 +65,8 @@ export default function GamePortal({
     <div
       className="min-h-screen text-slate-800 flex flex-col relative"
       style={{
-        backgroundColor: '#EEF6F1',
-        backgroundImage: 'linear-gradient(rgba(238,246,241,0.85), rgba(238,246,241,0.92)), url("/assets/Background-toan.jpg")',
-        backgroundPosition: 'center top',
-        backgroundRepeat: 'no-repeat',
-        backgroundSize: 'cover',
+        backgroundColor: '#72D9DD',
+        backgroundImage: 'linear-gradient(180deg, #62D5DC 0%, #A2EBDC 25%, #E3F2EE 65%, #F4F8F6 100%)',
         fontFamily: 'var(--font-body, system-ui, sans-serif)',
       }}
     >
@@ -245,51 +242,18 @@ export default function GamePortal({
         </div>
       </header>
 
-      {/* ── MAIN CONTENT CONTAINER ── */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10">
-        {/* HERO BANNER SECTION */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#006368]/30 bg-white/80 px-4 py-1.5 backdrop-blur-md shadow-xs">
-            <span className="h-2 w-2 rounded-full bg-[#C44837] animate-ping" />
-            <span className="text-xs font-bold uppercase tracking-widest text-[#006368]">
-              {isVie ? 'CÔNG CỤ QUẢN TRÒ BÀI CHÒI TRUYỀN THỐNG' : 'TRADITIONAL FOLK CALLER TOOL'}
-            </span>
-          </div>
-
-          <h1
-            className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-black text-[#006368] tracking-tight font-serif"
-            style={{ fontFamily: 'var(--font-display, serif)' }}
-          >
-            {isVie ? 'ỐNG RÚT BÀI QUẢN TRÒ & ANH HIỆU ẢO' : 'VIRTUAL CALLER TUBE & FOLK CHANTS'}
-          </h1>
-
-          <p className="mx-auto mt-3 max-w-3xl text-sm sm:text-base leading-relaxed text-[#006368]/85">
-            {isVie
-              ? 'Hệ thống ống tre 30 thẻ bài nguyên bản, hỗ trợ Quản trò / Anh Hiệu ảo lắc ống, rút thẻ và phát âm thanh câu hò thai truyền thống. Phục vụ đắc lực cho hội chơi thực tế, gia đình, lớp học và các sự kiện lễ hội dân gian.'
-              : 'Authentic 30-card bamboo tube caller tool with original chants. Perfect for real-life gatherings, classrooms, and folk cultural festivals.'}
-          </p>
-
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => setQrModalOpen(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#006368] hover:bg-[#004d51] text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
-            >
-              <span>📱</span>
-              <span>{isVie ? 'Lấy Mã QR Quét Trực Tiếp Vào Trang Này' : 'Get Direct QR Code'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* ── ỐNG RÚT THẺ & ANH HIỆU ẢO (OFFLINE PLAY) ── */}
-        <div className="rounded-3xl bg-white/90 border border-[#006368]/20 shadow-xl overflow-hidden backdrop-blur-md">
-          <OfflinePlay
-            lang={lang}
-            onOpenGameOffline={() => {
-              setIsPlayingGame(true)
-            }}
-          />
-        </div>
+      {/* ── MAIN CONTENT CONTAINER (QUANTRO STAGE) ── */}
+      <main className="flex-1 w-full max-w-[2000px] mx-auto px-2 sm:px-4 py-3 sm:py-6 flex flex-col items-center justify-center">
+        <OfflinePlay
+          lang={lang}
+          currentUser={currentUser}
+          onOpenQR={() => setQrModalOpen(true)}
+          onOpenCoins={onOpenCoins}
+          onOpenAuth={onOpenAuth}
+          onLogout={onLogout}
+          onBackToSite={onBackToSite}
+          onOpenGameOffline={() => setIsPlayingGame(true)}
+        />
       </main>
 
       {/* ── QR CODE DIRECT MODAL ── */}
