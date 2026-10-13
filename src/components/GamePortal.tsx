@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import type { UserProfile } from '../types/auth'
 import BaiChoiGame from '../BaiChoiGame'
 import OfflinePlay from '../OfflinePlay'
-import ChoiCoin from './ChoiCoin'
 
 export type GamePortalTab = 'caller'
 
@@ -31,35 +30,11 @@ export default function GamePortal({
 }: GamePortalProps) {
   const isVie = lang === 'VIE'
   const [isPlayingGame, setIsPlayingGame] = useState(false)
-  const [qrModalOpen, setQrModalOpen] = useState(false)
-  const [copiedLink, setCopiedLink] = useState(false)
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText('https://baichoi.id.vn/#quan-tro')
-    setCopiedLink(true)
-    setTimeout(() => setCopiedLink(false), 2500)
-  }
-
-  // User menu state
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const userMenuRef = useRef<HTMLDivElement>(null)
 
   // Scroll to top on mount
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [])
-
-  // Close user menu on outside click
-  useEffect(() => {
-    if (!userMenuOpen) return
-    const handleClickOutside = (e: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setUserMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [userMenuOpen])
 
   return (
     <div
@@ -70,282 +45,19 @@ export default function GamePortal({
         fontFamily: 'var(--font-body, system-ui, sans-serif)',
       }}
     >
-      {/* ── TOP HEADER / NAVBAR ── */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-[#006368]/20 shadow-sm transition-all">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#006368] via-[#F29963] to-[#C44837]" />
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-3">
-          {/* Brand & Back Button */}
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={onBackToSite}
-              className="flex items-center gap-2 group cursor-pointer"
-              title={isVie ? 'Quay lại Trang Chủ Bài Chòi' : 'Back to Home'}
-            >
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl bg-gradient-to-br from-[#006368] to-[#04374F] p-1.5 flex items-center justify-center shadow-md group-hover:scale-105 transition">
-                <img
-                  src="/assets/choi-transparent.png"
-                  alt="Logo Chòi"
-                  className="w-full h-full object-contain filter drop-shadow"
-                />
-              </div>
-              <div className="text-left whitespace-nowrap">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg sm:text-xl font-black tracking-normal text-[#006368] whitespace-nowrap font-sans">
-                    BÀI CHÒI
-                  </span>
-                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full whitespace-nowrap">
-                    {isVie ? 'ỐNG RÚT QUẢN TRÒ' : 'VIRTUAL CALLER'}
-                  </span>
-                </div>
-                <p className="text-[10px] sm:text-[11px] text-[#006368]/70 flex items-center gap-1 whitespace-nowrap">
-                  <span>←</span> <span>{isVie ? 'Trang chủ' : 'Home'}</span>
-                </p>
-              </div>
-            </button>
-          </div>
-
-          {/* Center Navigation Badge */}
-          <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#006368]/10 border border-[#006368]/20 text-[#006368] font-bold text-sm">
-            <span>🎋</span>
-            <span>{isVie ? 'Ống Rút Thẻ & Anh Hiệu Ảo' : 'Virtual Caller Tube'}</span>
-          </div>
-
-          {/* Right Action Controls */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Direct QR Code Button */}
-            <button
-              type="button"
-              onClick={() => setQrModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold transition shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
-              title={isVie ? 'Lấy mã QR quét mở trực tiếp trang Ống Rút' : 'Direct QR Code'}
-            >
-              <span className="text-sm">📱</span>
-              <span className="hidden sm:inline">{isVie ? 'Mã QR Quản Trò' : 'Direct QR'}</span>
-              <span className="sm:hidden">Mã QR</span>
-            </button>
-
-            {/* Coin Wallet Button in GamePortal */}
-            {currentUser && (
-              <button
-                type="button"
-                onClick={onOpenCoins}
-                className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-950 text-xs font-bold transition shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
-                title="Ví Xu Chòi - Bấm để nạp thêm hoặc xem lịch sử"
-              >
-                <ChoiCoin size={18} animate glow />
-                <span className="font-mono text-xs sm:text-sm font-black text-amber-900">
-                  {(currentUser.coins ?? 50).toLocaleString()}
-                </span>
-                <span className="text-[11px] font-semibold text-amber-800 hidden min-[480px]:inline">
-                  Xu
-                </span>
-                <span className="h-4 w-4 rounded-full bg-[#006368] text-white flex items-center justify-center text-[10px] font-black ml-0.5 shadow-2xs">
-                  +
-                </span>
-              </button>
-            )}
-
-            {/* User Capsule */}
-            {currentUser ? (
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  type="button"
-                  onClick={() => setUserMenuOpen((v) => !v)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-full bg-white border border-[#006368]/25 hover:border-[#006368] transition shadow-xs cursor-pointer"
-                >
-                  {currentUser.avatar ? (
-                    <img
-                      src={currentUser.avatar}
-                      alt={currentUser.fullName || currentUser.username}
-                      className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br from-[#006368] to-[#04374F] text-white flex items-center justify-center text-xs font-bold">
-                      {(currentUser.fullName || currentUser.username || 'U').charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <span className="text-xs sm:text-sm font-bold text-slate-800 max-w-[100px] truncate">
-                    {currentUser.fullName || currentUser.username}
-                  </span>
-                  <span className="text-[10px] text-slate-400">▼</span>
-                </button>
-
-                {/* Dropdown Menu */}
-                {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white border border-slate-200 shadow-xl p-2 z-50 text-left animate-in fade-in zoom-in-95 duration-150">
-                    <div className="px-3 py-2 border-b border-slate-100">
-                      <p className="text-xs font-bold text-slate-900 truncate">{currentUser.name}</p>
-                      <p className="text-[11px] text-slate-500 truncate">{currentUser.email}</p>
-                    </div>
-
-                    {/* Coin Row in GamePortal Dropdown */}
-                    <div className="px-3 py-2 my-1 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <ChoiCoin size={20} glow />
-                        <div>
-                          <p className="text-[10px] font-semibold text-amber-800 uppercase tracking-wider">Số dư Xu Chòi</p>
-                          <p className="font-mono text-sm font-black text-amber-950">
-                            {(currentUser.coins ?? 50).toLocaleString()} <span className="text-xs font-bold">Xu</span>
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUserMenuOpen(false)
-                          onOpenCoins?.()
-                        }}
-                        className="px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-black shadow-2xs transition active:scale-95 cursor-pointer"
-                      >
-                        Nạp
-                      </button>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUserMenuOpen(false)
-                        onGoToShop()
-                      }}
-                      className="w-full text-left rounded-xl px-3 py-2 text-xs font-semibold text-amber-800 hover:bg-amber-50 transition cursor-pointer flex items-center gap-2 mb-1"
-                    >
-                      <span>🛍️</span>
-                      <span>{isVie ? 'Cửa Hàng Di Sản' : 'Heritage Store'}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUserMenuOpen(false)
-                        onLogout()
-                      }}
-                      className="w-full text-left rounded-xl px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer flex items-center gap-2"
-                    >
-                      <span>🚪</span>
-                      <span>{isVie ? 'Đăng xuất' : 'Logout'}</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => onOpenAuth('login')}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border border-[#006368]/30 text-[#006368] hover:bg-white transition cursor-pointer shadow-xs"
-              >
-                <span>👤</span>
-                <span>{isVie ? 'Đăng nhập' : 'Sign in'}</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* ── MAIN CONTENT CONTAINER (QUANTRO STAGE) ── */}
-      <main className="flex-1 w-full max-w-[2000px] mx-auto px-2 sm:px-4 py-3 sm:py-6 flex flex-col items-center justify-center">
+      {/* ── MAIN CONTENT CONTAINER (QUANTRO STAGE AS PRIMARY INTERFACE) ── */}
+      <main className="flex-1 w-full max-w-[2000px] mx-auto px-2 sm:px-4 py-2 sm:py-4 flex flex-col items-center justify-center">
         <OfflinePlay
           lang={lang}
           currentUser={currentUser}
-          onOpenQR={() => setQrModalOpen(true)}
           onOpenCoins={onOpenCoins}
           onOpenAuth={onOpenAuth}
           onLogout={onLogout}
+          onGoToShop={onGoToShop}
           onBackToSite={onBackToSite}
           onOpenGameOffline={() => setIsPlayingGame(true)}
         />
       </main>
-
-      {/* ── QR CODE DIRECT MODAL ── */}
-      {qrModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div
-            className="w-full max-w-md rounded-3xl bg-white p-6 sm:p-7 shadow-2xl border-2 border-[#006368]/20 relative text-center"
-            style={{ fontFamily: 'var(--font-body, system-ui, sans-serif)' }}
-          >
-            {/* Close Button */}
-            <button
-              type="button"
-              onClick={() => setQrModalOpen(false)}
-              className="absolute top-4 right-4 h-9 w-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-lg transition cursor-pointer"
-              title="Đóng"
-            >
-              ✕
-            </button>
-
-            {/* Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold mb-3">
-              <span>🎋</span>
-              <span>ĐIỀU HƯỚNG TRỰC TIẾP</span>
-            </div>
-
-            <h3
-              className="text-xl sm:text-2xl font-black text-[#006368] font-serif"
-              style={{ fontFamily: 'var(--font-display, serif)' }}
-            >
-              Mã QR Ống Rút Quản Trò
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1">
-              Quét mã để truy cập thẳng vào trang Quản Trò, không qua trang chủ hay màn hình chờ.
-            </p>
-
-            {/* QR Code Frame */}
-            <div className="my-5 p-4 rounded-2xl bg-gradient-to-b from-amber-50 to-white border-2 border-dashed border-[#006368]/30 flex flex-col items-center justify-center">
-              <div className="p-3 bg-white rounded-2xl shadow-md border border-slate-200">
-                <img
-                  src="/assets/qr-quan-tro.png"
-                  alt="QR Code Quản Trò Bài Chòi"
-                  className="w-56 h-56 sm:w-64 sm:h-64 object-contain rounded-lg"
-                />
-              </div>
-              <div className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 max-w-full">
-                <span className="text-xs text-slate-500 font-mono select-all truncate">
-                  https://baichoi.id.vn/#quan-tro
-                </span>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={handleCopyLink}
-                className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-xs ${
-                  copiedLink
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-[#006368] hover:bg-[#004d51] text-white'
-                }`}
-              >
-                <span>{copiedLink ? '✓' : '📋'}</span>
-                <span>{copiedLink ? 'Đã sao chép liên kết!' : 'Sao chép liên kết trực tiếp'}</span>
-              </button>
-
-              <div className="flex gap-2">
-                <a
-                  href="/assets/qr-quan-tro.png"
-                  download="qr-bai-choi-quan-tro.png"
-                  className="flex-1 py-2 px-3 rounded-xl border border-slate-300 hover:border-[#006368] hover:bg-slate-50 text-slate-700 font-bold text-xs transition flex items-center justify-center gap-1.5"
-                >
-                  <span>💾</span>
-                  <span>Tải ảnh PNG (HD)</span>
-                </a>
-                <a
-                  href="/assets/qr-quan-tro.svg"
-                  download="qr-bai-choi-quan-tro.svg"
-                  className="flex-1 py-2 px-3 rounded-xl border border-slate-300 hover:border-[#006368] hover:bg-slate-50 text-slate-700 font-bold text-xs transition flex items-center justify-center gap-1.5"
-                >
-                  <span>📐</span>
-                  <span>Tải file SVG</span>
-                </a>
-              </div>
-            </div>
-
-            <p className="mt-4 text-[11px] text-slate-400">
-              💡 Thích hợp in ấn lên phôi thẻ, poster sự kiện, hoặc chia sẻ vào Zalo / trình chiếu màn hình lớn.
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* ── GAME FULLSCREEN OVERLAY IF PLAYING ── */}
       {isPlayingGame && (
@@ -357,13 +69,13 @@ export default function GamePortal({
 
       {/* ── FOOTER ĐỎ TRUYỀN THỐNG ĐỒNG BỘ ── */}
       <footer
-        className="mt-16 text-white border-t-4 border-amber-400/80"
+        className="mt-8 text-white border-t-4 border-amber-400/80"
         style={{
           background: 'linear-gradient(180deg, #96281e 0%, #701c15 60%, #4a120d 100%)',
           boxShadow: '0 -10px 30px rgba(74, 18, 13, 0.35)',
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10">
             {/* Cột 1: Thông tin thương hiệu */}
             <div className="lg:col-span-4 space-y-4 text-left">
@@ -404,7 +116,7 @@ export default function GamePortal({
               </ul>
             </div>
 
-            {/* Cột 3: Chính sách & Quy định (8 mục) */}
+            {/* Cột 3: Chính sách & Quy định */}
             <div className="lg:col-span-3 space-y-3 text-left">
               <h4 className="text-sm sm:text-base font-black uppercase tracking-wider text-amber-200 font-serif">
                 {isVie ? 'Chính Sách & Quy Định' : 'Policies & Terms'}
@@ -461,7 +173,7 @@ export default function GamePortal({
           </div>
 
           {/* Thanh đáy */}
-          <div className="mt-12 pt-6 border-t border-white/20 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/80">
+          <div className="mt-8 pt-4 border-t border-white/20 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/80">
             <p>© 2026 Bài Chòi — Dự án tham dự cuộc thi Color Up 2026. Mọi quyền được bảo lưu.</p>
             <div className="flex items-center gap-3">
               <button type="button" onClick={() => onOpenPolicy('dieu-khoan')} className="hover:text-amber-200 transition cursor-pointer">

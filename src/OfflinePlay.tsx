@@ -8,21 +8,21 @@ interface OfflinePlayProps {
   lang: 'VIE' | 'ENG'
   initialTab?: 'caller' | 'browse'
   onOpenGameOffline?: () => void
-  onOpenQR?: () => void
   currentUser?: UserProfile | null
   onOpenCoins?: () => void
   onOpenAuth?: (mode?: 'login' | 'register') => void
   onLogout?: () => void
+  onGoToShop?: () => void
   onBackToSite?: () => void
 }
 
 export default function OfflinePlay({
   lang,
-  onOpenQR,
   currentUser,
   onOpenCoins,
   onOpenAuth,
   onLogout,
+  onGoToShop,
   onBackToSite,
 }: OfflinePlayProps) {
   const isVie = lang === 'VIE'
@@ -206,105 +206,239 @@ export default function OfflinePlay({
           className="w-full h-full object-contain pointer-events-none select-none"
         />
 
-        {/* ── TOP RIGHT: CÁC NÚT ĐIỀU HƯỚNG TRÊN GIAO DIỆN ── */}
-        {/* Nút Ví Xu Chòi (Khớp vị trí ô xu x: 74.5%, y: 2.2%, w: 8.2%, h: 4.2%) */}
+        {/* ── TOP-LEFT: NÚT VỀ TRANG CHỦ (Đưa xuống thanh navbar chính của Canvas) ── */}
         <button
           type="button"
-          onClick={onOpenCoins}
-          className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform"
+          onClick={onBackToSite}
+          className="absolute z-30 px-3 py-1 rounded-full cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-all flex items-center gap-1.5 shadow-md hover:brightness-110"
           style={{
-            left: '74.5%',
-            top: '2.1%',
-            width: '8.2%',
-            height: '4.3%',
+            left: '2.4%',
+            top: '2.0%',
+            height: '4.4%',
+            backgroundColor: '#2b4968',
+            border: '1.5px solid #48a5b8',
           }}
-          title="Ví Xu Chòi - Bấm để nạp hoặc xem số dư"
-        />
+          title="Quay lại Trang Chủ Bài Chòi"
+        >
+          <div className="h-4 w-4 rounded-full bg-gradient-to-br from-[#006368] to-[#04374F] p-0.5 flex items-center justify-center shrink-0 shadow-2xs">
+            <img src="/assets/choi-transparent.png" alt="Chòi" className="w-full h-full object-contain" />
+          </div>
+          <span className="font-bold text-white text-[11px] sm:text-xs leading-none whitespace-nowrap">
+            ← Trang chủ
+          </span>
+        </button>
 
-        {/* Nút Tài khoản người dùng (Khớp vị trí ô penhi x: 84.5%, y: 2.2%, w: 8.2%, h: 4.2%) */}
+        {/* ── TOP-RIGHT 1: VIÊN THUỐC VÍ XU CHÒI (Bao phủ và thay thế hoàn toàn ô 50 tĩnh trên ảnh) ── */}
+        <div
+          className="absolute z-30 rounded-full flex items-center justify-between px-2 cursor-pointer outline-none select-none shadow-md transition hover:brightness-110 active:scale-95"
+          style={{
+            left: '74.2%',
+            top: '1.9%',
+            width: '8.6%',
+            height: '4.4%',
+            backgroundColor: '#2b4968',
+            border: '1.5px solid #48a5b8',
+          }}
+          onClick={onOpenCoins}
+          title="Ví Xu Chòi - Bấm để nạp thêm hoặc xem lịch sử"
+        >
+          {/* Icon đồng xu tròn */}
+          <div className="h-[74%] aspect-square rounded-full bg-[#18756d] border border-amber-300/70 flex items-center justify-center shrink-0 shadow-2xs">
+            <span className="text-[10px] leading-none">🪙</span>
+          </div>
+
+          {/* Số dư Xu THẬT của người dùng (biến động theo currentUser.coins) */}
+          <span className="font-mono font-black text-white text-xs sm:text-[13px] leading-none px-1 truncate">
+            {(currentUser?.coins ?? 0).toLocaleString()}
+          </span>
+
+          {/* Dấu cộng nạp xu */}
+          <span className="text-white/90 font-black text-sm leading-none pl-0.5 shrink-0">
+            +
+          </span>
+        </div>
+
+        {/* ── TOP-RIGHT 2: VIÊN THUỐC TÀI KHOẢN (Bao phủ và thay thế hoàn toàn ô penhi tĩnh trên ảnh) ── */}
         <div
           ref={userMenuRef}
           className="absolute z-30"
           style={{
-            left: '84.5%',
-            top: '2.1%',
-            width: '8.2%',
-            height: '4.3%',
+            left: '84.2%',
+            top: '1.9%',
+            width: '8.8%',
+            height: '4.4%',
           }}
         >
-          <button
-            type="button"
-            onClick={() => {
-              if (currentUser) {
-                setUserMenuOpen((v) => !v)
-              } else {
-                onOpenAuth?.('login')
-              }
-            }}
-            className="w-full h-full cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform"
-            title={currentUser ? currentUser.username : 'Đăng nhập'}
-          />
-
-          {/* User Menu Dropdown trên Desktop Canvas */}
-          {userMenuOpen && currentUser && (
-            <div className="absolute right-0 top-[120%] w-56 rounded-2xl bg-white p-3 shadow-2xl border border-slate-200 z-50 text-slate-800 animate-in fade-in zoom-in-95 duration-150">
-              <div className="pb-2 mb-2 border-b border-slate-100">
-                <p className="text-xs font-bold text-slate-900 truncate">
-                  {currentUser.username || currentUser.fullName}
-                </p>
-                <p className="text-[10px] text-slate-500 truncate">{currentUser.email}</p>
+          {currentUser ? (
+            /* Khi ĐÃ ĐĂNG NHẬP: Hiển thị Avatar thật + Tên người dùng thật (hoặc Admin) */
+            <button
+              type="button"
+              onClick={() => setUserMenuOpen((v) => !v)}
+              className="w-full h-full rounded-full flex items-center justify-between px-2 cursor-pointer outline-none select-none shadow-md transition hover:brightness-110 active:scale-95"
+              style={{
+                backgroundColor: '#2b4968',
+                border: '1.5px solid #48a5b8',
+              }}
+              title={currentUser.username || currentUser.fullName}
+            >
+              {/* Avatar người dùng */}
+              <div className="h-[74%] aspect-square rounded-full overflow-hidden bg-[#31b9c9] flex items-center justify-center shrink-0 border border-white/50 shadow-2xs">
+                {currentUser.avatar ? (
+                  <img
+                    src={currentUser.avatar}
+                    alt={currentUser.username}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <span className="text-white text-[10px] font-bold leading-none">
+                    {(currentUser.fullName || currentUser.username || 'U').charAt(0).toUpperCase()}
+                  </span>
+                )}
               </div>
-              <div className="py-1">
+
+              {/* Tên người dùng thật (thay đổi linh hoạt, không bị cố định là penhi) */}
+              <span className="font-bold text-white text-[11px] sm:text-xs truncate px-1 max-w-[85px] sm:max-w-[105px] leading-none">
+                {currentUser.username || currentUser.fullName}
+              </span>
+
+              {/* Mũi tên thả xuống */}
+              <span className="text-[9px] text-white/70 leading-none shrink-0">
+                {userMenuOpen ? '▲' : '▼'}
+              </span>
+            </button>
+          ) : (
+            /* Khi CHƯA ĐĂNG NHẬP: Hiển thị nút "Đăng nhập" để người dùng click đăng nhập/đăng ký */
+            <button
+              type="button"
+              onClick={() => onOpenAuth?.('login')}
+              className="w-full h-full rounded-full flex items-center justify-center gap-1.5 px-2 cursor-pointer outline-none select-none shadow-md transition hover:brightness-110 active:scale-95"
+              style={{
+                backgroundColor: '#2b4968',
+                border: '1.5px solid #48a5b8',
+              }}
+              title="Đăng nhập hoặc Đăng ký tài khoản"
+            >
+              <div className="h-[74%] aspect-square rounded-full bg-[#31b9c9] flex items-center justify-center shrink-0 text-white text-[10px]">
+                👤
+              </div>
+              <span className="font-bold text-white text-[11px] sm:text-xs truncate leading-none">
+                Đăng nhập
+              </span>
+            </button>
+          )}
+
+          {/* Menu Dropdown khi đã đăng nhập */}
+          {userMenuOpen && currentUser && (
+            <div className="absolute right-0 top-[118%] w-60 rounded-2xl bg-white p-3.5 shadow-2xl border border-slate-200 z-50 text-slate-800 animate-in fade-in zoom-in-95 duration-150 text-left">
+              {/* Header: Avatar, Tên, Email */}
+              <div className="flex items-center gap-2.5 pb-2.5 mb-2.5 border-b border-slate-100">
+                <div className="h-9 w-9 rounded-full bg-[#31b9c9] text-white flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden shadow-2xs">
+                  {currentUser.avatar ? (
+                    <img src={currentUser.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    (currentUser.fullName || currentUser.username || 'U').charAt(0).toUpperCase()
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs font-bold text-slate-900 truncate">
+                      {currentUser.username || currentUser.fullName}
+                    </p>
+                    {currentUser.role === 'admin' && (
+                      <span className="text-[9px] font-black bg-red-100 text-red-700 px-1.5 py-0.2 rounded shrink-0">
+                        Admin
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-400 truncate mt-0.5">{currentUser.email || 'user@baichoi.vn'}</p>
+                </div>
+              </div>
+
+              {/* Ô hiển thị số dư Xu Chòi */}
+              <div className="p-2 rounded-xl bg-amber-50 border border-amber-200/80 mb-2 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base">🪙</span>
+                  <div>
+                    <p className="text-[9px] font-bold text-amber-800 uppercase tracking-wider">Số dư Xu Chòi</p>
+                    <p className="font-mono text-xs font-black text-amber-950">
+                      {(currentUser.coins ?? 0).toLocaleString()} Xu
+                    </p>
+                  </div>
+                </div>
                 <button
                   type="button"
                   onClick={() => {
                     setUserMenuOpen(false)
                     onOpenCoins?.()
                   }}
-                  className="w-full text-left px-2 py-1.5 rounded-lg hover:bg-amber-50 text-amber-900 font-semibold text-xs flex items-center justify-between"
+                  className="px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-black transition cursor-pointer"
                 >
-                  <span>🪙 Số dư:</span>
-                  <span className="font-mono font-black">{(currentUser.coins ?? 50).toLocaleString()} Xu</span>
+                  + Nạp
                 </button>
               </div>
-              <div className="pt-2 border-t border-slate-100 flex flex-col gap-1">
+
+              {/* Các liên kết điều hướng */}
+              <div className="space-y-1 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserMenuOpen(false)
+                    onGoToShop?.()
+                  }}
+                  className="w-full text-left px-2.5 py-2 rounded-xl hover:bg-amber-50 text-amber-900 font-semibold transition flex items-center gap-2 cursor-pointer"
+                >
+                  <span>🛍️</span>
+                  <span>Cửa Hàng Di Sản</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={() => {
                     setUserMenuOpen(false)
                     onBackToSite?.()
                   }}
-                  className="w-full text-left px-2 py-1 rounded-lg text-slate-700 hover:bg-slate-100 text-xs font-medium"
+                  className="w-full text-left px-2.5 py-2 rounded-xl hover:bg-slate-100 text-slate-700 font-medium transition flex items-center gap-2 cursor-pointer"
                 >
-                  ← Về Trang chủ
+                  <span>←</span>
+                  <span>Về Trang chủ</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUserMenuOpen(false)
-                    onLogout?.()
-                  }}
-                  className="w-full text-left px-2 py-1 rounded-lg text-red-600 hover:bg-red-50 text-xs font-bold"
-                >
-                  🚪 Đăng xuất
-                </button>
+
+                <div className="pt-1 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserMenuOpen(false)
+                      onLogout?.()
+                    }}
+                    className="w-full text-left px-2.5 py-2 rounded-xl hover:bg-red-50 text-red-600 font-bold transition flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>🚪</span>
+                    <span>Đăng xuất</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Nút Menu ☰ (Khớp vị trí icon menu x: 94.0%, y: 1.9%, w: 3.0%, h: 4.5%) */}
+        {/* ── TOP-RIGHT 3: NÚT MENU ☰ ── */}
         <button
           type="button"
-          onClick={onOpenQR}
+          onClick={() => {
+            if (currentUser) {
+              setUserMenuOpen((v) => !v)
+            } else {
+              onOpenAuth?.('login')
+            }
+          }}
           className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform"
           style={{
             left: '94.0%',
-            top: '1.9%',
-            width: '3.0%',
-            height: '4.5%',
+            top: '1.8%',
+            width: '3.2%',
+            height: '4.6%',
           }}
-          title="Lấy mã QR Quản Trò"
+          title="Tùy chọn menu"
         />
 
         {/* ── BẢNG TRÁI: ỐNG BÀI HIỆU TRUYỀN THỐNG ── */}
@@ -546,7 +680,79 @@ export default function OfflinePlay({
           2. GIAO DIỆN MOBILE / TABLET (< 1024px)
           Tối ưu cảm ứng, giữ nguyên hình ảnh, phong cách và nhân vật của QUANTRO.png
           ========================================================================= */}
-      <div className="lg:hidden flex flex-col items-center gap-6 p-3 sm:p-5">
+      <div className="lg:hidden flex flex-col items-center gap-4 p-3 sm:p-5">
+        {/* ── THANH NAVBAR TRÊN MOBILE ── */}
+        <div className="w-full max-w-xl flex items-center justify-between gap-2 px-1">
+          {/* Nút Về Trang Chủ */}
+          <button
+            type="button"
+            onClick={onBackToSite}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white font-bold text-xs shadow-md active:scale-95 transition cursor-pointer"
+            style={{
+              backgroundColor: '#26445b',
+              border: '1.5px solid #45a3b2',
+            }}
+          >
+            <div className="h-4 w-4 rounded-full bg-gradient-to-br from-[#006368] to-[#04374F] p-0.5 flex items-center justify-center shrink-0">
+              <img src="/assets/choi-transparent.png" alt="Chòi" className="w-full h-full object-contain" />
+            </div>
+            <span>← Trang chủ</span>
+          </button>
+
+          {/* Cụm Xu và Tài khoản bên phải */}
+          <div className="flex items-center gap-2">
+            {/* Viên thuốc Xu */}
+            <button
+              type="button"
+              onClick={onOpenCoins}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-white font-bold text-xs shadow-md active:scale-95 transition cursor-pointer"
+              style={{
+                backgroundColor: '#26445b',
+                border: '1.5px solid #45a3b2',
+              }}
+              title="Ví Xu Chòi"
+            >
+              <span>🪙</span>
+              <span className="font-mono">{(currentUser?.coins ?? 0).toLocaleString()}</span>
+              <span className="text-white/80 font-black">+</span>
+            </button>
+
+            {/* Viên thuốc Tài khoản */}
+            {currentUser ? (
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen((v) => !v)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-white font-bold text-xs shadow-md active:scale-95 transition cursor-pointer max-w-[130px]"
+                style={{
+                  backgroundColor: '#26445b',
+                  border: '1.5px solid #45a3b2',
+                }}
+                title={currentUser.username || currentUser.fullName}
+              >
+                <span className="h-4 w-4 rounded-full bg-[#31b9c9] flex items-center justify-center text-[10px] shrink-0">
+                  👤
+                </span>
+                <span className="truncate">{currentUser.username || currentUser.fullName}</span>
+                <span className="text-[9px] text-white/70">▼</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onOpenAuth?.('login')}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-white font-bold text-xs shadow-md active:scale-95 transition cursor-pointer"
+                style={{
+                  backgroundColor: '#26445b',
+                  border: '1.5px solid #45a3b2',
+                }}
+                title="Đăng nhập"
+              >
+                <span>👤</span>
+                <span>Đăng nhập</span>
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* HERO BANNER VỚI MÁI CHÒI & 2 NHÂN VẬT ANH HIỆU / CHỊ HIỆU */}
         <div className="w-full max-w-xl rounded-3xl bg-gradient-to-b from-[#1b3f42] to-[#142e31] p-5 border-2 border-emerald-600/40 shadow-xl text-center relative overflow-hidden">
           {/* Huy hiệu Offline */}
