@@ -3246,6 +3246,10 @@ export default function App() {
       if (portal !== 'site') {
         setIntroShown(false)
         setShowContent(true)
+      } else {
+        // Khi quay về trang chủ (site), tuyệt đối KHÔNG bật lại intro
+        setIntroShown(false)
+        setShowContent(true)
       }
     }
 
@@ -3257,20 +3261,29 @@ export default function App() {
     }
   }, [])
 
-  // ── Intro animation state (Bỏ qua intro nếu người dùng quét mã QR vào thẳng trang con) ──
-  const [introShown, setIntroShown] = useState(!isDirectScan)
-  const [showContent, setShowContent] = useState(isDirectScan)
+  // Kiểm tra xem trong phiên này người dùng đã xem hoặc bỏ qua intro chưa
+  const hasSeenIntro = (() => {
+    try {
+      return sessionStorage.getItem('bai_choi_intro_seen') === 'true'
+    } catch {
+      return false
+    }
+  })()
+
+  // ── Intro animation state: chỉ phát DUY NHẤT 1 lần khi mới mở trang gốc '/', không bao giờ phát lại khi bấm Về Trang chủ ──
+  const [introShown, setIntroShown] = useState(() => !isDirectScan && !hasSeenIntro)
+  const [showContent, setShowContent] = useState(() => isDirectScan || hasSeenIntro)
   const [gameOpen, setGameOpen] = useState(false)
   const [gameAudioMode, setGameAudioMode] = useState<'online' | 'offline'>('online')
 
   useEffect(() => {
     document.title = 'Bài Chòi Di Sản'
-    if (!isDirectScan) {
-      setIntroShown(true)
-    }
-  }, [isDirectScan])
+  }, [])
 
   const handleIntroDone = useCallback(() => {
+    try {
+      sessionStorage.setItem('bai_choi_intro_seen', 'true')
+    } catch {}
     setShowContent(true)
     setTimeout(() => setIntroShown(false), 300)
   }, [])
@@ -3283,6 +3296,11 @@ export default function App() {
   }, [handleIntroDone, introShown, showContent])
 
   const handleBackToSite = useCallback(() => {
+    try {
+      sessionStorage.setItem('bai_choi_intro_seen', 'true')
+    } catch {}
+    setIntroShown(false)
+    setShowContent(true)
     setActivePortal('site')
     if (window.location.hash) {
       try {
@@ -3293,6 +3311,21 @@ export default function App() {
   }, [])
 
   const handleGoToPortal = useCallback((portal: 'site' | 'admin' | 'staff' | 'shop' | 'game') => {
+    if (portal === 'site') {
+      try {
+        sessionStorage.setItem('bai_choi_intro_seen', 'true')
+      } catch {}
+      setIntroShown(false)
+      setShowContent(true)
+      setActivePortal('site')
+      if (window.location.hash) {
+        try {
+          history.replaceState(null, '', window.location.pathname + window.location.search)
+        } catch {}
+      }
+      window.scrollTo({ top: 0, behavior: 'instant' })
+      return
+    }
     setActivePortal(portal)
     if (portal === 'game') {
       window.location.hash = '#quan-tro'
@@ -3300,12 +3333,6 @@ export default function App() {
       window.location.hash = '#shop'
     } else if (portal === 'admin') {
       window.location.hash = '#admin'
-    } else if (portal === 'site') {
-      if (window.location.hash) {
-        try {
-          history.replaceState(null, '', window.location.pathname + window.location.search)
-        } catch {}
-      }
     }
   }, [])
 
