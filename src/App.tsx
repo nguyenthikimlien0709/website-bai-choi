@@ -3152,6 +3152,43 @@ function Footer({
   )
 }
 
+// ─── Phân tích URL hash / search để tự động mở thẳng trang con khi quét mã QR ───
+function detectInitialPortal(): 'site' | 'admin' | 'staff' | 'shop' | 'game' {
+  if (typeof window === 'undefined') return 'site'
+  const hash = (window.location.hash || '').toLowerCase()
+  const search = (window.location.search || '').toLowerCase()
+  const pathname = (window.location.pathname || '').toLowerCase()
+
+  // 1. Quét mã QR hoặc link trực tiếp: Ống Rút Bài Quản Trò
+  if (
+    hash.includes('quan-tro') ||
+    hash.includes('ong-rut') ||
+    hash.includes('caller') ||
+    hash.includes('game') ||
+    search.includes('portal=quan-tro') ||
+    search.includes('portal=game') ||
+    search.includes('page=quan-tro') ||
+    pathname.includes('quan-tro')
+  ) {
+    return 'game'
+  }
+
+  // 2. Cửa hàng
+  if (hash.includes('shop') || search.includes('portal=shop') || pathname.includes('shop')) {
+    return 'shop'
+  }
+
+  // 3. Admin / Staff
+  if (hash.includes('admin') || search.includes('portal=admin')) {
+    return 'admin'
+  }
+  if (hash.includes('staff') || search.includes('portal=staff')) {
+    return 'staff'
+  }
+
+  return 'site'
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [lang, setLang] = useState<Lang>('VIE')
@@ -3159,7 +3196,9 @@ export default function App() {
 
   // ── Auth & Portal state ──
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => authService.getCurrentUser())
-  const [activePortal, setActivePortal] = useState<'site' | 'admin' | 'staff' | 'shop' | 'game'>('site')
+  const [activePortal, setActivePortal] = useState<'site' | 'admin' | 'staff' | 'shop' | 'game'>(detectInitialPortal)
+  const isDirectScan = activePortal !== 'site'
+
   const [gameInitialTab, setGameInitialTab] = useState<GamePortalTab>('arena')
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authModalMode, setAuthModalMode] = useState<'login' | 'register' | 'reset'>('login')
@@ -3199,16 +3238,37 @@ export default function App() {
     }
   }, [])
 
-  // ── Intro animation state ──
-  const [introShown, setIntroShown] = useState(false)
-  const [showContent, setShowContent] = useState(false)
+  // ── Lắng nghe sự kiện URL thay đổi (quét mã QR hoặc bấm nút back/forward) ──
+  useEffect(() => {
+    const handleUrlChange = () => {
+      const portal = detectInitialPortal()
+      setActivePortal(portal)
+      if (portal !== 'site') {
+        setIntroShown(false)
+        setShowContent(true)
+      }
+    }
+
+    window.addEventListener('hashchange', handleUrlChange)
+    window.addEventListener('popstate', handleUrlChange)
+    return () => {
+      window.removeEventListener('hashchange', handleUrlChange)
+      window.removeEventListener('popstate', handleUrlChange)
+    }
+  }, [])
+
+  // ── Intro animation state (Bỏ qua intro nếu người dùng quét mã QR vào thẳng trang con) ──
+  const [introShown, setIntroShown] = useState(!isDirectScan)
+  const [showContent, setShowContent] = useState(isDirectScan)
   const [gameOpen, setGameOpen] = useState(false)
   const [gameAudioMode, setGameAudioMode] = useState<'online' | 'offline'>('online')
 
   useEffect(() => {
-    document.title = 'Chòi'
-    setIntroShown(true)
-  }, [])
+    document.title = 'Bài Chòi Di Sản'
+    if (!isDirectScan) {
+      setIntroShown(true)
+    }
+  }, [isDirectScan])
 
   const handleIntroDone = useCallback(() => {
     setShowContent(true)
@@ -3224,7 +3284,29 @@ export default function App() {
 
   const handleBackToSite = useCallback(() => {
     setActivePortal('site')
+    if (window.location.hash) {
+      try {
+        history.replaceState(null, '', window.location.pathname + window.location.search)
+      } catch {}
+    }
     window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [])
+
+  const handleGoToPortal = useCallback((portal: 'site' | 'admin' | 'staff' | 'shop' | 'game') => {
+    setActivePortal(portal)
+    if (portal === 'game') {
+      window.location.hash = '#quan-tro'
+    } else if (portal === 'shop') {
+      window.location.hash = '#shop'
+    } else if (portal === 'admin') {
+      window.location.hash = '#admin'
+    } else if (portal === 'site') {
+      if (window.location.hash) {
+        try {
+          history.replaceState(null, '', window.location.pathname + window.location.search)
+        } catch {}
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -3314,7 +3396,7 @@ export default function App() {
             authService.logout()
             setCurrentUser(null)
           }}
-          onGoToPortal={(portal) => setActivePortal(portal)}
+          onGoToPortal={handleGoToPortal}
           onOpenPolicy={handleOpenPolicy}
           onOpenCoins={() => setCoinModalOpen(true)}
         />
@@ -3451,7 +3533,7 @@ export default function App() {
               handleBackToSite()
             }}
             onOpenCoins={() => setCoinModalOpen(true)}
-            onGoToPortal={(portal) => setActivePortal(portal)}
+            onGoToPortal={handleGoToPortal}
           />
 
           {/* Dưới trang chủ: 7 lướt cuộn liền mạch với tranh cuộn nền.jpg */}

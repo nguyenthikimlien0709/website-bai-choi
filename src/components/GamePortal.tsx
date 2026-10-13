@@ -31,6 +31,14 @@ export default function GamePortal({
 }: GamePortalProps) {
   const isVie = lang === 'VIE'
   const [isPlayingGame, setIsPlayingGame] = useState(false)
+  const [qrModalOpen, setQrModalOpen] = useState(false)
+  const [copiedLink, setCopiedLink] = useState(false)
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText('https://baichoi.id.vn/#quan-tro')
+    setCopiedLink(true)
+    setTimeout(() => setCopiedLink(false), 2500)
+  }
 
   // User menu state
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -109,6 +117,18 @@ export default function GamePortal({
 
           {/* Right Action Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Direct QR Code Button */}
+            <button
+              type="button"
+              onClick={() => setQrModalOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold transition shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+              title={isVie ? 'Lấy mã QR quét mở trực tiếp trang Ống Rút' : 'Direct QR Code'}
+            >
+              <span className="text-sm">📱</span>
+              <span className="hidden sm:inline">{isVie ? 'Mã QR Quản Trò' : 'Direct QR'}</span>
+              <span className="sm:hidden">Mã QR</span>
+            </button>
+
             {/* Coin Wallet Button in GamePortal */}
             {currentUser && (
               <button
@@ -248,6 +268,17 @@ export default function GamePortal({
               ? 'Hệ thống ống tre 30 thẻ bài nguyên bản, hỗ trợ Quản trò / Anh Hiệu ảo lắc ống, rút thẻ và phát âm thanh câu hò thai truyền thống. Phục vụ đắc lực cho hội chơi thực tế, gia đình, lớp học và các sự kiện lễ hội dân gian.'
               : 'Authentic 30-card bamboo tube caller tool with original chants. Perfect for real-life gatherings, classrooms, and folk cultural festivals.'}
           </p>
+
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => setQrModalOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#006368] hover:bg-[#004d51] text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            >
+              <span>📱</span>
+              <span>{isVie ? 'Lấy Mã QR Quét Trực Tiếp Vào Trang Này' : 'Get Direct QR Code'}</span>
+            </button>
+          </div>
         </div>
 
         {/* ── ỐNG RÚT THẺ & ANH HIỆU ẢO (OFFLINE PLAY) ── */}
@@ -260,6 +291,97 @@ export default function GamePortal({
           />
         </div>
       </main>
+
+      {/* ── QR CODE DIRECT MODAL ── */}
+      {qrModalOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div
+            className="w-full max-w-md rounded-3xl bg-white p-6 sm:p-7 shadow-2xl border-2 border-[#006368]/20 relative text-center"
+            style={{ fontFamily: 'var(--font-body, system-ui, sans-serif)' }}
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setQrModalOpen(false)}
+              className="absolute top-4 right-4 h-9 w-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-lg transition cursor-pointer"
+              title="Đóng"
+            >
+              ✕
+            </button>
+
+            {/* Badge */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold mb-3">
+              <span>🎋</span>
+              <span>ĐIỀU HƯỚNG TRỰC TIẾP</span>
+            </div>
+
+            <h3
+              className="text-xl sm:text-2xl font-black text-[#006368] font-serif"
+              style={{ fontFamily: 'var(--font-display, serif)' }}
+            >
+              Mã QR Ống Rút Quản Trò
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1">
+              Quét mã để truy cập thẳng vào trang Quản Trò, không qua trang chủ hay màn hình chờ.
+            </p>
+
+            {/* QR Code Frame */}
+            <div className="my-5 p-4 rounded-2xl bg-gradient-to-b from-amber-50 to-white border-2 border-dashed border-[#006368]/30 flex flex-col items-center justify-center">
+              <div className="p-3 bg-white rounded-2xl shadow-md border border-slate-200">
+                <img
+                  src="/assets/qr-quan-tro.png"
+                  alt="QR Code Quản Trò Bài Chòi"
+                  className="w-56 h-56 sm:w-64 sm:h-64 object-contain rounded-lg"
+                />
+              </div>
+              <div className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 max-w-full">
+                <span className="text-xs text-slate-500 font-mono select-all truncate">
+                  https://baichoi.id.vn/#quan-tro
+                </span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-xs ${
+                  copiedLink
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-[#006368] hover:bg-[#004d51] text-white'
+                }`}
+              >
+                <span>{copiedLink ? '✓' : '📋'}</span>
+                <span>{copiedLink ? 'Đã sao chép liên kết!' : 'Sao chép liên kết trực tiếp'}</span>
+              </button>
+
+              <div className="flex gap-2">
+                <a
+                  href="/assets/qr-quan-tro.png"
+                  download="qr-bai-choi-quan-tro.png"
+                  className="flex-1 py-2 px-3 rounded-xl border border-slate-300 hover:border-[#006368] hover:bg-slate-50 text-slate-700 font-bold text-xs transition flex items-center justify-center gap-1.5"
+                >
+                  <span>💾</span>
+                  <span>Tải ảnh PNG (HD)</span>
+                </a>
+                <a
+                  href="/assets/qr-quan-tro.svg"
+                  download="qr-bai-choi-quan-tro.svg"
+                  className="flex-1 py-2 px-3 rounded-xl border border-slate-300 hover:border-[#006368] hover:bg-slate-50 text-slate-700 font-bold text-xs transition flex items-center justify-center gap-1.5"
+                >
+                  <span>📐</span>
+                  <span>Tải file SVG</span>
+                </a>
+              </div>
+            </div>
+
+            <p className="mt-4 text-[11px] text-slate-400">
+              💡 Thích hợp in ấn lên phôi thẻ, poster sự kiện, hoặc chia sẻ vào Zalo / trình chiếu màn hình lớn.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── GAME FULLSCREEN OVERLAY IF PLAYING ── */}
       {isPlayingGame && (

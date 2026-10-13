@@ -152,33 +152,10 @@ export default function OfflinePlay({ lang, initialTab = 'caller', onOpenGameOff
   }, [])
 
   return (
-    <section id="offline" className="relative scroll-mt-20 px-4 py-12 sm:px-8 lg:px-12">
+    <section id="offline" className="relative scroll-mt-20 p-4 sm:p-6 lg:p-8">
       <div className="relative z-10 mx-auto max-w-7xl">
-        {/* TIÊU ĐỀ SECTION */}
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#006368]/30 bg-white/70 px-4 py-1.5 backdrop-blur-md shadow-sm">
-            <span className="h-2 w-2 rounded-full bg-[#c44837] animate-ping" />
-            <span className="text-xs font-bold uppercase tracking-widest text-[#006368]">
-              {isVie ? 'Công Cụ Quản Trò Truyền Thống' : 'Virtual Caller Tube Tool'}
-            </span>
-          </div>
-
-          <h2
-            className="mt-4 text-3xl font-black sm:text-4xl lg:text-5xl"
-            style={{ color: '#006368', fontFamily: 'var(--font-display)' }}
-          >
-            {isVie ? 'ỐNG RÚT BÀI QUẢN TRÒ & ANH HIỆU ẢO' : 'VIRTUAL CALLER TUBE & FOLK CHANTS'}
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed sm:text-base" style={{ color: '#006368' }}>
-            {isVie
-              ? 'Mô phỏng ống tre 30 thẻ bài, hỗ trợ Quản trò / Anh Hiệu ảo lắc ống rút thẻ ngẫu nhiên và phát câu hò thai nguyên bản cho hội chơi thực tế, lớp học hoặc gia đình.'
-              : 'Virtual bamboo drawer with all 30 cards. Shake, draw cards, and play authentic chants for real-life gatherings, classrooms, or festivals.'}
-          </p>
-        </div>
-
         {/* NỘI DUNG ỐNG RÚT THẺ & ANH HIỆU ẢO */}
-        <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
             {/* CỘT TRÁI: KHUNG RÚT THẺ & PHÁT HÔ CÂU THAI */}
             <div className="lg:col-span-7 rounded-3xl border border-[#006368]/20 bg-white/85 p-6 shadow-xl backdrop-blur-md sm:p-8">
               <div className="flex items-center justify-between border-b border-[#006368]/15 pb-4">
