@@ -411,18 +411,32 @@ function HeroScreen({
             Hoàn toàn trong suốt, không viền lệch, không tooltip trình duyệt!
             ======================================================== */}
 
-        {/* 1. Vùng bấm Ví Xu Chòi (Khớp 100% với ảnh nền mới x: 66.0%, w: 10.6%) */}
+        {/* 1. Viên thuốc Ví Xu Chòi động (Khớp 100% với ảnh nền mới x: 66.0%, w: 10.6%) */}
         <button
           type="button"
           onClick={onOpenCoins}
-          className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform"
+          className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform rounded-full flex items-center justify-between px-2 sm:px-2.5 bg-[#283c5d] border border-teal-400/60 shadow-xs hover:brightness-110"
           style={{
             left: '66.0%',
             top: '2.87%',
             width: '10.6%',
             height: '4.9%',
           }}
-        />
+          title="Ví Xu Chòi - Bấm để nạp thêm hoặc xem lịch sử"
+        >
+          {/* Icon đồng xu Chòi */}
+          <div className="h-[76%] aspect-square rounded-full overflow-hidden shrink-0 flex items-center justify-center">
+            <img src="/assets/xu-choi.png" alt="Xu Chòi" className="w-full h-full object-contain" draggable={false} />
+          </div>
+
+          {/* Số dư Xu thật */}
+          <span className="font-bold text-white text-[10px] sm:text-[12px] truncate px-1">
+            {(currentUser?.coins ?? 50).toLocaleString()}
+          </span>
+
+          {/* Dấu cộng nạp xu */}
+          <span className="text-white/80 font-bold text-xs sm:text-sm leading-none pl-0.5 shrink-0">+</span>
+        </button>
 
         {/* 2. Vùng bấm Tài khoản người dùng (Khớp chuẩn 100% với huy hiệu nền mới x: 79.0%, w: 10.6%) */}
         <div
@@ -456,7 +470,7 @@ function HeroScreen({
                   className="h-full w-full object-cover rounded-full"
                 />
               ) : (
-                <span className="text-white text-[10px] sm:text-xs font-bold leading-none">
+                <span className="text-[#243b57] text-[10px] sm:text-xs font-bold leading-none">
                   👤
                 </span>
               )}

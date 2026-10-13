@@ -41,6 +41,7 @@ export default function OfflinePlay({
   // User menu state cho desktop canvas
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
+  const [menuDrawerOpen, setMenuDrawerOpen] = useState(false)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const clapperAudioRef = useRef<HTMLAudioElement | null>(null)
@@ -228,44 +229,50 @@ export default function OfflinePlay({
           </span>
         </button>
 
-        {/* ── TOP-RIGHT 1: VIÊN THUỐC VÍ XU CHÒI (Bao phủ và thay thế hoàn toàn ô 50 tĩnh trên ảnh) ── */}
-        <div
-          className="absolute z-30 rounded-full flex items-center justify-between px-2 cursor-pointer outline-none select-none shadow-md transition hover:brightness-110 active:scale-95"
-          style={{
-            left: '74.2%',
-            top: '1.9%',
-            width: '8.6%',
-            height: '4.4%',
-            backgroundColor: '#2b4968',
-            border: '1.5px solid #48a5b8',
-          }}
+        {/* ── TOP-RIGHT 1: VIÊN THUỐC VÍ XU CHÒI (Chuẩn theo navbar Trang chủ) ── */}
+        <button
+          type="button"
           onClick={onOpenCoins}
+          className="absolute z-30 rounded-full flex items-center justify-between px-2 sm:px-2.5 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-all shadow-xs hover:brightness-110"
+          style={{
+            left: '73.8%',
+            top: '1.9%',
+            width: '8.8%',
+            height: '4.4%',
+            backgroundColor: '#283c5d',
+            border: '1.5px solid rgba(45, 184, 199, 0.65)',
+          }}
           title="Ví Xu Chòi - Bấm để nạp thêm hoặc xem lịch sử"
         >
-          {/* Icon đồng xu tròn */}
-          <div className="h-[74%] aspect-square rounded-full bg-[#18756d] border border-amber-300/70 flex items-center justify-center shrink-0 shadow-2xs">
-            <span className="text-[10px] leading-none">🪙</span>
+          {/* Icon đồng xu Chòi chuẩn matching Trang chủ */}
+          <div className="h-[76%] aspect-square rounded-full overflow-hidden flex items-center justify-center shrink-0">
+            <img
+              src="/assets/xu-choi.png"
+              alt="Xu Chòi"
+              className="w-full h-full object-contain"
+              draggable={false}
+            />
           </div>
 
-          {/* Số dư Xu THẬT của người dùng (biến động theo currentUser.coins) */}
-          <span className="font-mono font-black text-white text-xs sm:text-[13px] leading-none px-1 truncate">
-            {(currentUser?.coins ?? 0).toLocaleString()}
+          {/* Số dư Xu THẬT của người dùng */}
+          <span className="font-bold text-white text-xs sm:text-[13px] leading-none px-1.5 truncate">
+            {(currentUser?.coins ?? 50).toLocaleString()}
           </span>
 
           {/* Dấu cộng nạp xu */}
-          <span className="text-white/90 font-black text-sm leading-none pl-0.5 shrink-0">
+          <span className="text-white/80 font-bold text-sm leading-none pl-0.5 shrink-0">
             +
           </span>
-        </div>
+        </button>
 
-        {/* ── TOP-RIGHT 2: VIÊN THUỐC TÀI KHOẢN (Bao phủ và thay thế hoàn toàn ô penhi tĩnh trên ảnh) ── */}
+        {/* ── TOP-RIGHT 2: VIÊN THUỐC TÀI KHOẢN (Chuẩn theo navbar Trang chủ) ── */}
         <div
           ref={userMenuRef}
           className="absolute z-30"
           style={{
-            left: '84.2%',
+            left: currentUser ? '83.8%' : '83.0%',
             top: '1.9%',
-            width: '8.8%',
+            width: currentUser ? '9.6%' : '11.0%',
             height: '4.4%',
           }}
         >
@@ -274,55 +281,57 @@ export default function OfflinePlay({
             <button
               type="button"
               onClick={() => setUserMenuOpen((v) => !v)}
-              className="w-full h-full rounded-full flex items-center justify-between px-2 cursor-pointer outline-none select-none shadow-md transition hover:brightness-110 active:scale-95"
+              className="w-full h-full rounded-full flex items-center justify-between px-2 sm:px-2.5 cursor-pointer outline-none focus:outline-none focus:ring-0 select-none shadow-xs transition hover:brightness-110 active:scale-95"
               style={{
-                backgroundColor: '#2b4968',
-                border: '1.5px solid #48a5b8',
+                backgroundColor: '#283c5d',
+                border: '1.5px solid rgba(45, 184, 199, 0.65)',
               }}
               title={currentUser.username || currentUser.fullName}
             >
-              {/* Avatar người dùng */}
-              <div className="h-[74%] aspect-square rounded-full overflow-hidden bg-[#31b9c9] flex items-center justify-center shrink-0 border border-white/50 shadow-2xs">
+              {/* Avatar người dùng tròn cyan có icon 👤 */}
+              <div className="h-[76%] aspect-square rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-[#27b8c7]">
                 {currentUser.avatar ? (
                   <img
                     src={currentUser.avatar}
                     alt={currentUser.username}
-                    className="w-full h-full object-cover rounded-full"
+                    className="h-full w-full object-cover rounded-full"
                   />
                 ) : (
-                  <span className="text-white text-[10px] font-bold leading-none">
-                    {(currentUser.fullName || currentUser.username || 'U').charAt(0).toUpperCase()}
+                  <span className="text-[#243b57] text-[10px] sm:text-xs font-bold leading-none">
+                    👤
                   </span>
                 )}
               </div>
 
               {/* Tên người dùng thật (thay đổi linh hoạt, không bị cố định là penhi) */}
-              <span className="font-bold text-white text-[11px] sm:text-xs truncate px-1 max-w-[85px] sm:max-w-[105px] leading-none">
+              <span className="font-bold text-white text-[11px] sm:text-[12px] truncate px-1.5 max-w-[70px] sm:max-w-[95px] leading-none">
                 {currentUser.username || currentUser.fullName}
               </span>
 
               {/* Mũi tên thả xuống */}
-              <span className="text-[9px] text-white/70 leading-none shrink-0">
+              <span className="text-[8px] sm:text-[10px] text-white/80 leading-none shrink-0 font-bold pr-0.5">
                 {userMenuOpen ? '▲' : '▼'}
               </span>
             </button>
           ) : (
-            /* Khi CHƯA ĐĂNG NHẬP: Hiển thị nút "Đăng nhập" để người dùng click đăng nhập/đăng ký */
+            /* Khi CHƯA ĐĂNG NHẬP: Hiển thị đúng nút "Đăng nhập / Đăng ký" theo Trang chủ */
             <button
               type="button"
               onClick={() => onOpenAuth?.('login')}
-              className="w-full h-full rounded-full flex items-center justify-center gap-1.5 px-2 cursor-pointer outline-none select-none shadow-md transition hover:brightness-110 active:scale-95"
+              className="w-full h-full rounded-full flex items-center justify-between px-2 sm:px-2.5 cursor-pointer outline-none focus:outline-none focus:ring-0 select-none shadow-xs transition hover:brightness-110 active:scale-95"
               style={{
-                backgroundColor: '#2b4968',
-                border: '1.5px solid #48a5b8',
+                backgroundColor: '#283c5d',
+                border: '1.5px solid rgba(45, 184, 199, 0.65)',
               }}
               title="Đăng nhập hoặc Đăng ký tài khoản"
             >
-              <div className="h-[74%] aspect-square rounded-full bg-[#31b9c9] flex items-center justify-center shrink-0 text-white text-[10px]">
-                👤
+              <div className="h-[76%] aspect-square rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-[#27b8c7]">
+                <span className="text-[#243b57] text-[10px] sm:text-xs font-bold leading-none">
+                  👤
+                </span>
               </div>
-              <span className="font-bold text-white text-[11px] sm:text-xs truncate leading-none">
-                Đăng nhập
+              <span className="font-bold text-white text-[10px] sm:text-[11px] truncate leading-none px-1.5">
+                {isVie ? 'Đăng nhập / Đăng ký' : 'Sign in / Register'}
               </span>
             </button>
           )}
@@ -332,11 +341,11 @@ export default function OfflinePlay({
             <div className="absolute right-0 top-[118%] w-60 rounded-2xl bg-white p-3.5 shadow-2xl border border-slate-200 z-50 text-slate-800 animate-in fade-in zoom-in-95 duration-150 text-left">
               {/* Header: Avatar, Tên, Email */}
               <div className="flex items-center gap-2.5 pb-2.5 mb-2.5 border-b border-slate-100">
-                <div className="h-9 w-9 rounded-full bg-[#31b9c9] text-white flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden shadow-2xs">
+                <div className="h-9 w-9 rounded-full bg-[#27b8c7] text-[#243b57] flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden shadow-2xs">
                   {currentUser.avatar ? (
                     <img src={currentUser.avatar} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
-                    (currentUser.fullName || currentUser.username || 'U').charAt(0).toUpperCase()
+                    <span className="text-base">👤</span>
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -355,13 +364,13 @@ export default function OfflinePlay({
               </div>
 
               {/* Ô hiển thị số dư Xu Chòi */}
-              <div className="p-2 rounded-xl bg-amber-50 border border-amber-200/80 mb-2 flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-base">🪙</span>
+              <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200/80 mb-2 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <img src="/assets/xu-choi.png" alt="Xu Chòi" className="w-6 h-6 object-contain" />
                   <div>
                     <p className="text-[9px] font-bold text-amber-800 uppercase tracking-wider">Số dư Xu Chòi</p>
                     <p className="font-mono text-xs font-black text-amber-950">
-                      {(currentUser.coins ?? 0).toLocaleString()} Xu
+                      {(currentUser.coins ?? 50).toLocaleString()} Xu
                     </p>
                   </div>
                 </div>
@@ -371,7 +380,7 @@ export default function OfflinePlay({
                     setUserMenuOpen(false)
                     onOpenCoins?.()
                   }}
-                  className="px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-black transition cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-black transition cursor-pointer shadow-2xs"
                 >
                   + Nạp
                 </button>
@@ -421,16 +430,10 @@ export default function OfflinePlay({
           )}
         </div>
 
-        {/* ── TOP-RIGHT 3: NÚT MENU ☰ ── */}
+        {/* ── TOP-RIGHT 3: NÚT MENU ☰ (Khớp vị trí 3 gạch trên ảnh) ── */}
         <button
           type="button"
-          onClick={() => {
-            if (currentUser) {
-              setUserMenuOpen((v) => !v)
-            } else {
-              onOpenAuth?.('login')
-            }
-          }}
+          onClick={() => setMenuDrawerOpen(true)}
           className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform"
           style={{
             left: '94.0%',
@@ -438,7 +441,7 @@ export default function OfflinePlay({
             width: '3.2%',
             height: '4.6%',
           }}
-          title="Tùy chọn menu"
+          title="Mở Menu điều hướng"
         />
 
         {/* ── BẢNG TRÁI: ỐNG BÀI HIỆU TRUYỀN THỐNG ── */}
@@ -689,8 +692,8 @@ export default function OfflinePlay({
             onClick={onBackToSite}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white font-bold text-xs shadow-md active:scale-95 transition cursor-pointer"
             style={{
-              backgroundColor: '#26445b',
-              border: '1.5px solid #45a3b2',
+              backgroundColor: '#283c5d',
+              border: '1.5px solid rgba(45, 184, 199, 0.65)',
             }}
           >
             <div className="h-4 w-4 rounded-full bg-gradient-to-br from-[#006368] to-[#04374F] p-0.5 flex items-center justify-center shrink-0">
@@ -699,7 +702,7 @@ export default function OfflinePlay({
             <span>← Trang chủ</span>
           </button>
 
-          {/* Cụm Xu và Tài khoản bên phải */}
+          {/* Cụm Xu, Tài khoản và Menu bên phải */}
           <div className="flex items-center gap-2">
             {/* Viên thuốc Xu */}
             <button
@@ -707,14 +710,16 @@ export default function OfflinePlay({
               onClick={onOpenCoins}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-white font-bold text-xs shadow-md active:scale-95 transition cursor-pointer"
               style={{
-                backgroundColor: '#26445b',
-                border: '1.5px solid #45a3b2',
+                backgroundColor: '#283c5d',
+                border: '1.5px solid rgba(45, 184, 199, 0.65)',
               }}
               title="Ví Xu Chòi"
             >
-              <span>🪙</span>
-              <span className="font-mono">{(currentUser?.coins ?? 0).toLocaleString()}</span>
-              <span className="text-white/80 font-black">+</span>
+              <div className="h-4 w-4 rounded-full overflow-hidden flex items-center justify-center shrink-0">
+                <img src="/assets/xu-choi.png" alt="Xu Chòi" className="w-full h-full object-contain" />
+              </div>
+              <span className="font-bold">{(currentUser?.coins ?? 50).toLocaleString()}</span>
+              <span className="text-white/80 font-bold">+</span>
             </button>
 
             {/* Viên thuốc Tài khoản */}
@@ -724,32 +729,48 @@ export default function OfflinePlay({
                 onClick={() => setUserMenuOpen((v) => !v)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-white font-bold text-xs shadow-md active:scale-95 transition cursor-pointer max-w-[130px]"
                 style={{
-                  backgroundColor: '#26445b',
-                  border: '1.5px solid #45a3b2',
+                  backgroundColor: '#283c5d',
+                  border: '1.5px solid rgba(45, 184, 199, 0.65)',
                 }}
                 title={currentUser.username || currentUser.fullName}
               >
-                <span className="h-4 w-4 rounded-full bg-[#31b9c9] flex items-center justify-center text-[10px] shrink-0">
-                  👤
-                </span>
+                <div className="h-4 w-4 rounded-full overflow-hidden bg-[#27b8c7] flex items-center justify-center text-[10px] shrink-0">
+                  {currentUser.avatar ? (
+                    <img src={currentUser.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-[#243b57]">👤</span>
+                  )}
+                </div>
                 <span className="truncate">{currentUser.username || currentUser.fullName}</span>
-                <span className="text-[9px] text-white/70">▼</span>
+                <span className="text-[9px] text-white/70 font-bold">▼</span>
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => onOpenAuth?.('login')}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-white font-bold text-xs shadow-md active:scale-95 transition cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white font-bold text-xs shadow-md active:scale-95 transition cursor-pointer"
                 style={{
-                  backgroundColor: '#26445b',
-                  border: '1.5px solid #45a3b2',
+                  backgroundColor: '#283c5d',
+                  border: '1.5px solid rgba(45, 184, 199, 0.65)',
                 }}
-                title="Đăng nhập"
+                title="Đăng nhập / Đăng ký"
               >
-                <span>👤</span>
-                <span>Đăng nhập</span>
+                <div className="h-4 w-4 rounded-full overflow-hidden bg-[#27b8c7] flex items-center justify-center text-[10px] shrink-0 text-[#243b57]">
+                  👤
+                </div>
+                <span className="text-[11px] font-bold">{isVie ? 'Đăng nhập / Đăng ký' : 'Sign in / Register'}</span>
               </button>
             )}
+
+            {/* Nút Menu ☰ trên mobile */}
+            <button
+              type="button"
+              onClick={() => setMenuDrawerOpen(true)}
+              className="h-8 w-8 rounded-full bg-[#283c5d] border border-teal-400/60 text-teal-300 font-bold text-base flex items-center justify-center cursor-pointer shadow-xs active:scale-95 transition"
+              title="Menu điều hướng"
+            >
+              ☰
+            </button>
           </div>
         </div>
 
@@ -1041,6 +1062,117 @@ export default function OfflinePlay({
               >
                 Đóng
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          5. DRAWER MENU ĐIỀU HƯỚNG QUẢN TRÒ (TƯƠNG TỰ TRANG CHỦ)
+          ========================================================================= */}
+      {menuDrawerOpen && (
+        <div className="fixed inset-0 z-[160] bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-200">
+          <div className="w-full max-w-xs sm:max-w-sm h-full bg-white shadow-2xl p-6 flex flex-col justify-between text-left overflow-y-auto animate-in slide-in-from-right duration-300">
+            <div>
+              {/* Header Drawer */}
+              <div className="flex items-center justify-between pb-5 border-b border-slate-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-9 w-9 rounded-xl bg-[#283c5d] p-1 flex items-center justify-center shadow-xs">
+                    <img src="/assets/choi-transparent.png" alt="Logo" className="w-full h-full object-contain" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-[#006368] text-base leading-tight font-serif">BÀI CHÒI DI SẢN</h3>
+                    <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Hội Chơi Quản Trò</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMenuDrawerOpen(false)}
+                  className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm transition cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Danh sách mục chọn */}
+              <div className="py-6 flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuDrawerOpen(false)
+                    onBackToSite?.()
+                  }}
+                  className="px-4 py-3 rounded-2xl font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition flex items-center gap-3 text-left cursor-pointer"
+                >
+                  <span className="text-base">🏠</span>
+                  <span>{isVie ? 'Trang chủ' : 'Home'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuDrawerOpen(false)
+                    onGoToShop?.()
+                  }}
+                  className="px-4 py-3 rounded-2xl font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition flex items-center gap-3 text-left cursor-pointer"
+                >
+                  <span className="text-base">🛍️</span>
+                  <span>{isVie ? 'Cửa Hàng Di Sản' : 'Heritage Shop'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuDrawerOpen(false)
+                    onOpenCoins?.()
+                  }}
+                  className="px-4 py-3 rounded-2xl font-bold text-amber-900 bg-amber-50/80 hover:bg-amber-100 transition flex items-center justify-between text-left cursor-pointer border border-amber-200/60"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <img src="/assets/xu-choi.png" alt="Xu Chòi" className="w-5 h-5 object-contain" />
+                    <span>{isVie ? 'Ví Xu Chòi' : 'Choi Coin Wallet'}</span>
+                  </div>
+                  <span className="font-mono font-bold text-xs">{(currentUser?.coins ?? 50).toLocaleString()} Xu</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Chân trang Drawer */}
+            <div className="pt-4 border-t border-slate-100">
+              {currentUser ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-full bg-[#27b8c7] text-[#243b57] flex items-center justify-center font-bold text-xs">
+                      👤
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">{currentUser.username || currentUser.fullName}</p>
+                      <p className="text-[10px] text-slate-400">{currentUser.email || 'user@baichoi.vn'}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuDrawerOpen(false)
+                      onLogout?.()
+                    }}
+                    className="text-xs font-bold text-red-600 hover:text-red-700 cursor-pointer"
+                  >
+                    Đăng xuất
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuDrawerOpen(false)
+                    onOpenAuth?.('login')
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-[#006368] hover:bg-[#004e52] text-white font-bold text-xs text-center transition cursor-pointer"
+                >
+                  {isVie ? 'Đăng nhập / Đăng ký' : 'Sign in / Register'}
+                </button>
+              )}
             </div>
           </div>
         </div>
