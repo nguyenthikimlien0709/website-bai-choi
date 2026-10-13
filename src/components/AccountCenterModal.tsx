@@ -49,6 +49,7 @@ export default function AccountCenterModal({
   const [avatarPreview, setAvatarPreview] = useState(profile.avatar || '')
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('')
   const [saveLoading, setSaveLoading] = useState(false)
+  const [viewingTicket, setViewingTicket] = useState<TicketRecord | null>(null)
 
   // Sync profile when currentUser prop changes
   useEffect(() => {
@@ -696,10 +697,14 @@ export default function AccountCenterModal({
                                     </div>
                                     <button
                                       type="button"
-                                      onClick={() => onViewTicketPass?.(t)}
-                                      className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold px-3 py-1.5 transition cursor-pointer"
+                                      onClick={() => {
+                                        setViewingTicket(t)
+                                        onViewTicketPass?.(t)
+                                      }}
+                                      className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold px-3 py-1.5 transition cursor-pointer flex items-center gap-1.5 shadow-xs"
                                     >
-                                      Xem phôi vé
+                                      <span>🎫</span>
+                                      <span>Xem phôi vé</span>
                                     </button>
                                   </div>
                                 </div>
@@ -1229,6 +1234,106 @@ export default function AccountCenterModal({
           </div>
         </div>
       </div>
+
+      {/* MODAL PHÔI VÉ SỰ KIỆN CHÍNH THỨC */}
+      {viewingTicket && createPortal(
+        <div
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fade-in"
+          onClick={() => setViewingTicket(null)}
+        >
+          <div
+            className="relative w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-3xl bg-white shadow-2xl border border-amber-300/60 p-5 sm:p-7 cursor-default text-slate-800"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-900 text-lg shadow-xs">
+                  🎫
+                </span>
+                <div>
+                  <h4 className="font-black text-slate-900 text-base sm:text-lg">Phôi Vé Tham Gia Chính Thức</h4>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    Mã vé: <span className="font-mono font-black text-red-600 tracking-wider">{viewingTicket.ticketCode}</span>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewingTicket(null)}
+                className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center transition cursor-pointer"
+                title="Đóng"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Phôi vé ảnh Mockup */}
+            <div className="my-4 rounded-2xl overflow-hidden bg-gradient-to-b from-slate-50 to-amber-50/40 border-2 border-amber-300/60 shadow-lg p-2.5 text-center">
+              <img
+                src="/assets/mock up (1).png"
+                alt="Phôi vé Bài Chòi chính thức"
+                className="w-full max-h-[44vh] object-contain mx-auto rounded-xl shadow-xs"
+              />
+              <p className="text-[11px] text-amber-900/80 font-bold mt-2 flex items-center justify-center gap-1.5">
+                <span>🎴</span> Phôi vé & Thẻ tham gia Hội Bài Chòi Di Sản Dân Gian Miền Trung
+              </p>
+            </div>
+
+            {/* Thông tin vé chi tiết */}
+            <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4 space-y-2.5 text-xs">
+              <div className="flex justify-between items-start gap-2">
+                <span className="text-slate-500 font-medium shrink-0">Đêm hội / Sự kiện:</span>
+                <span className="font-bold text-slate-900 text-right">{viewingTicket.eventTitle}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 font-medium">Người sở hữu:</span>
+                <span className="font-bold text-slate-900">{viewingTicket.customerName} ({viewingTicket.phone})</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 font-medium">Giá vé niêm yết:</span>
+                <span className="font-black text-red-600">{viewingTicket.price.toLocaleString('vi-VN')} đ</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 font-medium">Thời gian đặt mua:</span>
+                <span className="font-medium text-slate-700">{viewingTicket.createdAt}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 font-medium">Tình trạng vé:</span>
+                <span className={`inline-flex items-center gap-1 font-bold px-2.5 py-0.5 rounded-full text-[11px] ${
+                  viewingTicket.status === 'checked_in' ? 'bg-slate-200 text-slate-700' : 'bg-emerald-100 text-emerald-800'
+                }`}>
+                  {viewingTicket.status === 'checked_in' ? '✓ Đã check-in vào cổng' : '● Chưa soát vé (Hợp lệ)'}
+                </span>
+              </div>
+            </div>
+
+            {/* Chú thích & Nút hành động */}
+            <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <p className="text-[11px] text-slate-500 italic leading-relaxed">
+                * Vui lòng đưa phôi vé điện tử này cho ban tổ chức hoặc nhân viên soát vé tại cửa để quét mã QR check-in vào hội.
+              </p>
+              <div className="flex items-center gap-2 justify-end shrink-0">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer flex items-center gap-1"
+                >
+                  <span>🖨️</span> In vé
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewingTicket(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>,
     document.body
   )

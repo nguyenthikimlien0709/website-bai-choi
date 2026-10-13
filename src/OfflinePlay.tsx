@@ -18,13 +18,7 @@ export default function OfflinePlay({ lang, initialTab = 'caller', onOpenGameOff
   const [isCalling, setIsCalling] = useState(false)
   const [isShaking, setIsShaking] = useState(false)
   const [lyricIndex, setLyricIndex] = useState(0)
-  const [activeTab, setActiveTab] = useState<'caller' | 'browse'>(initialTab)
 
-  useEffect(() => {
-    if (initialTab) {
-      setActiveTab(initialTab)
-    }
-  }, [initialTab])
 
   const [celebrateWon, setCelebrateWon] = useState(false)
 
@@ -158,14 +152,14 @@ export default function OfflinePlay({ lang, initialTab = 'caller', onOpenGameOff
   }, [])
 
   return (
-    <section id="offline" className="relative scroll-mt-20 px-4 py-20 sm:px-8 lg:px-12">
+    <section id="offline" className="relative scroll-mt-20 px-4 py-12 sm:px-8 lg:px-12">
       <div className="relative z-10 mx-auto max-w-7xl">
         {/* TIÊU ĐỀ SECTION */}
         <div className="text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-[#006368]/30 bg-white/70 px-4 py-1.5 backdrop-blur-md shadow-sm">
             <span className="h-2 w-2 rounded-full bg-[#c44837] animate-ping" />
             <span className="text-xs font-bold uppercase tracking-widest text-[#006368]">
-              {isVie ? 'Chế Độ Bài Chòi Offline' : 'Offline Bai Choi Mode'}
+              {isVie ? 'Công Cụ Quản Trò Truyền Thống' : 'Virtual Caller Tube Tool'}
             </span>
           </div>
 
@@ -173,49 +167,18 @@ export default function OfflinePlay({ lang, initialTab = 'caller', onOpenGameOff
             className="mt-4 text-3xl font-black sm:text-4xl lg:text-5xl"
             style={{ color: '#006368', fontFamily: 'var(--font-display)' }}
           >
-            {isVie ? 'HỘI CHƠI BÀI CHÒI TRUYỀN THỐNG' : 'TRADITIONAL FOLK BAI CHOI'}
+            {isVie ? 'ỐNG RÚT BÀI QUẢN TRÒ & ANH HIỆU ẢO' : 'VIRTUAL CALLER TUBE & FOLK CHANTS'}
           </h2>
 
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed sm:text-base" style={{ color: '#006368' }}>
             {isVie
-              ? 'Thưởng thức trọn vẹn 30 câu hò thai nguyên bản với thời lượng âm thanh đầy đủ (Sound-Offline). Thích hợp làm Quản trò / Anh Hiệu ảo cho hội chơi thực tế ngoài đời, gia đình, lễ hội hoặc lớp học.'
-              : 'Experience the full-length traditional folk chants with the original offline audio collection. Perfect for real-life group gatherings, festivals, or classrooms.'}
+              ? 'Mô phỏng ống tre 30 thẻ bài, hỗ trợ Quản trò / Anh Hiệu ảo lắc ống rút thẻ ngẫu nhiên và phát câu hò thai nguyên bản cho hội chơi thực tế, lớp học hoặc gia đình.'
+              : 'Virtual bamboo drawer with all 30 cards. Shake, draw cards, and play authentic chants for real-life gatherings, classrooms, or festivals.'}
           </p>
-
-          {/* 2 NÚT CHUYỂN TAB TRẢI NGHIỆM */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <button
-              onClick={() => setActiveTab('caller')}
-              className={`rounded-2xl px-5 py-2.5 text-sm font-bold transition shadow-sm ${
-                activeTab === 'caller'
-                  ? 'bg-[#006368] text-white shadow-md'
-                  : 'bg-white/80 text-[#006368] hover:bg-white'
-              }`}
-            >
-              🎋 {isVie ? 'Ống Rút Thẻ & Anh Hiệu Ảo' : 'Virtual Caller & Bamboo Drawer'}
-            </button>
-            <button
-              onClick={() => setActiveTab('browse')}
-              className={`rounded-2xl px-5 py-2.5 text-sm font-bold transition shadow-sm ${
-                activeTab === 'browse'
-                  ? 'bg-[#006368] text-white shadow-md'
-                  : 'bg-white/80 text-[#006368] hover:bg-white'
-              }`}
-            >
-              📻 {isVie ? 'Khám Phá 30 Điệu Hò Dài' : 'Browse 30 Long Chants'}
-            </button>
-            <button
-              onClick={onOpenGameOffline}
-              className="rounded-2xl border-2 border-[#c44837] bg-gradient-to-r from-[#c44837] to-[#7c2421] px-6 py-2.5 text-sm font-bold text-white shadow-lg transition hover:scale-105 active:scale-95"
-            >
-              🎮 {isVie ? 'Chơi Game Với Máy (Sound Offline)' : 'Play Against Bots (Offline Sound)'}
-            </button>
-          </div>
         </div>
 
-        {/* NỘI DUNG TAB 1: ỐNG RÚT THẺ & ANH HIỆU ẢO */}
-        {activeTab === 'caller' && (
-          <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
+        {/* NỘI DUNG ỐNG RÚT THẺ & ANH HIỆU ẢO */}
+        <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
             {/* CỘT TRÁI: KHUNG RÚT THẺ & PHÁT HÔ CÂU THAI */}
             <div className="lg:col-span-7 rounded-3xl border border-[#006368]/20 bg-white/85 p-6 shadow-xl backdrop-blur-md sm:p-8">
               <div className="flex items-center justify-between border-b border-[#006368]/15 pb-4">
@@ -383,54 +346,6 @@ export default function OfflinePlay({ lang, initialTab = 'caller', onOpenGameOff
               </div>
             </div>
           </div>
-        )}
-
-        {/* NỘI DUNG TAB 2: KHÁM PHÁ 30 ĐIỆU HÒ DÀI NGUYÊN BẢN */}
-        {activeTab === 'browse' && (
-          <div className="mt-10 rounded-3xl border border-[#006368]/20 bg-white/85 p-6 shadow-xl backdrop-blur-md sm:p-8">
-            <div className="border-b border-[#006368]/15 pb-4 text-center">
-              <h3 className="text-xl font-black text-[#006368]" style={{ fontFamily: 'var(--font-display)' }}>
-                {isVie ? 'TRỌN BỘ 30 CÂU HÒ THAI NGUYÊN BẢN (SOUND-OFFLINE)' : 'FULL 30 FOLK CHANTS (OFFLINE AUDIO)'}
-              </h3>
-              <p className="mt-1 text-xs text-[#006368]/70">
-                {isVie ? 'Bấm vào bất kỳ quân bài nào dưới đây để thưởng thức trọn vẹn câu hát dài truyền thống của lá đó.' : 'Click any card to play its full traditional chant audio.'}
-              </p>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6">
-              {CARDS.map((card) => {
-                const isSelected = currentCard?.id === card.id
-                return (
-                  <button
-                    key={card.id}
-                    onClick={() => playCardChant(card)}
-                    className={`group relative overflow-hidden rounded-2xl border-2 p-2 text-center transition-all hover:-translate-y-1 ${
-                      isSelected
-                        ? 'border-[#c44837] bg-[#fff0ed] shadow-lg'
-                        : 'border-[#006368]/15 bg-white hover:border-[#f29963] hover:shadow-md'
-                    }`}
-                  >
-                    <div className="overflow-hidden rounded-xl bg-gray-100">
-                      <img
-                        src={card.image}
-                        alt={card.name}
-                        className="aspect-[3/4] w-full object-cover transition-transform group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="mt-2 flex items-center justify-between px-1">
-                      <span className="text-xs font-bold text-[#006368] truncate" style={{ fontFamily: 'var(--font-display)' }}>
-                        {card.name}
-                      </span>
-                      <span className="text-xs">
-                        {isSelected && isCalling ? '🔊' : '▶️'}
-                      </span>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        )}
 
         {/* THÔNG BÁO CHIẾN THẮNG HỘI CHÒI */}
         {celebrateWon && (

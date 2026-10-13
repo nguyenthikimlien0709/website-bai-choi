@@ -15,6 +15,7 @@ import GamePortal, { type GamePortalTab } from './components/GamePortal'
 import { PolicyModal } from './components/PolicyModal'
 import ChoiCoin from './components/ChoiCoin'
 import CoinTopupModal from './components/CoinTopupModal'
+import AccountCenterModal, { type AccountTabKey } from './components/AccountCenterModal'
 import { authService } from './lib/authService'
 import { supabase, isSupabaseConfigured } from './lib/supabase'
 import type { UserProfile } from './types/auth'
@@ -323,541 +324,6 @@ function DragonDivider() {
   )
 }
 
-// ─── Navigation ───────────────────────────────────────────────────────────────
-function Nav({
-  lang,
-  setLang,
-  c,
-  onPlay,
-  currentUser,
-  onOpenAuth,
-  onLogout,
-  onGoToPortal,
-  onOpenCoins,
-}: {
-  lang: Lang
-  setLang: (l: Lang) => void
-  c: typeof content.VIE
-  onPlay: () => void
-  currentUser: UserProfile | null
-  onOpenAuth: (mode?: 'login' | 'register') => void
-  onLogout: () => void
-  onGoToPortal?: (portal: 'site' | 'admin' | 'staff' | 'shop' | 'game') => void
-  onOpenCoins?: () => void
-}) {
-  const [scrolled, setScrolled] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const userMenuRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', fn)
-    return () => window.removeEventListener('scroll', fn)
-  }, [])
-
-  // Đóng menu tài khoản khi bấm ra ngoài
-  useEffect(() => {
-    if (!userMenuOpen) return
-    const handleClickOutside = (e: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setUserMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [userMenuOpen])
-
-  const anchors = ['#home', '#history', '#characters', '#rules', '#game', '#shop']
-
-  return (
-    <nav
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
-      style={{
-        height: 80,
-        background: scrolled ? 'rgba(255,255,255,0.96)' : 'rgba(255,255,255,0.9)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: scrolled ? '1px solid rgba(0,99,104,0.26)' : '1px solid transparent',
-        boxShadow: scrolled ? '0 2px 20px rgba(0,42,45,0.28)' : 'none',
-      }}
-    >
-      {/* Top gold line */}
-      <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: 'linear-gradient(90deg, transparent 0%, #006368 24%, #F29963 44%, #C44837 62%, #006368 78%, transparent 100%)' }} />
-
-      <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6">
-        {/* Logo */}
-        <a href="#home" className="flex items-center shrink-0 group">
-          <div
-            className="flex h-10 w-10 items-center justify-center transition-transform group-hover:scale-105 sm:h-12 sm:w-12"
-            style={{ filter: 'drop-shadow(0 4px 10px rgba(0,99,104,0.18))' }}
-          >
-            <img
-              src="/assets/choi-transparent.png"
-              alt="Logo Chòi"
-              className="w-full h-full object-contain"
-            />
-          </div>
-        </a>
-
-        {/* Desktop Menu */}
-        <div className="hidden lg:flex items-center gap-1">
-          {c.nav.menu.map((item, i) => {
-            const isShop = anchors[i] === '#shop'
-            const isGame = anchors[i] === '#game'
-            if (isShop) {
-              return (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => onGoToPortal?.('shop')}
-                  className="relative rounded-md px-3 py-2 text-base font-semibold transition-all duration-200 group xl:px-4 xl:text-[17px] cursor-pointer flex items-center gap-1.5"
-                  style={{ color: '#006368', fontFamily: 'var(--font-body)' }}
-                >
-                  <span className="relative z-10 group-hover:text-vermilion transition-colors" style={{ color: 'inherit' }}>{item}</span>
-                  <span className="relative z-10 text-xs">🛍️</span>
-                  <span className="absolute bottom-1 left-4 right-4 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" style={{ background: '#F29963' }} />
-                </button>
-              )
-            }
-            if (isGame) {
-              return (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => onGoToPortal?.('game')}
-                  className="relative rounded-md px-3 py-2 text-base font-semibold transition-all duration-200 group xl:px-4 xl:text-[17px] cursor-pointer flex items-center gap-1.5"
-                  style={{ color: '#006368', fontFamily: 'var(--font-body)' }}
-                >
-                  <span className="relative z-10 group-hover:text-vermilion transition-colors" style={{ color: 'inherit' }}>{item}</span>
-                  <span className="relative z-10 text-xs">🎮</span>
-                  <span className="absolute bottom-1 left-4 right-4 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" style={{ background: '#F29963' }} />
-                </button>
-              )
-            }
-            return (
-              <a
-                key={item}
-                href={anchors[i]}
-                className="relative rounded-md px-3 py-2 text-base font-semibold transition-all duration-200 group xl:px-4 xl:text-[17px]"
-                style={{ color: '#006368', fontFamily: 'var(--font-body)' }}
-              >
-                <span className="relative z-10 group-hover:text-vermilion transition-colors" style={{ color: 'inherit' }}>{item}</span>
-                <span className="absolute bottom-1 left-4 right-4 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" style={{ background: '#F29963' }} />
-              </a>
-            )
-          })}
-        </div>
-
-        {/* Right controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Coin Wallet Button (Tám Tiền) */}
-          {currentUser ? (
-            <button
-              type="button"
-              onClick={onOpenCoins}
-              title="Ví Xu Chòi - Bấm để nạp xu hoặc xem lịch sử"
-              className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-950 text-xs font-bold transition shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
-            >
-              <ChoiCoin size={18} animate glow />
-              <span className="font-mono text-xs sm:text-sm font-black text-amber-900">
-                {(currentUser.coins ?? 50).toLocaleString()}
-              </span>
-              <span className="text-[11px] font-semibold text-amber-800 hidden min-[480px]:inline">
-                Xu
-              </span>
-              <span className="h-4 w-4 rounded-full bg-[#006368] text-white flex items-center justify-center text-[10px] font-black ml-0.5 shadow-2xs">
-                +
-              </span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onOpenAuth('register')}
-              title="Đăng ký tài khoản nhận ngay 50 Xu tân thủ"
-              className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50/90 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold transition hover:scale-105 cursor-pointer shadow-2xs"
-            >
-              <ChoiCoin size={16} glow />
-              <span>Tặng 50 Xu</span>
-              <span className="text-[9px] bg-red-600 text-white font-black px-1.5 py-0.2 rounded-full">
-                MỚI
-              </span>
-            </button>
-          )}
-
-          {/* User Auth Control */}
-          {currentUser ? (
-            <div className="relative" ref={userMenuRef}>
-              <button
-                type="button"
-                onClick={() => setUserMenuOpen((prev) => !prev)}
-                title="Bấm để xem thông tin hoặc đăng xuất"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border shadow-xs transition hover:scale-105 active:scale-95 cursor-pointer"
-                style={{
-                  background: currentUser.role === 'admin' ? '#FEF2F2' : currentUser.role === 'staff' ? '#EFF6FF' : '#F0FDF4',
-                  borderColor: currentUser.role === 'admin' ? '#FCA5A5' : currentUser.role === 'staff' ? '#93C5FD' : '#86EFAC',
-                  color: currentUser.role === 'admin' ? '#991B1B' : currentUser.role === 'staff' ? '#1E40AF' : '#166534',
-                }}
-              >
-                {currentUser.avatar ? (
-                  <img
-                    src={currentUser.avatar}
-                    alt={currentUser.fullName}
-                    className="h-4.5 w-4.5 rounded-full object-cover shrink-0 border border-current"
-                  />
-                ) : (
-                  <span>{currentUser.role === 'admin' ? '👑' : currentUser.role === 'staff' ? '🎫' : '👤'}</span>
-                )}
-                <span className="max-w-[85px] sm:max-w-[120px] truncate">
-                  {currentUser.username || currentUser.fullName}
-                </span>
-                <span className="text-[10px] opacity-60">▼</span>
-              </button>
-
-              {userMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white p-3 shadow-xl border border-slate-100 z-50 animate-in fade-in">
-                  <div className="border-b border-slate-100 pb-2 mb-2 flex items-center gap-2.5">
-                    <div className="h-9 w-9 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-slate-500 shadow-2xs">
-                      {currentUser.avatar ? (
-                        <img src={currentUser.avatar} alt="Avatar" className="h-full w-full object-cover" />
-                      ) : (
-                        <span className="text-base">👤</span>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-slate-800 truncate">
-                        {currentUser.fullName}
-                      </p>
-                      {currentUser.username && (
-                        <p className="text-[11px] font-semibold text-slate-600 truncate">
-                          @{currentUser.username}
-                        </p>
-                      )}
-                      <p className="text-[11px] text-slate-400 truncate">{currentUser.email}</p>
-                    </div>
-                  </div>
-
-                  {/* Coin row in dropdown */}
-                  <div className="mb-2.5 p-2 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <ChoiCoin size={20} glow />
-                      <div>
-                        <span className="text-[10px] text-amber-800 font-semibold block leading-tight">Ví Xu Chòi:</span>
-                        <span className="text-xs font-black text-amber-950 font-mono">
-                          {(currentUser.coins ?? 50).toLocaleString()} Xu
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUserMenuOpen(false)
-                        onOpenCoins?.()
-                      }}
-                      className="text-[10px] bg-[#006368] hover:bg-[#004d50] text-white font-bold px-2 py-1 rounded-lg transition shadow-2xs cursor-pointer shrink-0"
-                    >
-                      + Nạp Xu
-                    </button>
-                  </div>
-
-                  <div className="mb-2">
-                    <span
-                      className="inline-block rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
-                      style={{
-                        background: currentUser.role === 'admin' ? '#FEE2E2' : currentUser.role === 'staff' ? '#DBEAFE' : '#DCFCE7',
-                        color: currentUser.role === 'admin' ? '#991B1B' : currentUser.role === 'staff' ? '#1E40AF' : '#166534',
-                      }}
-                    >
-                      {currentUser.role === 'admin' ? 'Quản trị viên' : currentUser.role === 'staff' ? 'Nhân viên quầy' : 'Khách hàng'}
-                    </span>
-                  </div>
-
-                  {currentUser.role === 'admin' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUserMenuOpen(false)
-                        onGoToPortal?.('admin')
-                      }}
-                      className="w-full text-left rounded-xl px-3 py-2 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 transition cursor-pointer flex items-center gap-2 mb-1"
-                    >
-                      <span>👑</span>
-                      <span>Trang Quản Trị (Admin)</span>
-                    </button>
-                  )}
-
-                  {currentUser.role === 'staff' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUserMenuOpen(false)
-                        onGoToPortal?.('staff')
-                      }}
-                      className="w-full text-left rounded-xl px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition cursor-pointer flex items-center gap-2 mb-1"
-                    >
-                      <span>🎫</span>
-                      <span>Quầy Soát Vé (Staff)</span>
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUserMenuOpen(false)
-                      onGoToPortal?.('game')
-                    }}
-                    className="w-full text-left rounded-xl px-3 py-2 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition cursor-pointer flex items-center gap-2 mb-1"
-                  >
-                    <span>🎮</span>
-                    <span>Hội Chơi Bài Chòi & Game</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUserMenuOpen(false)
-                      onGoToPortal?.('shop')
-                    }}
-                    className="w-full text-left rounded-xl px-3 py-2 text-xs font-bold text-teal-800 bg-teal-50 hover:bg-teal-100 transition cursor-pointer flex items-center gap-2 mb-1"
-                  >
-                    <span>🛍️</span>
-                    <span>Cửa Hàng & Vé Sự Kiện</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUserMenuOpen(false)
-                      onLogout()
-                    }}
-                    className="w-full text-left rounded-xl px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer flex items-center gap-2"
-                  >
-                    <span>🚪</span>
-                    <span>Đăng xuất</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onOpenAuth('login')}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 hover:bg-slate-50 active:scale-95"
-              style={{ borderColor: 'rgba(0,99,104,0.35)', color: '#006368' }}
-            >
-              <span>👤</span>
-              <span>Đăng nhập</span>
-            </button>
-          )}
-
-          {/* Language switcher */}
-          <div className="hidden sm:flex rounded-full overflow-hidden border" style={{ borderColor: 'rgba(0,99,104,0.55)' }}>
-            {(['VIE', 'ENG'] as Lang[]).map((l) => (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                className="px-2.5 py-1 text-xs font-semibold transition-all duration-200"
-                style={{
-                  background: lang === l ? '#006368' : 'transparent',
-                  color: lang === l ? '#FFFFFF' : '#006368',
-                  fontFamily: 'var(--font-body)',
-                }}
-              >
-                {l}
-              </button>
-            ))}
-          </div>
-
-          {/* CTA */}
-          <button
-            onClick={onPlay}
-            className="hidden sm:block px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95"
-            style={{
-              background: 'linear-gradient(135deg, #C44837 0%, #7C2421 100%)',
-              color: '#FFFFFF',
-              fontFamily: 'var(--font-body)',
-              boxShadow: '0 4px 14px rgba(196,72,55,0.35)',
-            }}
-          >
-            {c.nav.cta}
-          </button>
-
-          {/* Mobile hamburger */}
-          <button
-            className="lg:hidden flex flex-col gap-1.5 p-2"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
-          >
-            {[0, 1, 2].map(i => (
-              <span key={i} className="block w-5 h-0.5 transition-all" style={{ background: '#006368' }} />
-            ))}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="absolute left-0 right-0 top-full flex max-h-[calc(100dvh-80px)] flex-col gap-3 overflow-y-auto px-5 py-4 lg:hidden" style={{ background: 'rgba(255,255,255,0.98)', borderBottom: '1px solid rgba(0,99,104,0.24)' }}>
-          {currentUser ? (
-            <>
-              <div className="flex items-center justify-between border-b pb-3 mb-1" style={{ borderColor: 'rgba(0,99,104,0.16)' }}>
-                <div>
-                  <p className="text-sm font-bold text-slate-800">{currentUser.fullName}</p>
-                  <p className="text-xs text-slate-500">{currentUser.email || currentUser.username}</p>
-                  <span className="text-[10px] font-bold uppercase text-emerald-700">
-                    {currentUser.role === 'admin' ? '👑 Quản trị viên' : currentUser.role === 'staff' ? '🎫 Nhân viên quầy' : '👤 Khách hàng'}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileOpen(false)
-                    onLogout()
-                  }}
-                  className="rounded-xl bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-100 transition flex items-center gap-1.5"
-                >
-                  <span>🚪</span>
-                  <span>Đăng xuất</span>
-                </button>
-              </div>
-              {currentUser.role === 'admin' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileOpen(false)
-                    onGoToPortal?.('admin')
-                  }}
-                  className="w-full text-left rounded-xl px-3 py-2 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 transition cursor-pointer flex items-center gap-2 mb-1"
-                >
-                  <span>👑</span>
-                  <span>Vào Trang Quản Trị (Admin)</span>
-                </button>
-              )}
-              {currentUser.role === 'staff' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileOpen(false)
-                    onGoToPortal?.('staff')
-                  }}
-                  className="w-full text-left rounded-xl px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition cursor-pointer flex items-center gap-2 mb-1"
-                >
-                  <span>🎫</span>
-                  <span>Vào Quầy Soát Vé (Staff)</span>
-                </button>
-              )}
-
-              {/* Coin wallet in mobile */}
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-amber-50 border border-amber-200 mb-1">
-                <div className="flex items-center gap-2.5">
-                  <ChoiCoin size={26} glow />
-                  <div>
-                    <span className="text-[11px] text-amber-800 font-semibold block leading-tight">Ví Xu Chòi:</span>
-                    <span className="text-sm font-black text-amber-950 font-mono">
-                      {(currentUser.coins ?? 50).toLocaleString()} Xu
-                    </span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileOpen(false)
-                    onOpenCoins?.()
-                  }}
-                  className="px-3 py-1.5 rounded-xl bg-[#006368] text-white text-xs font-bold transition shadow-2xs cursor-pointer"
-                >
-                  + Nạp Xu
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="border-b pb-3 mb-1" style={{ borderColor: 'rgba(0,99,104,0.16)' }}>
-              <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 mb-2 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ChoiCoin size={20} glow />
-                  <span className="text-xs font-bold text-amber-900">Tặng 50 Xu khi đăng ký mới!</span>
-                </div>
-                <span className="text-[9px] bg-red-600 text-white font-black px-1.5 py-0.5 rounded-full">HOT</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileOpen(false)
-                  onOpenAuth('login')
-                }}
-                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-bold border"
-                style={{ borderColor: 'rgba(0,99,104,0.35)', color: '#006368', background: 'rgba(0,99,104,0.05)' }}
-              >
-                <span>👤</span>
-                <span>Đăng nhập / Đăng ký</span>
-              </button>
-            </div>
-          )}
-          {c.nav.menu.map((item, i) => {
-            const isShop = anchors[i] === '#shop'
-            const isGame = anchors[i] === '#game'
-            if (isShop) {
-              return (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => {
-                    setMobileOpen(false)
-                    onGoToPortal?.('shop')
-                  }}
-                  className="w-full text-left border-b py-2 text-base font-semibold cursor-pointer flex items-center justify-between"
-                  style={{ color: '#006368', borderColor: 'rgba(0,99,104,0.16)' }}
-                >
-                  <span>{item}</span>
-                  <span className="text-xs bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">🛍️ Vào Shop</span>
-                </button>
-              )
-            }
-            if (isGame) {
-              return (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => {
-                    setMobileOpen(false)
-                    onGoToPortal?.('game')
-                  }}
-                  className="w-full text-left border-b py-2 text-base font-semibold cursor-pointer flex items-center justify-between"
-                  style={{ color: '#006368', borderColor: 'rgba(0,99,104,0.16)' }}
-                >
-                  <span>{item}</span>
-                  <span className="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">🎮 Vào Chơi</span>
-                </button>
-              )
-            }
-            return (
-              <a key={item} href={anchors[i]} onClick={() => setMobileOpen(false)}
-                className="border-b py-2 text-base font-semibold" style={{ color: '#006368', borderColor: 'rgba(0,99,104,0.16)' }}>
-                {item}
-              </a>
-            )
-          })}
-          <div className="flex gap-3 pt-2">
-            <div className="flex rounded-full overflow-hidden border" style={{ borderColor: 'rgba(0,99,104,0.55)' }}>
-              {(['VIE', 'ENG'] as Lang[]).map((l) => (
-                <button key={l} onClick={() => setLang(l)}
-                  className="px-3 py-1 text-xs font-semibold"
-                  style={{ background: lang === l ? '#006368' : 'transparent', color: lang === l ? '#FFFFFF' : '#006368' }}>
-                  {l}
-                </button>
-              ))}
-            </div>
-            <button onClick={() => { setMobileOpen(false); onPlay() }}
-              className="flex-1 text-center px-4 py-2 rounded-full text-sm font-semibold"
-              style={{ background: '#C44837', color: '#FFFFFF' }}>
-              {c.nav.cta}
-            </button>
-          </div>
-        </div>
-      )}
-    </nav>
-  )
-}
-
 // ─── Reference landing screens ───────────────────────────────────────────────
 function ReferenceScreen({
   id,
@@ -883,76 +349,472 @@ function ReferenceScreen({
   )
 }
 
-function HeroScreen({ c, lang, onPlay }: { c: typeof content.VIE; lang: Lang; onPlay: () => void }) {
+function HeroScreen({
+  c,
+  lang,
+  setLang,
+  onPlay,
+  currentUser,
+  onOpenAuth,
+  onLogout,
+  onOpenCoins,
+  onGoToPortal,
+}: {
+  c: typeof content.VIE
+  lang: Lang
+  setLang: (l: Lang) => void
+  onPlay: () => void
+  currentUser: UserProfile | null
+  onOpenAuth: (mode?: 'login' | 'register') => void
+  onLogout: () => void
+  onOpenCoins?: () => void
+  onGoToPortal?: (portal: 'site' | 'admin' | 'staff' | 'shop' | 'game') => void
+}) {
   const isVietnamese = lang === 'VIE'
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [userDropdown, setUserDropdown] = useState(false)
+  const [accountCenterOpen, setAccountCenterOpen] = useState(false)
+  const [accountCenterInitialTab, setAccountCenterInitialTab] = useState<AccountTabKey>('profile')
+  const userMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!userDropdown) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [userDropdown])
 
   return (
     <section
       id="home"
-      className="relative flex min-h-[100svh] scroll-mt-20 items-center overflow-x-clip px-4 pb-12 pt-24 sm:px-8 sm:pb-14 sm:pt-28 lg:px-12"
+      className="relative w-full overflow-hidden flex flex-col justify-center items-center select-none"
       style={{
-        backgroundColor: '#EEF6F1',
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.12), rgba(255,255,255,0.12)), url("/assets/Background-toan.jpg")',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundSize: 'cover',
+        backgroundColor: '#72D9DD',
+        backgroundImage: 'linear-gradient(180deg, #62D5DC 0%, #A2EBDC 25%, #E3F2EE 65%, #F4F8F6 100%)',
       }}
     >
-      <div className="relative z-10 mx-auto w-full max-w-7xl">
-        <div data-reveal="up" className="mx-auto w-full max-w-[900px] xl:max-w-[980px]">
-          <div className="home-hero-stage relative -translate-y-7 overflow-hidden sm:-translate-y-9 lg:-translate-y-12">
-            <img
-              src="/assets/trangchu2.png"
-              alt="Nữ nghệ nhân và tiêu đề Bài Chòi"
-              className="home-hero-composite aspect-[3/2] w-full object-contain"
-            />
+      {/* Khung hiển thị chuẩn tỉ lệ 16:9 matching Figma/mockup */}
+      <div className="relative w-full max-w-[1920px] aspect-[16/9] mx-auto overflow-hidden">
+        {/* Ảnh toàn cảnh Trang Chủ */}
+        <img
+          src="/assets/trangchu/trangchu-full.png"
+          alt="Trang chủ Bài Chòi"
+          className="w-full h-full object-contain pointer-events-none"
+        />
 
-            <div className="absolute bottom-[31%] left-[51%] right-[4%] z-30 hidden text-center lg:block">
-              <div className="grid grid-cols-2 gap-4">
+        {/* ========================================================
+            CÁC VÙNG TƯƠNG TÁC (CLICKABLE HOTSPOTS)
+            Hoàn toàn trong suốt, không viền lệch, không tooltip trình duyệt!
+            ======================================================== */}
+
+        {/* 1. Vùng bấm Ví Xu Chòi (Khớp 100% với ảnh nền mới x: 66.0%, w: 10.6%) */}
+        <button
+          type="button"
+          onClick={onOpenCoins}
+          className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform"
+          style={{
+            left: '66.0%',
+            top: '2.87%',
+            width: '10.6%',
+            height: '4.9%',
+          }}
+        />
+
+        {/* 2. Vùng bấm Tài khoản người dùng (Khớp chuẩn 100% với huy hiệu nền mới x: 79.0%, w: 10.6%) */}
+        <div
+          ref={userMenuRef}
+          className="absolute z-30"
+          style={{
+            left: '79.0%',
+            top: '2.96%',
+            width: '10.6%',
+            height: '4.9%',
+          }}
+        >
+          {/* Nút bấm ăn khớp hoàn toàn với viên thuốc gốc trên ảnh nền mới */}
+          <button
+            type="button"
+            onClick={() => {
+              if (currentUser) {
+                setUserDropdown(!userDropdown)
+              } else {
+                onOpenAuth('login')
+              }
+            }}
+            className="w-full h-full rounded-full flex items-center justify-between px-2 sm:px-2.5 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform bg-[#283c5d] border border-teal-400/60 shadow-xs"
+          >
+            {/* Avatar icon tròn bên trái */}
+            <div className="h-[76%] aspect-square rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-[#27b8c7]">
+              {currentUser?.avatar ? (
+                <img
+                  src={currentUser.avatar}
+                  alt="Avatar"
+                  className="h-full w-full object-cover rounded-full"
+                />
+              ) : (
+                <span className="text-white text-[10px] sm:text-xs font-bold leading-none">
+                  👤
+                </span>
+              )}
+            </div>
+
+            {currentUser ? (
+              <>
+                <span className="text-[10px] sm:text-[12px] font-bold text-white truncate max-w-[65px] sm:max-w-[90px] leading-none px-1">
+                  {currentUser.username || currentUser.fullName}
+                </span>
+                <span className="text-[8px] sm:text-[10px] text-white/80 shrink-0 font-bold leading-none">
+                  {userDropdown ? '▲' : '▼'}
+                </span>
+              </>
+            ) : (
+              <span className="text-[9px] sm:text-[11px] font-bold text-white truncate leading-none px-1">
+                {isVietnamese ? 'Đăng nhập / Đăng ký' : 'Sign in / Register'}
+              </span>
+            )}
+          </button>
+
+          {/* Menu thả xuống thông tin tài khoản (Khớp 100% Ảnh tham khảo của bạn) */}
+          {userDropdown && currentUser && (
+            <div className="absolute right-0 top-[115%] w-64 sm:w-72 rounded-2xl bg-white p-3.5 shadow-2xl border border-slate-100 z-50 animate-in fade-in text-slate-800">
+              {/* Header: Avatar, Tên đăng nhập, Email */}
+              <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+                <div className="h-10 w-10 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-slate-500 shadow-2xs">
+                  {currentUser.avatar ? (
+                    <img src={currentUser.avatar} alt="Avatar" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-lg">👤</span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-slate-900 truncate">
+                    {currentUser.username || currentUser.fullName}
+                  </p>
+                  <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                    {currentUser.email || 'user@example.com'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Ô Ví Xu Chòi chuẩn thiết kế với nút + Nạp Xu */}
+              <div className="my-2.5 p-2.5 rounded-xl bg-[#fffdf5] border border-[#fde68a] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ChoiCoin size={22} glow />
+                  <div>
+                    <span className="text-[11px] text-amber-900 font-medium block leading-tight">Ví Xu Chòi:</span>
+                    <span className="text-xs font-black text-amber-950 font-mono">
+                      {(currentUser.coins ?? 50).toLocaleString()} Xu
+                    </span>
+                  </div>
+                </div>
                 <button
                   type="button"
-                  onClick={onPlay}
-                  className="rounded-2xl border border-white/25 px-4 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 xl:text-base cursor-pointer"
-                  style={{ background: 'rgba(196,72,55,0.94)', boxShadow: '0 10px 28px rgba(0,28,48,0.3)' }}
+                  onClick={() => {
+                    setUserDropdown(false)
+                    onOpenCoins?.()
+                  }}
+                  className="text-xs bg-[#c8382b] hover:bg-[#a82d21] text-white font-bold px-3 py-1.5 rounded-xl transition shadow-2xs cursor-pointer shrink-0"
                 >
-                  {isVietnamese ? 'Chơi Ngay' : 'Play Now'}
+                  + Nạp Xu
                 </button>
-                <a
-                  href="#rules"
-                  className="rounded-2xl border border-white/25 px-4 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 xl:text-base cursor-pointer"
-                  style={{ background: 'rgba(4,55,79,0.84)', boxShadow: '0 10px 28px rgba(0,28,48,0.3)' }}
+              </div>
+
+              {/* Danh sách mục chọn trong menu tài khoản */}
+              <div className="flex flex-col gap-0.5 text-xs font-semibold text-slate-700 py-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserDropdown(false)
+                    setAccountCenterInitialTab('profile')
+                    setAccountCenterOpen(true)
+                  }}
+                  className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-50 hover:text-slate-900 transition flex items-center gap-3 cursor-pointer"
                 >
-                  {isVietnamese ? 'Luật Chơi' : 'Game Rules'}
-                </a>
+                  <span className="text-base text-slate-400">⚙️</span>
+                  <span>{isVietnamese ? 'Cài đặt tài khoản' : 'Account Settings'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserDropdown(false)
+                    setAccountCenterInitialTab('tickets')
+                    setAccountCenterOpen(true)
+                  }}
+                  className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-50 hover:text-slate-900 transition flex items-center gap-3 cursor-pointer"
+                >
+                  <span className="text-base text-slate-400">🎟️</span>
+                  <span>{isVietnamese ? 'Vé của tôi' : 'My Tickets'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserDropdown(false)
+                    setAccountCenterInitialTab('tracking')
+                    setAccountCenterOpen(true)
+                  }}
+                  className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-50 hover:text-slate-900 transition flex items-center gap-3 cursor-pointer"
+                >
+                  <span className="text-base text-slate-400">🚚</span>
+                  <span>{isVietnamese ? 'Theo dõi đơn hàng' : 'Track Orders'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserDropdown(false)
+                    setAccountCenterInitialTab('history')
+                    setAccountCenterOpen(true)
+                  }}
+                  className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-slate-50 hover:text-slate-900 transition flex items-center gap-3 cursor-pointer"
+                >
+                  <span className="text-base text-slate-400">✉️</span>
+                  <span>{isVietnamese ? 'Lịch sử giao dịch' : 'Transaction History'}</span>
+                </button>
+
+                {/* Nút dành riêng cho Admin / Staff nếu có */}
+                {currentUser.role === 'admin' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserDropdown(false)
+                      onGoToPortal?.('admin')
+                    }}
+                    className="w-full text-left px-3 py-2.5 rounded-xl text-red-700 hover:bg-red-50 transition flex items-center gap-3 cursor-pointer font-bold"
+                  >
+                    <span className="text-base">👑</span>
+                    <span>Trang Quản Trị (Admin)</span>
+                  </button>
+                )}
+
+                {currentUser.role === 'staff' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserDropdown(false)
+                      onGoToPortal?.('staff')
+                    }}
+                    className="w-full text-left px-3 py-2.5 rounded-xl text-blue-700 hover:bg-blue-50 transition flex items-center gap-3 cursor-pointer font-bold"
+                  >
+                    <span className="text-base">🎫</span>
+                    <span>Quầy Soát Vé (Staff)</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Đường kẻ và nút Đăng xuất */}
+              <div className="pt-2 mt-1 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserDropdown(false)
+                    onLogout()
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl text-red-600 font-bold hover:bg-red-50 transition cursor-pointer flex items-center gap-3 text-xs"
+                >
+                  <span className="text-base">🔄</span>
+                  <span>{isVietnamese ? 'Đăng xuất' : 'Log out'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 3. Vùng bấm Menu ☰ (Khớp vị trí trên ảnh mới) */}
+        <button
+          type="button"
+          onClick={() => setDrawerOpen(true)}
+          aria-label="Menu"
+          className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform"
+          style={{
+            left: '89.2%',
+            top: '3.0%',
+            width: '6.2%',
+            height: '4.5%',
+          }}
+        />
+
+        {/* 4. Vùng bấm Nút LUẬT CHƠI (Khớp chuẩn vị trí trên ảnh mới x: 50.5%, y: 63.5%) */}
+        <a
+          href="#rules"
+          onClick={(e) => {
+            e.preventDefault()
+            const el = document.getElementById('rules')
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth' })
+            } else {
+              window.location.hash = '#rules'
+            }
+          }}
+          className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform"
+          style={{
+            left: '50.5%',
+            top: '63.5%',
+            width: '21.5%',
+            height: '12.5%',
+          }}
+        />
+
+        {/* 5. Vùng bấm Nút CHƠI NGAY (Khớp chuẩn vị trí trên ảnh mới x: 75.5%, y: 63.5%) */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            onPlay()
+          }}
+          className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform"
+          style={{
+            left: '75.5%',
+            top: '63.5%',
+            width: '21.5%',
+            height: '12.5%',
+          }}
+        />
+      </div>
+
+      {/* Modal Quản lý Tài Khoản (Cài đặt, Vé của tôi, Theo dõi đơn hàng, Lịch sử) */}
+      {accountCenterOpen && currentUser && (
+        <AccountCenterModal
+          currentUser={currentUser}
+          initialTab={accountCenterInitialTab}
+          onClose={() => setAccountCenterOpen(false)}
+          onLogout={() => {
+            setAccountCenterOpen(false)
+            onLogout()
+          }}
+        />
+      )}
+
+      {/* Drawer Menu Điều Hướng (Khi bấm nút ☰) */}
+      {drawerOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <div className="relative ml-auto w-full max-w-sm bg-white h-full shadow-2xl p-6 flex flex-col z-10 animate-in slide-in-from-right duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <img src="/assets/choi-transparent.png" alt="Logo" className="h-8 w-8 object-contain" />
+                <span className="font-black text-slate-800 text-lg">Bài Chòi Di Sản</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDrawerOpen(false)}
+                  className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 font-bold transition cursor-pointer"
+                >
+                  ✕
+                </button>
               </div>
             </div>
 
-            <div className="absolute bottom-[26%] left-[48%] right-[3%] z-30 text-center lg:hidden">
-              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            {/* Menu Links */}
+            <div className="py-6 flex flex-col gap-2">
+              <a
+                href="#home"
+                onClick={() => setDrawerOpen(false)}
+                className="px-4 py-3 rounded-2xl font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition block text-left"
+              >
+                <span>{isVietnamese ? 'Trang chủ' : 'Home'}</span>
+              </a>
+              <a
+                href="#history"
+                onClick={() => setDrawerOpen(false)}
+                className="px-4 py-3 rounded-2xl font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition block text-left"
+              >
+                <span>{isVietnamese ? 'Giới Thiệu Di Sản' : 'Introduction'}</span>
+              </a>
+              <a
+                href="#characters"
+                onClick={() => setDrawerOpen(false)}
+                className="px-4 py-3 rounded-2xl font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition block text-left"
+              >
+                <span>{isVietnamese ? '30 Thẻ Bài Dân Gian' : '30 Cards'}</span>
+              </a>
+              <a
+                href="#rules"
+                onClick={() => setDrawerOpen(false)}
+                className="px-4 py-3 rounded-2xl font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition block text-left"
+              >
+                <span>{isVietnamese ? 'Luật Chơi Truyền Thống' : 'Rules'}</span>
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setDrawerOpen(false)
+                  onGoToPortal?.('game')
+                }}
+                className="px-4 py-3 rounded-2xl font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition text-left cursor-pointer block w-full"
+              >
+                <span>{isVietnamese ? 'Ống Rút Bài Quản Trò' : 'Virtual Caller Tube'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDrawerOpen(false)
+                  onGoToPortal?.('shop')
+                }}
+                className="px-4 py-3 rounded-2xl font-bold text-teal-800 bg-teal-50 hover:bg-teal-100 transition text-left cursor-pointer block w-full"
+              >
+                <span>{isVietnamese ? 'Cửa Hàng & Vé Sự Kiện' : 'Shop & Tickets'}</span>
+              </button>
+            </div>
+
+            {/* Bottom info */}
+            <div className="mt-auto pt-6 border-t border-slate-100 flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setDrawerOpen(false)
+                  onOpenCoins?.()
+                }}
+                className="flex items-center justify-between p-3 rounded-2xl bg-amber-50 border border-amber-200 cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <ChoiCoin size={22} glow />
+                  <span className="text-xs font-extrabold text-amber-950">Ví Xu: {(currentUser?.coins ?? 50).toLocaleString()} Xu</span>
+                </div>
+                <span className="text-xs text-emerald-800 font-bold">+ Nạp</span>
+              </button>
+
+              {currentUser ? (
                 <button
                   type="button"
-                  onClick={onPlay}
-                  className="rounded-lg border border-white/25 px-2 py-2 text-[10px] font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 min-[420px]:text-xs sm:rounded-xl sm:px-3 sm:py-2.5 sm:text-sm cursor-pointer"
-                  style={{ background: 'rgba(196,72,55,0.94)', boxShadow: '0 6px 18px rgba(0,28,48,0.26)' }}
+                  onClick={() => {
+                    setDrawerOpen(false)
+                    onLogout()
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-red-50 text-red-600 font-bold text-xs hover:bg-red-100 transition cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  {isVietnamese ? 'Chơi Ngay' : 'Play Now'}
+                  <span>🚪</span>
+                  <span>Đăng xuất ({currentUser.username || currentUser.fullName})</span>
                 </button>
-                <a
-                  href="#rules"
-                  className="rounded-lg border border-white/25 px-2 py-2 text-[10px] font-semibold text-white backdrop-blur-md transition hover:-translate-y-1 min-[420px]:text-xs sm:rounded-xl sm:px-3 sm:py-2.5 sm:text-sm cursor-pointer"
-                  style={{ background: 'rgba(4,55,79,0.82)', boxShadow: '0 6px 18px rgba(0,28,48,0.26)' }}
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDrawerOpen(false)
+                    onOpenAuth?.('login')
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-[#006368] text-white font-bold text-xs hover:bg-[#004d50] transition cursor-pointer flex items-center justify-center gap-1.5 shadow-md"
                 >
-                  {isVietnamese ? 'Luật Chơi' : 'Game Rules'}
-                </a>
-              </div>
+                  <span>👤</span>
+                  <span>Đăng nhập / Đăng ký</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
-      </div>
+      )}
     </section>
   )
 }
-
 function IntroScreens({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
   const isVietnamese = lang === 'VIE'
   const overview = isVietnamese
@@ -1197,21 +1059,25 @@ function History({ c }: { c: typeof content.VIE }) {
     <section id="history" className="py-20 lg:py-28" style={{ background: '#E7F1F1' }}>
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
-        <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 mb-4">
+        <div data-reveal="up" className="text-center mb-14">
+          <div data-reveal="up" data-reveal-delay="1" className="inline-flex items-center gap-2 mb-4">
             <LotusOrnament size={20} />
             <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: '#006368' }}>{c.history.sub}</span>
             <LotusOrnament size={20} />
           </div>
-          <h2 className="text-3xl lg:text-5xl font-bold mb-4"
+          <h2 data-reveal="up" data-reveal-delay="2" className="text-3xl lg:text-5xl font-bold mb-4"
             style={{ fontFamily: 'var(--font-display)', color: '#006368' }}>
             {c.history.title}
           </h2>
-          <DragonDivider />
+          <div data-reveal="up" data-reveal-delay="3">
+            <DragonDivider />
+          </div>
         </div>
 
         {/* Single introduction block */}
         <div
+          data-reveal="up"
+          data-reveal-delay="1"
           className="relative overflow-hidden rounded-[28px] px-7 py-9 sm:px-10 lg:px-14 lg:py-12"
           style={{
             background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(238,248,245,0.96) 100%)',
@@ -1230,6 +1096,8 @@ function History({ c }: { c: typeof content.VIE }) {
 
           <div className="relative flex flex-col items-center gap-7 md:flex-row md:items-stretch md:gap-10">
             <div
+              data-reveal="left"
+              data-reveal-delay="2"
               className="flex w-full shrink-0 items-center justify-center rounded-2xl px-6 py-5 md:w-48"
               style={{
                 background: 'linear-gradient(145deg, #006368 0%, #004B50 100%)',
@@ -1239,12 +1107,14 @@ function History({ c }: { c: typeof content.VIE }) {
               <img
                 src="/assets/choi-transparent.png"
                 alt="Logo Chòi"
-                className="h-24 w-auto object-contain md:h-32"
+                className="h-24 w-auto object-contain md:h-32 transition-transform duration-500 hover:scale-105"
               />
             </div>
 
-            <div className="flex flex-1 flex-col justify-center">
+            <div data-reveal="right" data-reveal-delay="2" className="flex flex-1 flex-col justify-center">
               <div
+                data-reveal="up"
+                data-reveal-delay="3"
                 className="mb-4 inline-flex w-fit items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em]"
                 style={{ background: 'rgba(196,72,55,0.12)', color: '#9C352B' }}
               >
@@ -1252,6 +1122,8 @@ function History({ c }: { c: typeof content.VIE }) {
                 {c.history.label}
               </div>
               <p
+                data-reveal="up"
+                data-reveal-delay="4"
                 className="text-base leading-8 sm:text-lg lg:text-xl lg:leading-10"
                 style={{ color: 'rgba(0,75,80,0.88)' }}
               >
@@ -1273,8 +1145,8 @@ function Rules({ c }: { c: typeof content.VIE }) {
     <section id="rules" className="flex min-h-[100svh] scroll-mt-20 items-center px-4 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
       <div className="mx-auto w-full max-w-7xl">
         <div data-reveal="up" className="mb-9 text-center sm:mb-12 lg:mb-14">
-          <div className="inline-block rounded-3xl bg-white px-8 py-5 shadow-2xl border border-white">
-            <div className="mb-3 inline-flex items-center gap-2">
+          <div data-reveal="scale" className="inline-block rounded-3xl bg-white px-8 py-5 shadow-2xl border border-white">
+            <div data-reveal="up" data-reveal-delay="1" className="mb-3 inline-flex items-center gap-2">
               <LotusOrnament size={20} />
               <span className="text-xs font-semibold uppercase tracking-widest text-amber-800">
                 {c.rules.sub}
@@ -1282,12 +1154,16 @@ function Rules({ c }: { c: typeof content.VIE }) {
               <LotusOrnament size={20} />
             </div>
             <h2
+              data-reveal="up"
+              data-reveal-delay="2"
               className="mb-3 text-3xl font-bold sm:text-4xl lg:text-5xl text-[#04374f]"
               style={{ fontFamily: 'var(--font-section)' }}
             >
               {c.rules.title}
             </h2>
-            <DragonDivider />
+            <div data-reveal="up" data-reveal-delay="3">
+              <DragonDivider />
+            </div>
           </div>
         </div>
 
@@ -1296,10 +1172,12 @@ function Rules({ c }: { c: typeof content.VIE }) {
             <article
               key={step.num}
               data-reveal="up"
-              data-reveal-delay={Math.min(index, 2)}
+              data-reveal-delay={index + 1}
               className="relative flex h-full flex-col rounded-3xl bg-white/20 backdrop-blur-md p-5 sm:p-7 lg:p-8 shadow-2xl border border-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(0,0,0,0.18)] hover:border-amber-400/50"
             >
               <div
+                data-reveal="scale"
+                data-reveal-delay={index + 1}
                 className="mb-5 flex h-12 w-12 items-center justify-center rounded-full text-sm font-black sm:mb-6 sm:h-14 sm:w-14 sm:text-base"
                 style={{
                   background: 'linear-gradient(135deg, #C44837 0%, #7C2421 100%)',
@@ -1310,11 +1188,11 @@ function Rules({ c }: { c: typeof content.VIE }) {
               >
                 {step.num}
               </div>
-              <h3 className="text-lg font-bold leading-snug sm:text-xl lg:text-2xl text-[#04374f]" style={{ fontFamily: 'var(--font-display)' }}>
+              <h3 data-reveal="up" data-reveal-delay={index + 2} className="text-lg font-bold leading-snug sm:text-xl lg:text-2xl text-[#04374f]" style={{ fontFamily: 'var(--font-display)' }}>
                 {step.title}
               </h3>
               <div className="my-5 h-0.5 w-10 bg-amber-500" />
-              <p className="flex-1 text-sm leading-7 sm:text-base sm:leading-8 text-stone-700">
+              <p data-reveal="up" data-reveal-delay={index + 2} className="flex-1 text-sm leading-7 sm:text-base sm:leading-8 text-stone-700">
                 {step.body}
               </p>
             </article>
@@ -1569,7 +1447,7 @@ function Characters({ c }: { c: typeof content.VIE }) {
                   className="mb-6 text-center sm:mb-8"
                 >
                   <div className="inline-block text-center">
-                    <div className="mb-1.5 inline-flex items-center gap-2">
+                    <div data-reveal="up" data-reveal-delay="1" className="mb-1.5 inline-flex items-center gap-2">
                       <LotusOrnament size={18} />
                       <span
                         className="text-xs font-semibold uppercase tracking-widest text-amber-200 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]"
@@ -1579,6 +1457,8 @@ function Characters({ c }: { c: typeof content.VIE }) {
                       <LotusOrnament size={18} />
                     </div>
                     <h2
+                      data-reveal="up"
+                      data-reveal-delay="2"
                       className="text-2xl font-bold sm:text-3xl lg:text-4xl text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
                       style={{
                         fontFamily: 'var(--font-section)',
@@ -2043,7 +1923,7 @@ function Characters({ c }: { c: typeof content.VIE }) {
 
                   </button>
 
-                  {/* NÚT NẰM DƯỚI LÁ BÀI */}
+                  {/* NÚT / CHỮ NẰM DƯỚI LÁ BÀI */}
 
                   <button
                     type="button"
@@ -2051,43 +1931,30 @@ function Characters({ c }: { c: typeof content.VIE }) {
                       toggleCard(cardIndex)
                     }
                     className="
-    mx-auto
-    mt-3
-    block
-
-    whitespace-nowrap
-    rounded-full
-
-    px-4
-    py-1.5
-
-    text-[8px]
-    font-bold
-    uppercase
-    tracking-wider
-
-    transition-all
-    duration-300
-
-    hover:scale-105
-    active:scale-95
-
-    sm:px-5
-    sm:py-2
-    sm:text-xs
-
-    bg-black/40
-    hover:bg-black/60
-    text-white
-    backdrop-blur-md
-    border
-    border-white/30
-    shadow-lg
-  "
+                      w-full
+                      mt-2.5
+                      flex
+                      items-center
+                      justify-center
+                      text-center
+                      text-[9px]
+                      font-bold
+                      uppercase
+                      tracking-widest
+                      text-white/90
+                      hover:text-amber-200
+                      drop-shadow-[0_2px_6px_rgba(0,0,0,0.95)]
+                      transition-all
+                      duration-200
+                      hover:scale-105
+                      active:scale-95
+                      cursor-pointer
+                      sm:text-[11px]
+                    "
                   >
-                    {isVietnamese
-                      ? 'Chạm để xem ý nghĩa'
-                      : 'Tap to see the meaning'}
+                    {isFlipped
+                      ? (isVietnamese ? 'Chạm để xem mặt trước' : 'Tap to view front')
+                      : (isVietnamese ? 'Chạm để xem ý nghĩa' : 'Tap to see the meaning')}
                   </button>
 
 
@@ -2095,7 +1962,7 @@ function Characters({ c }: { c: typeof content.VIE }) {
                   {/* TÊN + SỐ LÁ */}
                   {/* ========================= */}
 
-                  <div className="mt-4 text-center">
+                  <div className="mt-2.5 text-center">
 
                     <p
                       className="
@@ -2461,7 +2328,7 @@ function Publications({ c }: { c: typeof content.VIE }) {
     <section id="publications" className="scroll-mt-20 py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div data-reveal="up" className="mx-auto mb-12 max-w-3xl text-center">
-          <div className="mb-4 inline-flex items-center gap-2">
+          <div data-reveal="up" data-reveal-delay="1" className="mb-4 inline-flex items-center gap-2">
             <LotusOrnament size={20} />
             <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#006368' }}>
               {c.publications.sub}
@@ -2469,13 +2336,17 @@ function Publications({ c }: { c: typeof content.VIE }) {
             <LotusOrnament size={20} />
           </div>
           <h2
+            data-reveal="up"
+            data-reveal-delay="2"
             className="mb-5 text-3xl font-bold sm:text-4xl lg:text-6xl"
             style={{ fontFamily: 'var(--font-section)', color: '#006368' }}
           >
             {c.publications.title}
           </h2>
-          <DragonDivider />
-          <p className="mt-6 text-base leading-8 lg:text-lg" style={{ color: 'rgba(0,75,80,0.78)' }}>
+          <div data-reveal="up" data-reveal-delay="3">
+            <DragonDivider />
+          </div>
+          <p data-reveal="up" data-reveal-delay="4" className="mt-6 text-base leading-8 lg:text-lg" style={{ color: 'rgba(0,75,80,0.78)' }}>
             {c.publications.sub}
           </p>
         </div>
@@ -3065,7 +2936,7 @@ function Footer({
                   onClick={() => onNavigateSection?.('game')}
                   className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer block font-semibold text-amber-200"
                 >
-                  Hội chơi Bài Chòi & Game Online 🎮
+                  Ống Rút Bài Quản Trò 🎋
                 </button>
               </li>
               <li>
@@ -3361,10 +3232,10 @@ export default function App() {
 
     const revealElements = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'))
 
-    // Kích hoạt hiển thị ngay các phần tử trong màn hình đầu, chống trắng trang
+    // Kích hoạt hiển thị ngay các phần tử nằm trong viewport khi tải trang
     revealElements.forEach((element) => {
       const rect = element.getBoundingClientRect()
-      if (rect.top < window.innerHeight + 120) {
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
         element.classList.add('is-visible')
       }
     })
@@ -3374,15 +3245,22 @@ export default function App() {
       return
     }
 
+    // Quan sát đa chiều khi lướt lên và lướt xuống
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('is-visible')
+          } else {
+            // Khi phần tử trượt ra khỏi vùng nhìn, gỡ bỏ is-visible
+            // để khi lướt lại (lướt lên hoặc xuống) sẽ kích hoạt lại chuyển động mềm mại
+            if (!entry.target.closest('#home')) {
+              entry.target.classList.remove('is-visible')
+            }
           }
         })
       },
-      { threshold: 0.05, rootMargin: '60px 0px 60px 0px' },
+      { threshold: 0.08, rootMargin: '0px 0px -30px 0px' },
     )
 
     revealElements.forEach((element) => observer.observe(element))
@@ -3553,34 +3431,27 @@ export default function App() {
           transition: 'opacity 0.8s ease',
         }}
       >
-        <Nav
-          lang={lang}
-          setLang={setLang}
-          c={c}
-          currentUser={currentUser}
-          onOpenAuth={(mode = 'login') => {
-            setAuthModalMode(mode)
-            setAuthModalOpen(true)
-          }}
-          onLogout={() => {
-            authService.logout()
-            setCurrentUser(null)
-            handleBackToSite()
-          }}
-          onGoToPortal={(portal) => setActivePortal(portal)}
-          onPlay={() => {
-            setGameOpen(true)
-          }}
-          onOpenCoins={() => setCoinModalOpen(true)}
-        />
         <div className={`relative isolate ${showContent ? 'site-content-enter' : ''}`}>
-          {/* Lướt 1: Trang chủ giữ nguyên ảnh và hình nền cũ (Background-toan.jpg) */}
+          {/* Lướt 1: Trang chủ mới dựa trên CHOINGAY.png */}
           <HeroScreen
             c={c}
             lang={lang}
+            setLang={setLang}
             onPlay={() => {
               setGameOpen(true)
             }}
+            currentUser={currentUser}
+            onOpenAuth={(mode = 'login') => {
+              setAuthModalMode(mode)
+              setAuthModalOpen(true)
+            }}
+            onLogout={() => {
+              authService.logout()
+              setCurrentUser(null)
+              handleBackToSite()
+            }}
+            onOpenCoins={() => setCoinModalOpen(true)}
+            onGoToPortal={(portal) => setActivePortal(portal)}
           />
 
           {/* Dưới trang chủ: 7 lướt cuộn liền mạch với tranh cuộn nền.jpg */}

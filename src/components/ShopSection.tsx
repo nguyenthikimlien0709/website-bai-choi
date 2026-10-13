@@ -464,7 +464,7 @@ export default function ShopSection({ lang, currentUser, onGoToShopPortal, onOpe
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         {/* Section Header */}
         <div data-reveal="up" className="mx-auto mb-10 max-w-3xl text-center">
-          <div className="mb-3 inline-flex items-center gap-2">
+          <div data-reveal="up" data-reveal-delay="1" className="mb-3 inline-flex items-center gap-2">
             <span className="text-xl">🎴</span>
             <span className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: '#006368' }}>
               {isVie ? 'Không Gian Mua Sắm & Đặt Vé Di Sản' : 'Heritage Shop & Event Ticket Box'}
@@ -472,13 +472,15 @@ export default function ShopSection({ lang, currentUser, onGoToShopPortal, onOpe
             <span className="text-xl">🎟️</span>
           </div>
           <h2
+            data-reveal="up"
+            data-reveal-delay="2"
             className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl"
             style={{ fontFamily: 'var(--font-section)', color: '#006368' }}
           >
             {isVie ? 'Cửa Hàng Di Sản & Vé Bài Chòi' : 'Bài Chòi Heritage Shop & Tickets'}
           </h2>
-          <div className="mx-auto h-0.5 w-28 bg-gradient-to-r from-transparent via-[#E2BC5B] to-transparent mb-5" />
-          <p className="text-sm sm:text-base leading-relaxed" style={{ color: 'rgba(0,75,80,0.85)' }}>
+          <div data-reveal="scale" data-reveal-delay="2" className="mx-auto h-0.5 w-28 bg-gradient-to-r from-transparent via-[#E2BC5B] to-transparent mb-5" />
+          <p data-reveal="up" data-reveal-delay="3" className="text-sm sm:text-base leading-relaxed" style={{ color: 'rgba(0,75,80,0.85)' }}>
             {isVie
               ? 'Khám phá các ấn phẩm mỹ thuật độc bản, bộ thẻ gỗ truyền thống cùng hệ thống đặt vé tham gia trực tiếp các đêm hội Bài Chòi dân gian tại Quy Nhơn, Hội An và miền Trung.'
               : 'Explore bespoke cultural publications, traditional wooden card decks, and secure your admission tickets to folk Bài Chòi festivals in Central Vietnam.'}

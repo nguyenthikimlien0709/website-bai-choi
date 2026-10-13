@@ -1320,7 +1320,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
           zIndex: 100, textAlign: 'center'
         }}>
           <h1 style={{
-            fontFamily: 'Playfair Display, serif', color: '#D8B069',
+            fontFamily: 'var(--font-display)', color: '#D8B069',
             fontSize: '3.8rem', letterSpacing: 0, fontWeight: 900,
             textShadow: '0 0 40px rgba(216,176,105,0.3)'
           }}>BÀI CHÒI</h1>
@@ -1344,7 +1344,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
           pointerEvents: 'none',
         }}>
           <div style={{
-            fontFamily: 'Playfair Display, serif',
+            fontFamily: 'var(--font-display)',
             fontSize: 'clamp(44px, 8vw, 82px)',
             lineHeight: 1,
             fontWeight: 900,

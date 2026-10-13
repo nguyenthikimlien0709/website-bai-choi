@@ -1,24 +1,84 @@
-@import url('https://fonts.googleapis.com/css2?family=Bevan&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Bevan&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
 @import 'tailwindcss';
 
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src:
+    local('Bricolage Grotesque'),
+    url('/font/Bricolage_Grotesque/BricolageGrotesque-VariableFont_opsz,wdth,wght.ttf') format('truetype');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src:
+    local('Bricolage Grotesque Regular'),
+    url('/font/Bricolage_Grotesque/static/BricolageGrotesque-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src:
+    local('Bricolage Grotesque Medium'),
+    url('/font/Bricolage_Grotesque/static/BricolageGrotesque-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src:
+    local('Bricolage Grotesque SemiBold'),
+    url('/font/Bricolage_Grotesque/static/BricolageGrotesque-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src:
+    local('Bricolage Grotesque Bold'),
+    url('/font/Bricolage_Grotesque/static/BricolageGrotesque-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src:
+    local('Bricolage Grotesque ExtraBold'),
+    url('/font/Bricolage_Grotesque/static/BricolageGrotesque-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
 
 @font-face {
   font-family: 'HP DNS Gibsons One';
   src:
-    local('HP DNS Gibsons One Regular'),
-    local('HP DNS Gibsons One'),
-    url('/font/HP%20DNS%20Gibsons%20One.otf') format('opentype'),
-    url('/font/HP DNS Gibsons One.otf') format('opentype');
+    local('Bricolage Grotesque'),
+    url('/font/Bricolage_Grotesque/BricolageGrotesque-VariableFont_opsz,wdth,wght.ttf') format('truetype'),
+    url('/font/Bricolage_Grotesque/static/BricolageGrotesque-Bold.ttf') format('truetype');
   font-display: swap;
   font-style: normal;
   font-weight: 100 900;
 }
 
 @theme {
-  --font-display: 'HP DNS Gibsons One', 'Playfair Display', 'Bevan', Georgia, serif;
-  --font-title: 'HP DNS Gibsons One', 'Playfair Display', 'Bevan', Georgia, serif;
-  --font-section: 'HP DNS Gibsons One', 'Playfair Display', 'Bevan', Georgia, serif;
-  --font-body: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+  --font-display: 'Bricolage Grotesque', system-ui, -apple-system, sans-serif;
+  --font-title: 'Bricolage Grotesque', system-ui, -apple-system, sans-serif;
+  --font-section: 'Bricolage Grotesque', system-ui, -apple-system, sans-serif;
+  --font-body: 'Bricolage Grotesque', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Bricolage Grotesque', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Bricolage Grotesque', Georgia, serif;
 
   --color-cream: #ffffff;
   --color-cream-dark: #e7f1f1;
@@ -54,9 +114,20 @@ body {
   overflow-x: hidden;
 }
 
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-body);
+}
+
 h1,
 h2,
-h3 {
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display);
   overflow-wrap: break-word;
 }
@@ -444,50 +515,80 @@ a {
   animation: image-float 6s ease-in-out 1.4s infinite;
 }
 
-/* Hiện nội dung theo vị trí cuộn */
+/* Hiện nội dung theo vị trí cuộn (Lướt lên / Lướt xuống mượt mà) */
 [data-reveal] {
   opacity: 0;
+  transform: translateY(32px);
+  filter: blur(4px);
   transition:
-    opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
+    opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform, filter;
 }
 
 [data-reveal='up'] {
-  transform: translateY(42px);
+  transform: translateY(32px);
+}
+
+[data-reveal='down'] {
+  transform: translateY(-32px);
+}
+
+[data-reveal='left'] {
+  transform: translateX(-44px);
+}
+
+[data-reveal='right'] {
+  transform: translateX(44px);
+}
+
+[data-reveal='scale'] {
+  transform: scale(0.93) translateY(18px);
+}
+
+[data-reveal='fade'] {
+  transform: none;
+}
+
+/* Staggered delay cho các đoạn văn bản và thành phần con */
+[data-reveal-delay='1'] {
+  transition-delay: 80ms;
+}
+
+[data-reveal-delay='2'] {
+  transition-delay: 160ms;
+}
+
+[data-reveal-delay='3'] {
+  transition-delay: 240ms;
+}
+
+[data-reveal-delay='4'] {
+  transition-delay: 320ms;
+}
+
+[data-reveal-delay='5'] {
+  transition-delay: 400ms;
+}
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+  filter: blur(0px);
 }
 
 /* Hero trang chủ luôn hiển thị ngay, không bị ẩn khi vào lại trang chủ */
 #home [data-reveal] {
   opacity: 1 !important;
   transform: none !important;
-}
-
-[data-reveal='left'] {
-  transform: translateX(-54px);
-}
-
-[data-reveal='right'] {
-  transform: translateX(54px);
-}
-
-[data-reveal-delay='1'] {
-  transition-delay: 120ms;
-}
-
-[data-reveal-delay='2'] {
-  transition-delay: 240ms;
-}
-
-[data-reveal].is-visible {
-  opacity: 1;
-  transform: translate(0, 0);
+  filter: none !important;
 }
 
 @media (max-width: 640px) {
   [data-reveal='left'],
   [data-reveal='right'] {
-    transform: translateY(30px);
+    transform: translateY(24px);
   }
 }
 

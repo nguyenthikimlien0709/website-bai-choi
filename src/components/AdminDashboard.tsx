@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import type { UserProfile } from '../types/auth'
 import { eventTicketService, type EventItem } from '../lib/eventTicketService'
 import { orderService, type OrderItem } from '../lib/orderService'
 import { publicationService, type PublicationRecord } from '../lib/publicationService'
+import { CARDS, type Card } from '../BaiChoiGame'
+import { getChantLyrics } from '../chantLyrics'
 
 interface AdminDashboardProps {
   currentUser: UserProfile
@@ -15,7 +17,7 @@ export default function AdminDashboard({
   onBackToSite,
   onLogout,
 }: AdminDashboardProps) {
-  const [tab, setTab] = useState<'overview' | 'events' | 'publications' | 'orders' | 'users'>('events')
+  const [tab, setTab] = useState<'overview' | 'events' | 'publications' | 'orders' | 'users' | 'chants'>('events')
   const [events, setEvents] = useState<EventItem[]>(() => eventTicketService.getAllEvents())
   const [deletedEvents, setDeletedEvents] = useState<EventItem[]>(() => eventTicketService.getDeletedEvents())
   const [publications, setPublications] = useState<PublicationRecord[]>(() => publicationService.getAllPublications())
@@ -516,6 +518,122 @@ export default function AdminDashboard({
     }
   }
 
+  // ── 30 Điệu Hò Cổ Truyền (Admin Audio Library) ──
+  const [chantActiveCard, setChantActiveCard] = useState<Card | null>(() => CARDS[0])
+  const [chantPlaying, setChantPlaying] = useState<boolean>(false)
+  const [chantAudioMode, setChantAudioMode] = useState<'offline' | 'online'>('offline')
+  const [chantSearch, setChantSearch] = useState<string>('')
+  const [chantSuitFilter, setChantSuitFilter] = useState<'all' | 'van' | 'van2' | 'hai'>('all')
+  const [chantCurrentTime, setChantCurrentTime] = useState<number>(0)
+  const [chantDuration, setChantDuration] = useState<number>(0)
+  const [chantLyricsModalCard, setChantLyricsModalCard] = useState<Card | null>(null)
+  const chantAudioRef = useRef<HTMLAudioElement | null>(null)
+
+  const getCardSuit = (index: number) => {
+    if (index < 10) return { name: 'Phô Văn', color: 'bg-emerald-50 text-emerald-800 border-emerald-200' }
+    if (index < 20) return { name: 'Phô Vạn', color: 'bg-amber-50 text-amber-800 border-amber-200' }
+    return { name: 'Phô Hài', color: 'bg-rose-50 text-rose-800 border-rose-200' }
+  }
+
+  const stopChantAudio = () => {
+    if (chantAudioRef.current) {
+      chantAudioRef.current.pause()
+      chantAudioRef.current.currentTime = 0
+    }
+    setChantPlaying(false)
+    setChantCurrentTime(0)
+  }
+
+  const playChantAudio = (card: Card, mode?: 'offline' | 'online') => {
+    const selectedMode = mode || chantAudioMode
+    if (mode && mode !== chantAudioMode) {
+      setChantAudioMode(mode)
+    }
+
+    if (chantActiveCard?.id === card.id && chantPlaying && (!mode || mode === chantAudioMode)) {
+      chantAudioRef.current?.pause()
+      setChantPlaying(false)
+      return
+    }
+
+    if (chantActiveCard?.id === card.id && !chantPlaying && (!mode || mode === chantAudioMode)) {
+      chantAudioRef.current?.play().then(() => setChantPlaying(true)).catch(() => setChantPlaying(false))
+      return
+    }
+
+    if (chantAudioRef.current) {
+      chantAudioRef.current.pause()
+    }
+    setChantActiveCard(card)
+    setChantCurrentTime(0)
+
+    const soundSrc = selectedMode === 'offline' ? (card.soundOffline || card.sound) : card.sound
+    const audio = chantAudioRef.current || new Audio()
+    audio.src = soundSrc
+    audio.currentTime = 0
+    chantAudioRef.current = audio
+
+    audio.ontimeupdate = () => {
+      setChantCurrentTime(audio.currentTime || 0)
+      setChantDuration(audio.duration || 0)
+    }
+
+    audio.onended = () => {
+      setChantPlaying(false)
+      setChantCurrentTime(0)
+    }
+
+    audio.onerror = () => {
+      setChantPlaying(false)
+    }
+
+    void audio.play().then(() => {
+      setChantPlaying(true)
+    }).catch(() => {
+      setChantPlaying(false)
+    })
+  }
+
+  // Tắt audio khi đổi tab
+  useEffect(() => {
+    return () => {
+      if (chantAudioRef.current) {
+        chantAudioRef.current.pause()
+      }
+      setChantPlaying(false)
+    }
+  }, [tab])
+
+  const formatAudioTime = (sec: number) => {
+    if (!sec || isNaN(sec)) return '0:00'
+    const m = Math.floor(sec / 60)
+    const s = Math.floor(sec % 60)
+    return `${m}:${s < 10 ? '0' : ''}${s}`
+  }
+
+  const filteredChants = useMemo(() => {
+    return CARDS.map((card, index) => ({
+      ...card,
+      index,
+      suit: getCardSuit(index),
+      lyrics: getChantLyrics(card.id),
+    })).filter((item) => {
+      if (chantSuitFilter === 'van' && item.index >= 10) return false
+      if (chantSuitFilter === 'van2' && (item.index < 10 || item.index >= 20)) return false
+      if (chantSuitFilter === 'hai' && item.index < 20) return false
+
+      if (chantSearch.trim()) {
+        const query = chantSearch.toLowerCase().trim()
+        const matchName = item.name.toLowerCase().includes(query)
+        const matchSuit = item.suit.name.toLowerCase().includes(query)
+        const matchLyrics = item.lyrics.some((line) => line.toLowerCase().includes(query))
+        return matchName || matchSuit || matchLyrics
+      }
+
+      return true
+    })
+  }, [chantSuitFilter, chantSearch])
+
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col font-sans">
       {/* ── TOP HEADER (LIGHT THEME) ── */}
@@ -646,6 +764,23 @@ export default function AdminDashboard({
             >
               <span>👥</span>
               <span>Tài khoản & Role</span>
+            </button>
+
+            <button
+              onClick={() => setTab('chants')}
+              className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition text-left shrink-0 cursor-pointer ${
+                tab === 'chants'
+                  ? 'bg-[#c8382b] text-white shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              <span>📻</span>
+              <span>30 Điệu Hò Bài</span>
+              <span className={`ml-auto rounded-md px-1.5 py-0.5 text-[10px] ${
+                tab === 'chants' ? 'bg-red-950/40 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200'
+              }`}>
+                30
+              </span>
             </button>
           </nav>
 
@@ -1518,8 +1653,398 @@ export default function AdminDashboard({
               </div>
             </div>
           )}
+
+          {/* 6. KHO 30 ĐIỆU HÒ BÀI CHÒI CỔ TRUYỀN (ADMIN AUDIO & LYRICS LIBRARY) */}
+          {tab === 'chants' && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              {/* Tiêu đề & Thống kê */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-red-50 border border-red-200 px-3 py-1 text-xs font-bold text-red-700 mb-2">
+                    <span>📻</span>
+                    <span>THƯ VIỆN ÂM THANH DI SẢN</span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 font-serif">
+                    Kho Tàng 30 Điệu Hò Bài Chòi Cổ Truyền
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                    Hệ thống lưu trữ, đối chiếu âm thanh hò thai nguyên bản (Sound-Offline & Sound-Online) và trọn bộ lời thơ diễn xướng 30 quân bài.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="rounded-xl bg-white border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 shadow-2xs">
+                    🎴 30 Quân Bài
+                  </span>
+                  <span className="rounded-xl bg-white border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 shadow-2xs">
+                    🎵 60 Bản Thu Âm
+                  </span>
+                </div>
+              </div>
+
+              {/* ── TRÌNH PHÁT MASTER AUDIO PLAYER BAR ── */}
+              {chantActiveCard && (
+                <div className="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-[#004d50] text-white p-4 sm:p-6 shadow-xl border border-slate-700 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                  <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+                    {/* Thông tin quân bài đang chọn */}
+                    <div className="flex items-center gap-4">
+                      <div className="relative h-16 w-12 sm:h-20 sm:w-16 rounded-xl overflow-hidden border-2 border-amber-400 shadow-md shrink-0 bg-slate-800">
+                        <img
+                          src={chantActiveCard.image}
+                          alt={chantActiveCard.name}
+                          className="h-full w-full object-cover"
+                        />
+                        {chantPlaying && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <span className="h-3 w-3 rounded-full bg-emerald-400 animate-ping" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-amber-400 text-slate-950 uppercase">
+                            #{((CARDS.findIndex((c) => c.id === chantActiveCard.id)) + 1).toString().padStart(2, '0')}
+                          </span>
+                          <span className="text-xs font-semibold text-slate-300">
+                            {getCardSuit(CARDS.findIndex((c) => c.id === chantActiveCard.id)).name}
+                          </span>
+                        </div>
+                        <h4 className="text-lg sm:text-xl font-black text-amber-300 mt-1">
+                          {chantActiveCard.name}
+                        </h4>
+                        <p className="text-xs text-slate-300 italic line-clamp-1 mt-0.5">
+                          "{getChantLyrics(chantActiveCard.id)[0] || 'Câu hò thai truyền thống...'}"
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Điều khiển phát & Chuyển chế độ âm thanh */}
+                    <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                      {/* Nút chuyển chế độ Sound Offline / Online */}
+                      <div className="flex items-center rounded-xl bg-slate-950/60 p-1 border border-slate-700 w-full sm:w-auto justify-center">
+                        <button
+                          type="button"
+                          onClick={() => playChantAudio(chantActiveCard, 'offline')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                            chantAudioMode === 'offline'
+                              ? 'bg-[#c8382b] text-white shadow-xs'
+                              : 'text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          📻 Offline (Bản Dài)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => playChantAudio(chantActiveCard, 'online')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                            chantAudioMode === 'online'
+                              ? 'bg-[#006368] text-white shadow-xs'
+                              : 'text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          ⚡ Online (Bản Nhanh)
+                        </button>
+                      </div>
+
+                      {/* Nút Play / Pause / Stop */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => playChantAudio(chantActiveCard)}
+                          className="h-11 w-11 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 flex items-center justify-center text-lg font-black shadow-lg transition active:scale-95 cursor-pointer"
+                          title={chantPlaying ? 'Tạm dừng' : 'Phát âm thanh'}
+                        >
+                          {chantPlaying ? '⏸' : '▶'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={stopChantAudio}
+                          className="h-10 w-10 rounded-full bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xs font-bold transition active:scale-95 cursor-pointer"
+                          title="Dừng hẳn"
+                        >
+                          ⏹
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setChantLyricsModalCard(chantActiveCard)}
+                          className="px-3 py-2 rounded-xl bg-slate-700/80 hover:bg-slate-600 text-amber-200 text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
+                        >
+                          <span>📜</span>
+                          <span>Xem Lời Thơ</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Thanh tiến trình Audio Timeline */}
+                  <div className="mt-4 pt-3 border-t border-slate-700/60 flex items-center gap-3">
+                    <span className="text-[11px] font-mono text-slate-400 w-10 text-right">
+                      {formatAudioTime(chantCurrentTime)}
+                    </span>
+                    <input
+                      type="range"
+                      min="0"
+                      max={chantDuration || 100}
+                      value={chantCurrentTime}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value)
+                        if (chantAudioRef.current) {
+                          chantAudioRef.current.currentTime = val
+                          setChantCurrentTime(val)
+                        }
+                      }}
+                      className="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-400"
+                    />
+                    <span className="text-[11px] font-mono text-slate-400 w-10">
+                      {formatAudioTime(chantDuration)}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* ── BỘ LỌC & TÌM KIẾM ── */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
+                {/* Lọc theo Phô */}
+                <div className="flex items-center gap-1 overflow-x-auto">
+                  {[
+                    { id: 'all', name: 'Tất cả (30)' },
+                    { id: 'van', name: 'Phô Văn (10)' },
+                    { id: 'van2', name: 'Phô Vạn (10)' },
+                    { id: 'hai', name: 'Phô Hài (10)' },
+                  ].map((filter) => (
+                    <button
+                      key={filter.id}
+                      type="button"
+                      onClick={() => setChantSuitFilter(filter.id as any)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                        chantSuitFilter === filter.id
+                          ? 'bg-slate-900 text-white shadow-xs'
+                          : 'text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {filter.name}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Tìm kiếm */}
+                <div className="relative sm:w-72">
+                  <input
+                    type="text"
+                    value={chantSearch}
+                    onChange={(e) => setChantSearch(e.target.value)}
+                    placeholder="Tìm tên lá bài, lời thơ..."
+                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:border-[#c8382b] focus:outline-none"
+                  />
+                  <span className="absolute left-3 top-2.5 text-xs text-slate-400">🔍</span>
+                  {chantSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setChantSearch('')}
+                      className="absolute right-2.5 top-2 text-xs text-slate-400 hover:text-slate-600"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* ── DANH SÁCH 30 QUÂN BÀI & CÂU HÒ THAI ── */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
+                {filteredChants.map((item) => {
+                  const isCurrent = chantActiveCard?.id === item.id
+                  const isCurrentPlaying = isCurrent && chantPlaying
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`rounded-2xl border p-3 bg-white transition-all duration-200 hover:shadow-md flex flex-col justify-between ${
+                        isCurrent
+                          ? 'border-amber-400 ring-2 ring-amber-400/30 bg-amber-50/20'
+                          : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <div>
+                        {/* Ảnh quân bài & Badge số thứ tự */}
+                        <div className="relative aspect-[3/4] w-full rounded-xl overflow-hidden bg-slate-100 border border-slate-200/80 mb-2.5">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                          />
+                          <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md bg-black/70 backdrop-blur-xs text-white font-mono text-[10px] font-black">
+                            #{(item.index + 1).toString().padStart(2, '0')}
+                          </span>
+                          <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-bold border shadow-2xs ${item.suit.color}`}>
+                            {item.suit.name}
+                          </span>
+
+                          {/* Quick Play Overlay */}
+                          <button
+                            type="button"
+                            onClick={() => playChantAudio(item)}
+                            className={`absolute inset-0 flex items-center justify-center transition cursor-pointer ${
+                              isCurrentPlaying
+                                ? 'bg-black/40'
+                                : 'bg-black/0 hover:bg-black/30 opacity-0 hover:opacity-100'
+                            }`}
+                          >
+                            <span className="h-10 w-10 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-sm shadow-md">
+                              {isCurrentPlaying ? '⏸' : '▶'}
+                            </span>
+                          </button>
+                        </div>
+
+                        {/* Tên lá bài */}
+                        <div className="flex items-center justify-between mb-1.5">
+                          <h4 className="font-black text-slate-900 text-sm font-serif">
+                            {item.name}
+                          </h4>
+                          {isCurrentPlaying && (
+                            <span className="flex items-center gap-0.5 text-emerald-600 text-[10px] font-bold">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              Đang phát
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Trích đoạn lời thơ */}
+                        <div className="rounded-xl bg-slate-50 border border-slate-100 p-2 text-[11px] text-slate-600 italic line-clamp-2 leading-relaxed mb-3">
+                          "{item.lyrics[0] || 'Đang cập nhật lời hò thai...'}"
+                        </div>
+                      </div>
+
+                      {/* Các nút thao tác nghe & xem lời */}
+                      <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                        <div className="grid grid-cols-2 gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => playChantAudio(item, 'offline')}
+                            className={`px-2 py-1.5 rounded-lg text-[10px] font-bold transition cursor-pointer text-center truncate ${
+                              isCurrent && chantAudioMode === 'offline' && chantPlaying
+                                ? 'bg-[#c8382b] text-white shadow-2xs'
+                                : 'bg-red-50 hover:bg-red-100 text-red-800 border border-red-200'
+                            }`}
+                            title="Nghe bản dài hò thai cổ truyền"
+                          >
+                            📻 Bản Dài
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => playChantAudio(item, 'online')}
+                            className={`px-2 py-1.5 rounded-lg text-[10px] font-bold transition cursor-pointer text-center truncate ${
+                              isCurrent && chantAudioMode === 'online' && chantPlaying
+                                ? 'bg-[#006368] text-white shadow-2xs'
+                                : 'bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200'
+                            }`}
+                            title="Nghe bản ngắn thi đấu trực tuyến"
+                          >
+                            ⚡ Bản Nhanh
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setChantLyricsModalCard(item)}
+                          className="w-full py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold transition cursor-pointer text-center flex items-center justify-center gap-1"
+                        >
+                          <span>📜</span>
+                          <span>Chi tiết lời thơ</span>
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {filteredChants.length === 0 && (
+                <div className="p-12 text-center bg-white rounded-2xl border border-slate-200">
+                  <span className="text-3xl">🔍</span>
+                  <p className="font-bold text-slate-700 mt-2">Không tìm thấy quân bài nào phù hợp</p>
+                  <p className="text-xs text-slate-500 mt-1">Hãy thử xóa từ khóa tìm kiếm hoặc đổi bộ lọc Phô</p>
+                </div>
+              )}
+            </div>
+          )}
         </main>
       </div>
+
+      {/* ── MODAL CHI TIẾT LỜI THƠ HÒ THAI (CHANT LYRICS MODAL) ── */}
+      {chantLyricsModalCard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-lg rounded-3xl bg-white border border-slate-200 p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">📜</span>
+                <div>
+                  <h3 className="font-black text-slate-900 text-lg font-serif">
+                    Lời Thơ Hò Thai: {chantLyricsModalCard.name}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Thuộc {getCardSuit(CARDS.findIndex((c) => c.id === chantLyricsModalCard.id)).name} · Quân #{((CARDS.findIndex((c) => c.id === chantLyricsModalCard.id)) + 1).toString().padStart(2, '0')}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setChantLyricsModalCard(null)}
+                className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center text-sm font-bold transition cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Chi tiết nội dung */}
+            <div className="flex gap-4 items-start bg-amber-50/50 p-4 rounded-2xl border border-amber-200/80">
+              <div className="w-20 aspect-[3/4] rounded-xl overflow-hidden border-2 border-amber-400 shrink-0 shadow-sm bg-white">
+                <img
+                  src={chantLyricsModalCard.image}
+                  alt={chantLyricsModalCard.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex-1 space-y-2">
+                <p className="text-xs font-bold text-amber-950 uppercase tracking-wide">
+                  Toàn văn câu hò thai nguyên bản:
+                </p>
+                <div className="space-y-1.5 pl-2 border-l-2 border-amber-400">
+                  {getChantLyrics(chantLyricsModalCard.id).map((line, idx) => (
+                    <p key={idx} className="text-xs sm:text-sm font-medium text-slate-800 italic">
+                      "{line}"
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Audio action inside modal */}
+            <div className="pt-2 flex flex-col sm:flex-row gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  playChantAudio(chantLyricsModalCard, 'offline')
+                }}
+                className="flex-1 py-2.5 px-3 rounded-xl bg-[#c8382b] hover:bg-[#a82e23] text-white text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>📻</span>
+                <span>Phát Bản Dài (Sound-Offline)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  playChantAudio(chantLyricsModalCard, 'online')
+                }}
+                className="flex-1 py-2.5 px-3 rounded-xl bg-[#006368] hover:bg-[#004d50] text-white text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>⚡</span>
+                <span>Phát Bản Nhanh (Sound-Online)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── MODAL THÊM / SỬA SỰ KIỆN & QUẢN LÝ ĐA ẢNH SLIDER (LIGHT THEME) ── */}
       {showEventModal && (
