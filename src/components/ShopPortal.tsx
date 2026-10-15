@@ -6,8 +6,10 @@ import { orderService, type OrderItem } from '../lib/orderService'
 import { publicationService, type PublicationRecord } from '../lib/publicationService'
 import { PUBLICATION_GROUPS } from '../publications'
 import { authService } from '../lib/authService'
+import { heroBannerService, type HeroSlideItem } from '../lib/heroBannerService'
 import AccountCenterModal, { type AccountTabKey } from './AccountCenterModal'
 import ChoiCoin from './ChoiCoin'
+import Footer from './Footer'
 
 function normalizeVietnamese(str: string): string {
   return (str || '')
@@ -21,6 +23,10 @@ function normalizeVietnamese(str: string): string {
 
 export function getVndToCoins(vnd: number): number {
   return Math.ceil(vnd / 1000)
+}
+
+export function formatVndPrice(vnd: number): string {
+  return (vnd || 0).toLocaleString('vi-VN')
 }
 
 function getDisplayUsername(user: UserProfile | null | undefined): string {
@@ -182,71 +188,39 @@ export default function ShopPortal({
     }
   }
 
-  // Active category filter: 'all' | 'tickets' | 'cards' | 'apparel' | 'gift'
-  const [categoryFilter, setCategoryFilter] = useState<'all' | 'tickets' | 'cards' | 'apparel' | 'gift'>('all')
+  // Scroll detection for sticky navbar
+  const [isScrolled, setIsScrolled] = useState(false)
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
-  // Hero carousel slides
-  const heroSlides = useMemo(() => [
-    {
-      id: 'slide-01',
-      tag: '• SỰ KIỆN TRỌNG ĐIỂM TRÊN HERO',
-      title: 'Đêm Hội Bài Chòi Cổ Truyền Quy Nhơn: Vang Vọng Tiếng Hát Anh Hiệu',
-      desc: 'Hòa mình vào không khí hội làng miền Trung rực rỡ dưới ánh trăng rằm, lắng nghe những câu thai hóm hỉnh của anh Hiệu và tranh tài các ván bài dân gian đầy kịch tính với phần thưởng giá trị.',
-      ctaText: '🎟️ Đặt Vé Ngay (50.000 đ · 50 Xu)',
-      ctaType: 'ticket' as const,
-      targetEventId: 'evt-01',
-      bgImage: '/assets/booth.jpg',
-      floatingCard: {
-        badge: 'VÉ SỰ KIỆN CHÍNH THỨC',
-        rating: '⭐ 9.8',
-        title: 'Hội Đánh Bài Chòi Quy Nhơn 2026',
-        genre: 'Lễ hội dân gian · UNESCO · Hát hô · 19:30 Thứ Bảy',
-        status: '🟢 Đang mở bán online',
-        posterImage: '/assets/mock up (1).png',
-      },
-    },
-    {
-      id: 'slide-02',
-      tag: '• ẤN PHẨM ĐỘC BẢN GIỚI HẠN',
-      title: 'Bộ Bài Chòi Gỗ Tự Nhiên 30 Thẻ - Nghệ Thuật Điêu Khắc Dân Gian',
-      desc: 'Lưu giữ trọn vẹn hồn cốt di sản Bài Chòi trong không gian sống hiện đại. 30 thẻ gỗ tự nhiên khắc laser 3 pho Văn, Vạn, Hạch cùng hộp đựng thủ công tinh xảo, thích hợp chơi cùng gia đình và sưu tầm.',
-      ctaText: '🛍️ Đặt Mua Bộ Thẻ Gỗ (290.000 đ · 290 Xu)',
-      ctaType: 'product' as const,
-      targetProductId: 'prod-01',
-      bgImage: '/assets/thedungbai.jpg',
-      floatingCard: {
-        badge: 'BÁN CHẠY NHẤT #1',
-        rating: '⭐ 4.9',
-        title: 'Bộ Bài Chòi Gỗ 30 Thẻ Cổ Truyền',
-        genre: 'Mỹ nghệ thủ công · Gỗ tự nhiên · 3 Pho · Kèm cẩm nang',
-        status: '📦 Sẵn hàng giao ngay',
-        posterImage: '/assets/thedungbai.jpg',
-      },
-    },
-    {
-      id: 'slide-03',
-      tag: '• SỰ KIỆN VĂN HÓA ĐẶC SẮC',
-      title: 'Đêm Thơ Ca & Di Sản Bài Chòi Phố Cổ Hội An',
-      desc: 'Trải nghiệm không gian lung linh của phố cổ Hội An bên bờ sông Hoài, hòa giọng cùng nghệ nhân trong những điệu hô bài chòi ngân vang giữa lòng di sản thế giới.',
-      ctaText: '🎟️ Xem Vé Hội An (60.000 đ · 60 Xu)',
-      ctaType: 'ticket' as const,
-      targetEventId: 'evt-02',
-      bgImage: '/assets/vethamgia.jpg',
-      floatingCard: {
-        badge: 'VÉ HỘI AN VỀ ĐÊM',
-        rating: '⭐ 9.9',
-        title: 'Đêm Thơ Ca & Di Sản Hội An',
-        genre: 'Phố cổ Hội An · Sân đình · Thơ ca · 19:00',
-        status: '🏛️ Bán tại quầy & online',
-        posterImage: '/assets/mock up (1).png',
-      },
-    },
-  ], [])
+  // Active category tab: 'tickets' | 'cards' | 'apparel' | 'gift' | 'all'
+  const [activeShopTab, setActiveShopTab] = useState<'tickets' | 'cards' | 'apparel' | 'gift' | 'all'>('tickets')
+  const [carouselIndex, setCarouselIndex] = useState(0)
+
+  // Hero carousel slides động từ heroBannerService (Do Admin quản lý và cấu hình)
+  const [allHeroSlides, setAllHeroSlides] = useState<HeroSlideItem[]>(() => heroBannerService.getAllSlides())
+  const heroSlides = useMemo(() => {
+    const active = allHeroSlides.filter((s) => s.isActive)
+    return active.length > 0 ? active : allHeroSlides.slice(0, 1)
+  }, [allHeroSlides])
+
+  useEffect(() => {
+    const unsub = heroBannerService.subscribe(() => {
+      setAllHeroSlides(heroBannerService.getAllSlides())
+    })
+    return unsub
+  }, [])
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0)
 
   // Auto rotate hero slide every 7 seconds
   useEffect(() => {
+    if (heroSlides.length <= 1) return
     const timer = setInterval(() => {
       setCurrentSlideIndex((prev) => (prev + 1) % heroSlides.length)
     }, 7000)
@@ -363,11 +337,10 @@ export default function ShopPortal({
     const isDirectProductIntent = generalProductTokens.some((tok) => qNorm === tok || qNorm.startsWith(tok + ' ') || qNorm.endsWith(' ' + tok))
 
     return products.filter((p) => {
-      const matchCat = categoryFilter === 'all' || categoryFilter === p.category
-      if (!rawQuery) return matchCat
+      if (!rawQuery) return true
 
       if (isDirectProductIntent && (qNorm === 'an pham' || qNorm === 'san pham' || qNorm === 'do luu niem' || qNorm === 'qua tang')) {
-        return matchCat
+        return true
       }
 
       const titleNorm = normalizeVietnamese(p.title)
@@ -384,9 +357,52 @@ export default function ShopPortal({
         return titleNorm.includes(tok) || descNorm.includes(tok) || catLabelNorm.includes(tok) || catNorm.includes(tok) || priceStr.includes(tok)
       })
 
-      return matchCat && allTokensMatch
+      return allTokensMatch
     })
-  }, [products, categoryFilter, searchQuery])
+  }, [products, searchQuery])
+
+  // Phân loại số lượng cho từng tab
+  const cardsCount = useMemo(() => products.filter((p) => p.category === 'cards').length, [products])
+  const apparelCount = useMemo(() => products.filter((p) => p.category === 'apparel').length, [products])
+  const giftCount = useMemo(() => products.filter((p) => p.category === 'gift').length, [products])
+
+  // Danh sách sản phẩm của tab hiện tại
+  const currentProducts = useMemo(() => {
+    if (activeShopTab === 'tickets') return []
+    return filteredProducts.filter((p) => {
+      if (activeShopTab === 'all') return true
+      return p.category === activeShopTab
+    })
+  }, [filteredProducts, activeShopTab])
+
+  // Reset carousel index khi đổi tab hoặc tìm kiếm
+  useEffect(() => {
+    setCarouselIndex(0)
+  }, [activeShopTab, searchQuery])
+
+  const shopTabs = useMemo(() => [
+    { key: 'tickets' as const, label: 'Vé Sự Kiện', count: filteredEvents.length },
+    { key: 'cards' as const, label: 'Thẻ bài & Hộp', count: cardsCount },
+    { key: 'apparel' as const, label: 'Áo & Túi', count: apparelCount },
+    { key: 'gift' as const, label: 'Quà lưu niệm', count: giftCount },
+    { key: 'all' as const, label: 'Tất cả ấn phẩm', count: products.length },
+  ], [filteredEvents.length, cardsCount, apparelCount, giftCount, products.length])
+
+  const isTicketTab = activeShopTab === 'tickets'
+  const currentTotalItems = isTicketTab ? filteredEvents.length : currentProducts.length
+  const hasMultiple = currentTotalItems > 4
+  const maxCarouselIndex = Math.max(0, currentTotalItems - 4)
+
+  const handleCarouselPrev = () => {
+    setCarouselIndex((prev) => (prev <= 0 ? maxCarouselIndex : prev - 1))
+  }
+
+  const handleCarouselNext = () => {
+    setCarouselIndex((prev) => (prev >= maxCarouselIndex ? 0 : prev + 1))
+  }
+
+  const displayEvents = isTicketTab ? filteredEvents.slice(carouselIndex, carouselIndex + 4) : []
+  const displayProducts = !isTicketTab ? currentProducts.slice(carouselIndex, carouselIndex + 4) : []
 
   // Mở modal đặt vé và điền sẵn thông tin người dùng
   const handleOpenBooking = (evt: EventItem) => {
@@ -593,36 +609,41 @@ export default function ShopPortal({
     }, 500)
   }
 
-  const currentSlide = heroSlides[currentSlideIndex]
+  const safeSlideIndex = currentSlideIndex >= heroSlides.length ? 0 : currentSlideIndex
+  const currentSlide = heroSlides[safeSlideIndex] || heroSlides[0]
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col font-sans selection:bg-[#c8382b] selection:text-white">
       {/* ─────────────────────────────────────────────────────────────
-          1. TOP NAVBAR (PHONG CÁCH SÁNG SỦA, TINH TẾ)
+          1. TOP NAVBAR (STICKY BẢO ĐẢM LUÔN HIỂN THỊ KHI LƯỚT CHUỘT)
       ────────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs px-4 sm:px-8 py-3">
+      <header
+        className={`sticky top-0 z-[100] bg-white/95 backdrop-blur-md border-b border-slate-200 transition-all duration-200 px-4 sm:px-8 ${
+          isScrolled ? 'py-2.5 shadow-md bg-white/98' : 'py-3.5 shadow-xs'
+        }`}
+      >
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          {/* Logo Brand */}
+          {/* Logo Brand: Logo Chòi + CHÒI STORE chuẩn Ảnh 1 */}
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={onBackToSite}
-              className="flex items-center gap-2 group cursor-pointer"
+              className="flex items-center gap-2.5 group cursor-pointer"
               title="Về Website chính Bài Chòi"
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#c8382b] to-[#92261b] text-white text-xl font-black shadow-md shadow-red-900/20 group-hover:scale-105 transition">
-                🎴
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#c8382b] to-[#92261b] text-white shadow-md shadow-red-900/20 group-hover:scale-105 transition p-1.5 shrink-0">
+                <img src="/assets/choi-transparent.png" alt="Logo Chòi" className="w-full h-full object-contain filter drop-shadow-xs" />
               </span>
               <div className="text-left">
                 <div className="flex items-center gap-1.5 leading-none">
-                  <span className="text-lg font-black tracking-tight text-slate-900 group-hover:text-[#c8382b] transition">
+                  <span className="text-xl font-black tracking-tight text-slate-900 group-hover:text-[#c8382b] transition font-serif" style={{ fontFamily: 'var(--font-display, serif)' }}>
                     CHÒI
                   </span>
-                  <span className="text-xs font-bold uppercase tracking-widest text-[#c8382b] bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-sm">
+                  <span className="text-xs font-black uppercase tracking-wider text-[#c8382b] bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-md shadow-2xs">
                     STORE
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-500 tracking-wider">Heritage & Ticket Box</span>
+                <span className="text-[10px] text-slate-500 tracking-wider font-semibold block mt-0.5">Heritage & Ticket Box</span>
               </div>
             </button>
           </div>
@@ -632,27 +653,31 @@ export default function ShopPortal({
             <button
               type="button"
               onClick={() => {
-                setCategoryFilter('tickets')
+                setActiveShopTab('tickets')
+                setCarouselIndex(0)
                 const el = document.getElementById('shop-items')
                 el?.scrollIntoView({ behavior: 'smooth' })
               }}
-              className="hover:text-slate-950 transition flex items-center gap-1 cursor-pointer"
+              className={`transition flex items-center gap-1.5 cursor-pointer font-bold ${
+                activeShopTab === 'tickets' ? 'text-[#c8382b]' : 'text-slate-800 hover:text-[#c8382b]'
+              }`}
             >
-              <span>Vé Sự Kiện</span>
-              <span className="text-xs text-slate-400">▾</span>
+              <span>🎟️ Vé Sự Kiện</span>
             </button>
 
             <button
               type="button"
               onClick={() => {
-                setCategoryFilter('all')
+                setActiveShopTab('all')
+                setCarouselIndex(0)
                 const el = document.getElementById('shop-items')
                 el?.scrollIntoView({ behavior: 'smooth' })
               }}
-              className="hover:text-slate-950 transition flex items-center gap-1 cursor-pointer"
+              className={`transition flex items-center gap-1.5 cursor-pointer font-bold ${
+                activeShopTab !== 'tickets' ? 'text-[#006368]' : 'text-slate-800 hover:text-teal-800'
+              }`}
             >
-              <span>Ấn Phẩm Di Sản</span>
-              <span className="text-xs text-slate-400">▾</span>
+              <span>🛍️ Ấn Phẩm Di Sản</span>
             </button>
           </nav>
 
@@ -1097,11 +1122,13 @@ export default function ShopPortal({
                     <div className="pt-1">
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
                           setUserDropdownOpen(false)
                           onLogout()
                         }}
-                        className="w-full text-left px-3.5 py-2.5 rounded-xl text-red-600 hover:bg-red-50 transition flex items-center gap-3 cursor-pointer font-semibold"
+                        className="w-full text-left px-3.5 py-2.5 rounded-xl text-red-600 hover:bg-red-50 transition flex items-center gap-3 cursor-pointer font-semibold active:scale-95"
                       >
                         <span className="text-red-500 text-sm">↪</span>
                         <span>Đăng xuất</span>
@@ -1167,45 +1194,89 @@ export default function ShopPortal({
       </header>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. HERO BANNER SECTION (NỀN SÁNG TƯƠI TẮN, THANH LỊCH)
+          2. HERO BANNER SECTION (NỀN TRANH NGHỆ THUẬT SHOP.PNG & NENSHOP.PNG)
       ────────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-slate-100 min-h-[480px] lg:min-h-[520px] flex items-center border-b border-slate-200">
-        {/* Background image hiển thị sáng rõ phía sau */}
+      <section className="relative overflow-hidden bg-[#0d2235] h-[480px] sm:h-[520px] lg:h-[550px] flex items-start border-b border-slate-200">
+        {/* Lớp 0: Background image hiển thị toàn bộ bức tranh Shop.png */}
         <div
-          className="absolute inset-0 z-0 bg-cover bg-center transition-all duration-1000 scale-105"
+          className="absolute inset-0 z-0 bg-cover bg-center transition-opacity duration-500 scale-100"
           style={{
-            backgroundImage: `url("${currentSlide.bgImage}")`,
-            filter: 'brightness(0.98) saturate(1.15)',
-            opacity: 0.95,
+            backgroundImage: `url("/assets/shop/Shop.png")`,
+            filter: 'brightness(1.02) saturate(1.05)',
           }}
         />
 
-        {/* Lớp phủ chuyển sắc nhẹ nhàng từ trái sang phải, không tạo đường viền khung */}
-        <div className="absolute inset-0 z-1 bg-gradient-to-r from-white/80 via-white/50 to-transparent" />
-        <div className="absolute inset-0 z-1 bg-gradient-to-t from-white/40 via-transparent to-transparent" />
+        {/* Lớp 1: Lớp phủ chuyển sắc nhẹ nhàng bên trái để chữ đọc rõ, CHỈ áp dụng ở bên trái */}
+        <div
+          className="absolute inset-0 z-1 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to right, rgba(8, 22, 36, 0.45) 0%, rgba(8, 22, 36, 0.28) 42%, rgba(8, 22, 36, 0.10) 58%, transparent 68%)',
+            backdropFilter: 'blur(2px)',
+            WebkitBackdropFilter: 'blur(2px)',
+            maskImage: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 65%)',
+            WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 65%)',
+          }}
+        />
 
-        {/* Main Hero Content Container */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-12 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Cột trái: Chữ và nút hiển thị trực tiếp lên nền, KHÔNG CÒN KHUNG VIỀN */}
-          <div className="lg:col-span-7 space-y-4">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-md border border-amber-300/80 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-amber-950 shadow-xs">
-              {currentSlide.tag}
-            </span>
+        {/* Lớp 2: Lớp Nenshop.png sắc nét 100%, nằm trên lớp mờ, hiển thị mascot & bảng vé cực kỳ rõ nét */}
+        <div
+          className="absolute inset-0 z-2 bg-cover bg-center pointer-events-none scale-100"
+          style={{
+            backgroundImage: `url("/assets/shop/Nenshop.png")`,
+            filter: 'contrast(1.06) saturate(1.06) brightness(1.01)',
+          }}
+        />
 
-            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-slate-950 leading-tight drop-shadow-xs">
+        {/* Nút thao tác nhanh Quản lý Banner Hero cho Quản trị viên (Admin) */}
+        {effectiveUser?.role === 'admin' && (
+          <div className="absolute top-3 right-4 sm:right-8 z-30">
+            <button
+              type="button"
+              onClick={() => onGoToPortal?.('admin')}
+              className="rounded-full bg-slate-900/90 hover:bg-slate-900 text-amber-300 border border-amber-400/60 px-3.5 py-1.5 text-xs font-bold shadow-lg backdrop-blur-md flex items-center gap-1.5 transition hover:scale-105 active:scale-95 cursor-pointer"
+              title="Chuyển đến trang Admin để chọn sự kiện / ấn phẩm xuất hiện trên Banner Hero"
+            >
+              <span>⚙️ Quản lý Banner Hero (Admin)</span>
+            </button>
+          </div>
+        )}
+
+        {/* Main Hero Content Container: Đặt cao lên gần thanh navbar */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-5 sm:pt-7 lg:pt-8 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Cột trái: Khối thông tin chữ nhỏ gọn vừa vặn, đặt cao lên gần navbar */}
+          <div className="lg:col-span-7 space-y-2.5 sm:space-y-3 text-left flex flex-col justify-start">
+            <div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400/25 backdrop-blur-md border border-amber-300/70 px-3 py-0.5 text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-amber-200 shadow-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
+                <span>{currentSlide.tag}</span>
+              </span>
+            </div>
+
+            <h1
+              className="text-base sm:text-xl lg:text-2xl font-black text-white leading-tight font-serif max-w-lg line-clamp-2"
+              style={{
+                fontFamily: 'var(--font-display, serif)',
+                textShadow: '0 2px 10px rgba(0, 0, 0, 0.9), 0 1px 3px rgba(0, 0, 0, 0.95)',
+              }}
+            >
               {currentSlide.title}
             </h1>
 
-            <p className="text-xs sm:text-sm text-slate-800 leading-relaxed max-w-2xl font-medium drop-shadow-2xs">
+            <p
+              className="text-xs sm:text-[13px] text-white leading-relaxed max-w-lg font-medium drop-shadow-xs line-clamp-2"
+              style={{
+                textShadow: '0 1px 6px rgba(0, 0, 0, 0.85)',
+              }}
+            >
               {currentSlide.desc}
             </p>
 
             {/* Nút hành động chính */}
-            <div className="pt-2 flex flex-wrap items-center gap-3">
+            <div className="pt-1.5 flex flex-wrap items-center gap-2.5 sm:gap-3">
               <button
                 type="button"
                 onClick={() => handleHeroCTA(currentSlide)}
-                className="rounded-full bg-gradient-to-r from-[#c8382b] to-[#92261b] hover:from-[#d94437] hover:to-[#a82d21] text-white font-bold text-xs sm:text-sm px-6 py-3 transition shadow-md shadow-red-900/30 hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
+                className="rounded-full bg-gradient-to-r from-[#d94437] to-[#ba2f22] hover:from-[#e55245] hover:to-[#cb372a] text-white font-extrabold text-xs px-5 py-2.5 sm:px-6 sm:py-3 transition shadow-md shadow-red-950/40 hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
               >
                 <span>{currentSlide.ctaText}</span>
               </button>
@@ -1216,18 +1287,18 @@ export default function ShopPortal({
                   const el = document.getElementById('shop-items')
                   el?.scrollIntoView({ behavior: 'smooth' })
                 }}
-                className="rounded-full bg-white/90 hover:bg-white text-slate-900 font-semibold text-xs sm:text-sm px-5 py-3 transition border border-slate-200/90 shadow-xs cursor-pointer"
+                className="rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-bold text-xs px-4 py-2.5 sm:px-5 sm:py-3 transition border border-white/30 shadow-xs cursor-pointer"
               >
                 Khám phá tất cả ▾
               </button>
             </div>
 
             {/* Slider Navigation: < • • • > */}
-            <div className="pt-3 flex items-center gap-3">
+            <div className="pt-1 flex items-center gap-2.5">
               <button
                 type="button"
                 onClick={() => setCurrentSlideIndex((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)}
-                className="h-8 w-8 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center transition border border-slate-200/90 shadow-xs cursor-pointer"
+                className="h-7 w-7 rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-md flex items-center justify-center transition border border-white/30 shadow-xs cursor-pointer font-bold text-xs"
                 aria-label="Previous slide"
               >
                 ‹
@@ -1239,8 +1310,8 @@ export default function ShopPortal({
                     type="button"
                     key={i}
                     onClick={() => setCurrentSlideIndex(i)}
-                    className={`h-2 transition-all rounded-full cursor-pointer ${
-                      i === currentSlideIndex ? 'w-6 bg-[#c8382b]' : 'w-2 bg-slate-400 hover:bg-slate-600'
+                    className={`h-1.5 transition-all rounded-full cursor-pointer ${
+                      i === currentSlideIndex ? 'w-6 bg-amber-400' : 'w-1.5 bg-white/40 hover:bg-white/70'
                     }`}
                     aria-label={`Go to slide ${i + 1}`}
                   />
@@ -1250,7 +1321,7 @@ export default function ShopPortal({
               <button
                 type="button"
                 onClick={() => setCurrentSlideIndex((prev) => (prev + 1) % heroSlides.length)}
-                className="h-8 w-8 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center transition border border-slate-200/90 shadow-xs cursor-pointer"
+                className="h-7 w-7 rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-md flex items-center justify-center transition border border-white/30 shadow-xs cursor-pointer font-bold text-xs"
                 aria-label="Next slide"
               >
                 ›
@@ -1258,62 +1329,41 @@ export default function ShopPortal({
             </div>
           </div>
 
-          {/* Cột phải: Floating Featured Card */}
-          <div className="lg:col-span-5 flex justify-center lg:justify-end">
-            <div className="w-full max-w-sm rounded-3xl bg-white/85 backdrop-blur-md border border-white/80 p-3.5 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition duration-300">
-              {/* Poster image */}
-              <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-gradient-to-br from-amber-50/70 via-white to-slate-100/90 p-2.5 flex items-center justify-center border border-amber-100/60 shadow-inner group/poster">
-                <img
-                  src={currentSlide.floatingCard.posterImage}
-                  alt={currentSlide.floatingCard.title}
-                  className="h-full w-full object-contain drop-shadow-md transition-transform duration-300 group-hover/poster:scale-105"
-                />
-                <span className="absolute top-2.5 left-2.5 rounded-full bg-[#c8382b] text-white px-2.5 py-0.5 text-[10px] font-extrabold uppercase shadow-sm z-10">
-                  {currentSlide.floatingCard.badge}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setLightboxTicketImage(currentSlide.floatingCard.posterImage)}
-                  title="Xem phóng to ảnh"
-                  className="absolute top-2.5 right-2.5 rounded-full bg-slate-900/60 hover:bg-slate-900 text-white p-1.5 transition text-xs cursor-pointer shadow-xs z-10"
-                >
-                  🔍
-                </button>
-                <span className="absolute bottom-2.5 right-2.5 rounded-full bg-white/95 backdrop-blur-xs text-amber-700 px-2.5 py-0.5 text-xs font-black shadow-xs border border-amber-200/80 z-10 flex items-center gap-1">
-                  {currentSlide.floatingCard.rating}
-                </span>
-              </div>
-
-              {/* Card info */}
-              <div className="p-3 text-left">
-                <h4 className="font-bold text-sm text-slate-900 line-clamp-1">
-                  {currentSlide.floatingCard.title}
-                </h4>
-                <p className="text-[11px] text-slate-500 mt-1 line-clamp-1">
-                  {currentSlide.floatingCard.genre}
-                </p>
-                <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-emerald-600">
-                    {currentSlide.floatingCard.status}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleHeroCTA(currentSlide)}
-                    className="rounded-xl bg-[#c8382b] hover:bg-[#a82d21] text-white font-bold text-xs px-3.5 py-1.5 transition cursor-pointer shadow-xs"
-                  >
-                    Xem & Đặt Ngay →
-                  </button>
-                </div>
-              </div>
-            </div>
+          {/* Cột phải: Khu vực chiếc bảng vé của cô bé (Đã có Đánh giá, Giá vé & Nút Đặt Vé trực tiếp trên mặt bảng xanh) */}
+          <div className="lg:col-span-5 h-[360px] sm:h-[430px] lg:h-[480px] flex items-center justify-center relative">
+            {/* Vùng bấm đặt vé tương tác phủ trên toàn bộ chiếc bảng */}
+            <div
+              onClick={() => handleHeroCTA(currentSlide)}
+              className="w-full h-full cursor-pointer group"
+              title="Bấm để xem chi tiết và đặt vé ngay!"
+            />
           </div>
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. CATEGORY BAR & SEARCH
+          3. DANH SÁCH VÉ & GIAN HÀNG SẢN PHẨM (NỀN TRANH NGHỆ THUẬT SHOP4.PNG)
       ────────────────────────────────────────────────────────────── */}
-      <section id="shop-items" className="max-w-7xl mx-auto px-4 sm:px-8 py-8 w-full">
+      <section
+        id="shop-items"
+        className="relative w-full pt-8 pb-12 overflow-hidden bg-[#e9faf1]"
+      >
+        {/* Lớp ảnh nền nghệ thuật shop4.png */}
+        <div
+          className="absolute inset-0 z-0 pointer-events-none bg-top bg-no-repeat bg-cover md:bg-[length:100%_auto]"
+          style={{
+            backgroundImage: `url("/assets/shop/shop4.png")`,
+            backgroundPosition: 'center top',
+          }}
+        />
+
+        {/* Lớp phủ chuyển sắc dịu nhẹ bảo đảm tương phản sắc nét cho các thẻ vé và sản phẩm */}
+        <div
+          className="absolute inset-0 z-1 pointer-events-none bg-gradient-to-b from-[#e9faf1]/30 via-transparent to-[#e9faf1]/85"
+        />
+
+        {/* Khung nội dung tối đa 7xl */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 w-full">
         {/* Active Search Query Feedback Banner */}
         {searchQuery.trim().length > 0 && (
           <div className="mb-6 rounded-2xl bg-amber-50/90 border border-amber-200/90 p-4 flex flex-wrap items-center justify-between gap-3 shadow-xs animate-fade-in">
@@ -1381,92 +1431,89 @@ export default function ShopPortal({
           </div>
         )}
 
-        {/* Category Filter Pills */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setCategoryFilter('all')}
-              className={`rounded-full px-4 py-2 text-xs font-bold transition cursor-pointer ${
-                categoryFilter === 'all'
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shadow-2xs'
-              }`}
-            >
-              ✨ Tất Cả
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCategoryFilter('tickets')}
-              className={`rounded-full px-4 py-2 text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
-                categoryFilter === 'tickets'
-                  ? 'bg-[#c8382b] text-white shadow-xs'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shadow-2xs'
-              }`}
-            >
-              <span>🎟️</span>
-              <span>Vé Sự Kiện ({events.length})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCategoryFilter('cards')}
-              className={`rounded-full px-4 py-2 text-xs font-bold transition cursor-pointer ${
-                categoryFilter === 'cards'
-                  ? 'bg-teal-700 text-white shadow-xs'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shadow-2xs'
-              }`}
-            >
-              🎴 Thẻ Bài & Hộp
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCategoryFilter('apparel')}
-              className={`rounded-full px-4 py-2 text-xs font-bold transition cursor-pointer ${
-                categoryFilter === 'apparel'
-                  ? 'bg-teal-700 text-white shadow-xs'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shadow-2xs'
-              }`}
-            >
-              👕 Áo Thun & Túi
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCategoryFilter('gift')}
-              className={`rounded-full px-4 py-2 text-xs font-bold transition cursor-pointer ${
-                categoryFilter === 'gift'
-                  ? 'bg-teal-700 text-white shadow-xs'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shadow-2xs'
-              }`}
-            >
-              🎁 Quà Lưu Niệm & Gốm
-            </button>
+        {/* ── THANH TAB DANH MỤC TÍCH HỢP (ẢNH 1 ĐEM LÊN THAY THẾ ẢNH 2) ── */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-6 border-b border-slate-200/80">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            {shopTabs.map((tab) => {
+              const isActive = activeShopTab === tab.key
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => {
+                    setActiveShopTab(tab.key)
+                    setCarouselIndex(0)
+                  }}
+                  className={`rounded-full px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-xs select-none ${
+                    isActive
+                      ? tab.key === 'tickets'
+                        ? 'bg-gradient-to-r from-[#c8382b] to-[#92261b] text-white shadow-md shadow-red-900/20 scale-102 border border-red-500/30'
+                        : tab.key === 'all'
+                        ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20 scale-102 border border-slate-700'
+                        : 'bg-gradient-to-r from-[#006368] to-[#004e52] text-white shadow-md shadow-teal-900/20 scale-102 border border-teal-500/30'
+                      : 'bg-white/95 hover:bg-white text-slate-700 hover:text-slate-950 border border-slate-200/90 hover:border-slate-300 hover:shadow-sm'
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  <span
+                    className={`text-[11px] px-1.5 py-0.2 rounded-full font-bold ${
+                      isActive
+                        ? 'bg-white/20 text-white'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+              )
+            })}
           </div>
 
-          <span className="text-xs text-slate-500">
-            Hiển thị <strong>{filteredEvents.length + filteredProducts.length}</strong> mục
-          </span>
+          {/* Chỉ báo số lượng hiển thị */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-slate-700 bg-white/95 border border-slate-200 px-3 py-1 rounded-full shadow-2xs">
+              {isTicketTab ? (
+                <>Hiển thị <strong>{Math.min(filteredEvents.length, 4)}</strong> / <strong>{filteredEvents.length}</strong> vé sự kiện</>
+              ) : (
+                <>Hiển thị <strong>{Math.min(currentProducts.length, 4)}</strong> / <strong>{currentProducts.length}</strong> ấn phẩm di sản</>
+              )}
+            </span>
+          </div>
         </div>
 
-        {/* ── 4. PHẦN VÉ SỰ KIỆN BÀI CHÒI ── */}
-        {(categoryFilter === 'tickets' || (categoryFilter === 'all' && filteredEvents.length > 0)) && (
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 text-[#c8382b] text-sm font-bold border border-red-200">
-                  🎟️
-                </span>
-                <h3 className="text-lg font-bold text-slate-900">Vé Tham Gia Các Hội Bài Chòi</h3>
-              </div>
-              <span className="text-xs text-slate-500">Đặt vé quét mã QR vào cổng</span>
-            </div>
+        {/* ── CAROUSEL SẢN PHẨM / VÉ 4 CỘT DUY NHẤT (THEO ẢNH 4) ── */}
+        <div className="relative">
+          {/* Nút lướt sang trái (<) khi có quá 4 mục */}
+          {hasMultiple && (
+            <button
+              type="button"
+              onClick={handleCarouselPrev}
+              aria-label="Xem mục trước"
+              title="Xem mục trước"
+              className="absolute -left-3 sm:-left-5 lg:-left-6 top-1/2 -translate-y-1/2 z-30 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-slate-800 hover:bg-slate-50 hover:text-[#c8382b] border border-slate-200 shadow-xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
+            >
+              <span className="text-xl sm:text-2xl font-bold leading-none select-none pb-0.5">‹</span>
+            </button>
+          )}
 
-            {filteredEvents.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredEvents.map((evt) => {
+          {/* Nút lướt sang phải (>) khi có quá 4 mục */}
+          {hasMultiple && (
+            <button
+              type="button"
+              onClick={handleCarouselNext}
+              aria-label="Xem mục tiếp theo"
+              title="Xem mục tiếp theo"
+              className="absolute -right-3 sm:-right-5 lg:-right-6 top-1/2 -translate-y-1/2 z-30 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-slate-800 hover:bg-slate-50 hover:text-[#c8382b] border border-slate-200 shadow-xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
+            >
+              <span className="text-xl sm:text-2xl font-bold leading-none select-none pb-0.5">›</span>
+            </button>
+          )}
+
+          {/* Nội dung danh sách hiển thị */}
+          {isTicketTab ? (
+            displayEvents.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {displayEvents.map((evt) => {
                   const remaining = Math.max(0, evt.totalTickets - evt.soldTickets)
                   const isOnline = evt.status === 'online_sale'
                   const isDoor = evt.status === 'offline_sale'
@@ -1474,10 +1521,10 @@ export default function ShopPortal({
                   return (
                     <div
                       key={evt.id}
-                      className="rounded-2xl bg-white border border-slate-200 overflow-hidden flex flex-col justify-between hover:border-slate-300 hover:shadow-lg transition-all duration-300 shadow-xs group"
+                      className="rounded-2xl bg-white/95 backdrop-blur-xs border border-slate-200/90 overflow-hidden flex flex-col justify-between hover:border-slate-300 hover:shadow-lg transition-all duration-300 shadow-xs group"
                     >
                       <div>
-                        {/* Slider Lướt Xem Ảnh Vé & Hộp Quà Pop-up Di Sản (Hỗ trợ đa ảnh không giới hạn theo cấu hình Admin) */}
+                        {/* Slider Lướt Xem Ảnh Vé & Hộp Quà Pop-up Di Sản */}
                         {(() => {
                           const eventImages = evt.images && evt.images.length > 0
                             ? evt.images
@@ -1485,18 +1532,17 @@ export default function ShopPortal({
                           const activeIdx = (eventSlideIndexes[evt.id] || 0) % eventImages.length
                           const currentImg = eventImages[activeIdx] || eventImages[0]
 
-                          // Nhãn badge thông minh theo từng loại ảnh
                           const isPopUpBox = currentImg.includes('popup') || currentImg.includes('hopdungve-popup')
                           const isStandardBox = currentImg.includes('hopdungve') && !isPopUpBox
                           const isTicketMockup = currentImg.includes('mock up') || (!isPopUpBox && !isStandardBox && activeIdx === 0)
 
                           const badgeLabel = isPopUpBox
-                            ? '🎁 Hộp Quà Pop-up Di Sản 3D'
+                            ? '🎁 Hộp Quà 3D'
                             : isStandardBox
-                            ? '📦 Hộp Đựng Vé Sang Trọng'
+                            ? '📦 Hộp Đựng Vé'
                             : isTicketMockup
-                            ? '🎫 Vé Tham Gia Chính Thức'
-                            : `📸 Ảnh Chi Tiết #${activeIdx + 1}`
+                            ? '🎫 Vé Chính Thức'
+                            : `📸 Ảnh #${activeIdx + 1}`
 
                           const handlePrev = (e: React.MouseEvent) => {
                             e.stopPropagation()
@@ -1516,8 +1562,8 @@ export default function ShopPortal({
 
                           return (
                             <div className="relative w-full border-b border-slate-100 bg-white">
-                              {/* Khung ảnh chính */}
-                              <div className={`relative aspect-[16/10] w-full p-3 flex items-center justify-center overflow-hidden ${eventImages.length > 1 ? 'pb-14' : ''}`}>
+                              {/* Khung ảnh chính thu nhỏ gọn gàng */}
+                              <div className={`relative aspect-[16/10] w-full p-2 flex items-center justify-center overflow-hidden ${eventImages.length > 1 ? 'pb-8' : ''}`}>
                                 <img
                                   key={currentImg}
                                   src={currentImg}
@@ -1525,8 +1571,8 @@ export default function ShopPortal({
                                   className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-102"
                                 />
 
-                                {/* Badge Tên Ấn phẩm / Góc chụp */}
-                                <span className="absolute top-2.5 left-2.5 rounded-md bg-gradient-to-r from-[#006368] to-[#004e52] text-white font-extrabold text-[10px] px-2.5 py-0.5 shadow-xs flex items-center gap-1 z-10">
+                                {/* Badge Tên Ấn phẩm / Góc chụp nhỏ gọn */}
+                                <span className="absolute top-2 left-2 rounded-md bg-gradient-to-r from-[#006368] to-[#004e52] text-white font-extrabold text-[9px] px-2 py-0.5 shadow-xs flex items-center gap-1 z-10">
                                   <span>{badgeLabel}</span>
                                 </span>
 
@@ -1535,26 +1581,24 @@ export default function ShopPortal({
                                   type="button"
                                   onClick={() => setLightboxTicketImage(currentImg)}
                                   title="Phóng to ảnh này"
-                                  className="absolute top-2.5 right-2.5 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white p-1.5 transition text-xs cursor-pointer shadow-xs z-10"
+                                  className="absolute top-2 right-2 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white p-1 transition text-[10px] cursor-pointer shadow-xs z-10"
                                 >
                                   🔍
                                 </button>
 
-                                {/* Thanh điều hướng Slider chuẩn Thiết kế Ảnh 1: [ (<)  • • ▬  (>) ] */}
+                                {/* Thanh điều hướng Slider nhỏ gọn */}
                                 {eventImages.length > 1 && (
-                                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center justify-center gap-3 sm:gap-4 z-20 select-none">
-                                    {/* Nút tròn trắng bên trái: < */}
+                                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 z-20 select-none">
                                     <button
                                       type="button"
                                       onClick={handlePrev}
                                       aria-label="Xem ảnh trước"
-                                      className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-white text-slate-800 shadow-md hover:shadow-lg border border-slate-200/80 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
+                                      className="h-6 w-6 rounded-full bg-white/95 text-slate-800 shadow-xs hover:shadow-sm border border-slate-200/80 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
                                     >
-                                      <span className="text-[#0a3641] font-black text-sm leading-none -ml-0.5 select-none">‹</span>
+                                      <span className="text-[#0a3641] font-black text-xs leading-none select-none">‹</span>
                                     </button>
 
-                                    {/* Dải Dots chỉ số ảnh: Inactive là chấm tròn xám xanh, Active là thanh dẹt bo góc màu đỏ */}
-                                    <div className="flex items-center gap-2 sm:gap-2.5 px-0.5">
+                                    <div className="flex items-center gap-1.5 px-0.5">
                                       {eventImages.map((_, idx) => {
                                         const isActive = idx === activeIdx
                                         return (
@@ -1571,22 +1615,21 @@ export default function ShopPortal({
                                             aria-label={`Xem ảnh ${idx + 1}`}
                                             className={`transition-all duration-300 cursor-pointer ${
                                               isActive
-                                                ? 'h-2.5 sm:h-3 w-7 sm:w-8 rounded-full bg-[#c8382b] shadow-2xs'
-                                                : 'h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-[#8799a9] hover:bg-slate-500'
+                                                ? 'h-1.5 w-4 rounded-full bg-[#c8382b] shadow-2xs'
+                                                : 'h-1.5 w-1.5 rounded-full bg-slate-300 hover:bg-slate-400'
                                             }`}
                                           />
                                         )
                                       })}
                                     </div>
 
-                                    {/* Nút tròn trắng bên phải: > */}
                                     <button
                                       type="button"
                                       onClick={handleNext}
                                       aria-label="Xem ảnh sau"
-                                      className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-white text-slate-800 shadow-md hover:shadow-lg border border-slate-200/80 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
+                                      className="h-6 w-6 rounded-full bg-white/95 text-slate-800 shadow-xs hover:shadow-sm border border-slate-200/80 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
                                     >
-                                      <span className="text-[#0a3641] font-black text-sm leading-none -mr-0.5 select-none">›</span>
+                                      <span className="text-[#0a3641] font-black text-xs leading-none select-none">›</span>
                                     </button>
                                   </div>
                                 )}
@@ -1595,13 +1638,14 @@ export default function ShopPortal({
                           )
                         })()}
 
-                        <div className="p-4 sm:p-5">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                        {/* Nội dung chi tiết vé thu nhỏ vừa vặn */}
+                        <div className="p-3 sm:p-3.5">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[9px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
                               HỘI BÀI CHÒI
                             </span>
                             <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                              className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
                                 isOnline
                                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                   : isDoor
@@ -1609,28 +1653,28 @@ export default function ShopPortal({
                                   : 'bg-slate-100 text-slate-500 border border-slate-200'
                               }`}
                             >
-                              {isOnline ? '● Đang mở bán online' : isDoor ? 'Bán tại quầy soát vé' : 'Đã kết thúc'}
+                              {isOnline ? '● Đang mở bán online' : isDoor ? 'Bán tại quầy' : 'Đã kết thúc'}
                             </span>
                           </div>
 
-                          <h4 className="font-bold text-slate-900 text-base leading-snug line-clamp-2 group-hover:text-[#c8382b] transition">
+                          <h4 className="font-bold text-slate-900 text-xs sm:text-sm leading-snug line-clamp-2 group-hover:text-[#c8382b] transition">
                             {evt.title}
                           </h4>
 
-                          <div className="mt-3 space-y-1.5 text-xs text-slate-600">
-                            <p>📅 <strong className="text-slate-800">{evt.eventDate}</strong></p>
-                            <p className="line-clamp-1">📍 {evt.location}</p>
+                          <div className="mt-2 space-y-1 text-[11px] text-slate-600">
+                            <p className="truncate">📅 <strong className="text-slate-800">{evt.eventDate}</strong></p>
+                            <p className="truncate">📍 {evt.location}</p>
                           </div>
 
-                          {/* Quota */}
-                          <div className="mt-3 pt-2.5 border-t border-slate-100">
-                            <div className="flex justify-between text-[11px] mb-1 text-slate-500">
+                          {/* Quota bar nhỏ gọn */}
+                          <div className="mt-2 pt-1.5 border-t border-slate-100">
+                            <div className="flex justify-between text-[10px] mb-0.5 text-slate-500">
                               <span>Số lượng vé:</span>
                               <span className="font-bold text-slate-800">
                                 {remaining > 0 ? `Còn ${remaining} vé` : 'Hết vé online'}
                               </span>
                             </div>
-                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
                               <div
                                 className="h-full bg-gradient-to-r from-emerald-500 to-teal-500"
                                 style={{ width: `${Math.min(100, ((evt.totalTickets - remaining) / evt.totalTickets) * 100)}%` }}
@@ -1640,15 +1684,16 @@ export default function ShopPortal({
                         </div>
                       </div>
 
-                      <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-0">
-                        <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                      {/* Giá vé & Nút Đặt Vé nhỏ gọn */}
+                      <div className="px-3 pb-3 sm:px-3.5 sm:pb-3.5 pt-0">
+                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
                           <div>
-                            <span className="text-[10px] text-slate-400 block uppercase font-semibold">Giá vé (Tiền / Xu)</span>
-                            <div className="flex items-baseline gap-1.5 flex-wrap">
-                              <span className="text-lg font-black text-[#c8382b]">
+                            <span className="text-[9px] text-slate-400 block uppercase font-semibold leading-none mb-0.5">Giá vé</span>
+                            <div className="flex items-baseline gap-1 flex-wrap">
+                              <span className="text-sm sm:text-base font-black text-[#c8382b]">
                                 {evt.ticketPrice.toLocaleString('vi-VN')} đ
                               </span>
-                              <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 inline-flex items-center gap-1 shadow-2xs">
+                              <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-1 py-0.2 rounded border border-amber-200 inline-flex items-center gap-0.5 shadow-2xs">
                                 <span>hoặc {getVndToCoins(evt.ticketPrice)}</span>
                                 <ChoiCoin size="xs" />
                               </span>
@@ -1659,13 +1704,13 @@ export default function ShopPortal({
                             <button
                               type="button"
                               onClick={() => handleOpenBooking(evt)}
-                              className="rounded-xl bg-gradient-to-r from-[#c8382b] to-[#92261b] hover:from-[#d94437] hover:to-[#a82d21] text-white font-bold text-xs px-4 py-2 transition shadow-xs hover:shadow-md cursor-pointer"
+                              className="rounded-lg bg-gradient-to-r from-[#c8382b] to-[#92261b] hover:from-[#d94437] hover:to-[#a82d21] text-white font-bold text-xs px-3 py-1.5 transition shadow-2xs hover:shadow-xs cursor-pointer active:scale-95 shrink-0"
                             >
                               🎟️ Đặt Vé
                             </button>
                           ) : (
-                            <span className="text-xs text-slate-500 font-medium">
-                              {isDoor ? 'Mua tại cổng sự kiện' : 'Hết vé'}
+                            <span className="text-[11px] text-slate-500 font-medium shrink-0">
+                              {isDoor ? 'Tại cổng' : 'Hết vé'}
                             </span>
                           )}
                         </div>
@@ -1675,7 +1720,7 @@ export default function ShopPortal({
                 })}
               </div>
             ) : (
-              <div className="py-12 text-center rounded-2xl bg-white border border-slate-200 p-6">
+              <div className="py-12 text-center rounded-2xl bg-white/90 border border-slate-200 p-6">
                 <p className="text-sm font-semibold text-slate-700">
                   Không tìm thấy vé sự kiện nào phù hợp với từ khóa "{searchQuery}".
                 </p>
@@ -1687,163 +1732,181 @@ export default function ShopPortal({
                   Xóa từ khóa tìm kiếm để xem tất cả vé
                 </button>
               </div>
-            )}
+            )
+          ) : (
+            displayProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {displayProducts.map((prod) => {
+                  return (
+                    <div
+                      key={prod.id}
+                      className="group rounded-2xl bg-white/95 backdrop-blur-xs text-slate-900 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between border border-slate-200/90 hover:border-slate-300"
+                    >
+                      {/* Vùng ảnh sản phẩm */}
+                      <div className="relative aspect-square w-full bg-slate-50/80 overflow-hidden p-2.5 flex items-center justify-center">
+                        <img
+                          src={prod.imageSrc}
+                          alt={prod.imageAlt}
+                          className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                        />
+                        {prod.badge && (
+                          <span className="absolute top-2 left-2 rounded-md bg-amber-400 text-slate-950 font-extrabold text-[9px] px-2 py-0.5 shadow-2xs">
+                            {prod.badge}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setLightboxGroupIndex(prod.publicationGroupIndex)}
+                          title="Phóng to ảnh"
+                          className="absolute bottom-2 right-2 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white p-1 transition text-[10px] cursor-pointer shadow-xs"
+                        >
+                          🔍
+                        </button>
+                      </div>
+
+                      {/* Chi tiết sản phẩm */}
+                      <div className="p-3 sm:p-3.5 flex-1 flex flex-col justify-between">
+                        <div>
+                          <span className="text-[9px] font-bold uppercase text-teal-700 block">
+                            {prod.categoryLabel}
+                          </span>
+                          <h4 className="font-bold text-xs sm:text-sm text-slate-900 leading-snug line-clamp-2 mt-0.5 group-hover:text-[#c8382b] transition">
+                            {prod.title}
+                          </h4>
+                          <div className="flex items-center gap-1 mt-1 text-[10px] text-amber-500 font-semibold">
+                            <span>⭐ {prod.rating}</span>
+                            <span className="text-slate-400 font-normal">({prod.reviewsCount})</span>
+                          </div>
+                        </div>
+
+                        {/* Giá tiền & Nút Đặt Mua */}
+                        <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5">
+                          <div>
+                            <div className="flex items-baseline gap-1 flex-wrap">
+                              <span className="text-sm sm:text-base font-black text-[#c8382b]">
+                                {prod.price.toLocaleString('vi-VN')} đ
+                              </span>
+                              {prod.originalPrice && (
+                                <span className="text-[9px] text-slate-400 line-through">
+                                  {prod.originalPrice.toLocaleString('vi-VN')} đ
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-1 py-0.2 rounded border border-amber-200 inline-flex items-center gap-0.5 mt-0.5 shadow-2xs">
+                              <span>hoặc {getVndToCoins(prod.price)}</span>
+                              <ChoiCoin size="xs" />
+                            </span>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setBuyingProduct(prod)
+                              setProdQty(1)
+                              setProdBuyMethod('money')
+                              setProdPayment('cod')
+                              setOrderResult(null)
+                              setOrderError('')
+                              if (effectiveUser) {
+                                if (effectiveUser.fullName) setShippingName(effectiveUser.fullName)
+                                if (effectiveUser.phone) setShippingPhone(effectiveUser.phone)
+                                if (effectiveUser.address) setShippingAddress(effectiveUser.address)
+                              }
+                            }}
+                            className="rounded-lg bg-[#006368] hover:bg-[#004e52] text-white font-bold text-xs px-3 py-1.5 transition shadow-2xs hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+                          >
+                            Đặt Mua
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="py-12 text-center rounded-2xl bg-white/90 border border-slate-200 p-6">
+                <p className="text-sm font-semibold text-slate-700">
+                  Không tìm thấy ấn phẩm nào phù hợp trong mục này.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveShopTab('all')
+                    setSearchQuery('')
+                  }}
+                  className="mt-3 text-xs text-teal-700 font-bold hover:underline cursor-pointer"
+                >
+                  Xem tất cả ấn phẩm
+                </button>
+              </div>
+            )
+          )}
+        </div>
+
+        {/* ── THANH ĐIỀU HƯỚNG VỊ TRÍ CAROUSEL (KHI CÓ QUÁ 4 MỤC) ── */}
+        {hasMultiple && (
+          <div className="mt-6 flex items-center justify-center gap-3 select-none">
+            <button
+              type="button"
+              onClick={handleCarouselPrev}
+              className="text-xs font-bold text-slate-700 hover:text-[#c8382b] px-3.5 py-1.5 rounded-full bg-white/95 hover:bg-white border border-slate-200/90 shadow-2xs transition flex items-center gap-1 cursor-pointer"
+            >
+              <span className="text-sm leading-none">‹</span>
+              <span>Trước</span>
+            </button>
+
+            <div className="flex items-center gap-1.5 px-2">
+              {Array.from({ length: maxCarouselIndex + 1 }).map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setCarouselIndex(i)}
+                  aria-label={`Vị trí ${i + 1}`}
+                  className={`transition-all duration-300 rounded-full cursor-pointer ${
+                    i === carouselIndex
+                      ? 'w-6 h-2 bg-[#c8382b] shadow-2xs'
+                      : 'w-2 h-2 bg-slate-300 hover:bg-slate-400'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleCarouselNext}
+              className="text-xs font-bold text-slate-700 hover:text-[#c8382b] px-3.5 py-1.5 rounded-full bg-white/95 hover:bg-white border border-slate-200/90 shadow-2xs transition flex items-center gap-1 cursor-pointer"
+            >
+              <span>Sau</span>
+              <span className="text-sm leading-none">›</span>
+            </button>
+
+            <span className="text-[11px] text-slate-500 font-medium ml-1">
+              ({carouselIndex + 1}/{maxCarouselIndex + 1})
+            </span>
           </div>
         )}
 
-        {/* ── 5. PHẦN ẤN PHẨM & QUÀ TẶNG ── */}
-        {(categoryFilter !== 'tickets' && (filteredProducts.length > 0 || categoryFilter !== 'all')) && (
-          <div className="mt-12">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-50 text-teal-700 text-sm font-bold border border-teal-200">
-                  🛍️
-                </span>
-                <h3 className="text-lg font-bold text-slate-900">Ấn Phẩm Mỹ Thuật & Đồ Lưu Niệm</h3>
-              </div>
-              <span className="text-xs text-slate-500">Giao hàng toàn quốc · Kiểm tra khi nhận</span>
-            </div>
-
-            {/* Product Grid */}
-            {filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-              {filteredProducts.map((prod) => {
-                return (
-                  <div
-                    key={prod.id}
-                    className="group rounded-2xl bg-white text-slate-900 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between border border-slate-200 hover:border-slate-300"
-                  >
-                    {/* Image Area */}
-                    <div className="relative aspect-square w-full bg-slate-50 overflow-hidden p-3 flex items-center justify-center">
-                      <img
-                        src={prod.imageSrc}
-                        alt={prod.imageAlt}
-                        className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
-                      />
-                      {prod.badge && (
-                        <span className="absolute top-2.5 left-2.5 rounded-md bg-amber-400 text-slate-950 font-extrabold text-[10px] px-2 py-0.5 shadow-2xs">
-                          {prod.badge}
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => setLightboxGroupIndex(prod.publicationGroupIndex)}
-                        title="Phóng to ảnh"
-                        className="absolute bottom-2.5 right-2.5 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white p-1.5 transition text-xs cursor-pointer shadow-xs"
-                      >
-                        🔍
-                      </button>
-                    </div>
-
-                    {/* Details */}
-                    <div className="p-3.5 flex-1 flex flex-col justify-between">
-                      <div>
-                        <span className="text-[10px] font-bold uppercase text-teal-700 block">
-                          {prod.categoryLabel}
-                        </span>
-                        <h4 className="font-bold text-xs sm:text-sm text-slate-900 leading-snug line-clamp-2 mt-0.5 group-hover:text-[#c8382b] transition">
-                          {prod.title}
-                        </h4>
-                        <div className="flex items-center gap-1 mt-1 text-[11px] text-amber-500 font-semibold">
-                          <span>⭐ {prod.rating}</span>
-                          <span className="text-slate-400 font-normal">({prod.reviewsCount})</span>
-                        </div>
-                      </div>
-
-                      {/* Price & Action */}
-                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
-                        <div>
-                          <div className="flex items-baseline gap-1.5 flex-wrap">
-                            <span className="text-sm sm:text-base font-black text-[#c8382b]">
-                              {prod.price.toLocaleString('vi-VN')} đ
-                            </span>
-                            {prod.originalPrice && (
-                              <span className="text-[10px] text-slate-400 line-through">
-                                {prod.originalPrice.toLocaleString('vi-VN')} đ
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 inline-flex items-center gap-0.5 mt-0.5 shadow-2xs">
-                            <span>hoặc {getVndToCoins(prod.price)}</span>
-                            <ChoiCoin size="xs" />
-                          </span>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setBuyingProduct(prod)
-                            setProdQty(1)
-                            setProdBuyMethod('money')
-                            setProdPayment('cod')
-                            setOrderResult(null)
-                            setOrderError('')
-                            if (effectiveUser) {
-                              if (effectiveUser.fullName) setShippingName(effectiveUser.fullName)
-                              if (effectiveUser.phone) setShippingPhone(effectiveUser.phone)
-                              if (effectiveUser.address) setShippingAddress(effectiveUser.address)
-                            }
-                          }}
-                          className="rounded-xl bg-[#006368] hover:bg-[#004e52] text-white font-bold text-xs px-3.5 py-1.5 transition shadow-xs cursor-pointer"
-                        >
-                          Đặt Mua
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <div className="py-12 text-center rounded-2xl bg-white border border-slate-200 p-6">
-              <p className="text-sm font-semibold text-slate-700">
-                Không tìm thấy ấn phẩm nào phù hợp với từ khóa "{searchQuery}".
-              </p>
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="mt-3 text-xs text-teal-700 font-bold hover:underline cursor-pointer"
-              >
-                Xóa từ khóa tìm kiếm để xem tất cả ấn phẩm
-              </button>
-            </div>
-          )}
         </div>
-      )}
-
-        {/* ── FOOTER CỦA TRANG MUA SẮM ── */}
-        <footer className="mt-16 border-t border-slate-200 pt-8 pb-4 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-base">🎴</span>
-            <span className="font-bold text-slate-800">Chòi Heritage Store</span>
-            <span className="text-slate-300">|</span>
-            <span>Cửa hàng ấn phẩm di sản & hệ thống vé sự kiện chính thức</span>
-          </div>
-          <div className="flex items-center gap-3 font-semibold text-slate-600 flex-wrap justify-center">
-            <button type="button" onClick={onBackToSite} className="hover:text-[#c8382b] transition cursor-pointer">
-              ← Về Trang Chủ Bài Chòi
-            </button>
-            <span>·</span>
-            {onOpenPolicy && (
-              <>
-                <button type="button" onClick={() => onOpenPolicy('dieu-khoan')} className="hover:text-[#c8382b] transition cursor-pointer">
-                  Điều khoản
-                </button>
-                <span>·</span>
-                <button type="button" onClick={() => onOpenPolicy('bao-mat')} className="hover:text-[#c8382b] transition cursor-pointer">
-                  Chính sách bảo mật
-                </button>
-                <span>·</span>
-                <button type="button" onClick={() => onOpenPolicy('giao-hang')} className="hover:text-[#c8382b] transition cursor-pointer">
-                  Giao hàng & COD
-                </button>
-                <span>·</span>
-              </>
-            )}
-            <span>Hotline CSKH: 0848 180 081</span>
-          </div>
-        </footer>
       </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          4. FOOTER ĐỒNG BỘ TOÀN DIỆN DI SẢN BÀI CHÒI
+      ────────────────────────────────────────────────────────────── */}
+      <Footer
+        lang={lang}
+        isVietnamese={isVie}
+        onOpenPolicy={onOpenPolicy}
+        onBackToSite={onBackToSite}
+        onNavigateSection={(sec) => {
+          if (sec === 'shop') {
+            document.getElementById('shop-items')?.scrollIntoView({ behavior: 'smooth' })
+          } else if (sec === 'game' && onGoToPortal) {
+            onGoToPortal('game')
+          } else if (onBackToSite) {
+            onBackToSite()
+          }
+        }}
+      />
 
       {/* ─────────────────────────────────────────────────────────────
           MODAL: ĐẶT VÉ SỰ KIỆN & HỘP QUÀ POP-UP (GIAO TẬN NHÀ DUY NHẤT)

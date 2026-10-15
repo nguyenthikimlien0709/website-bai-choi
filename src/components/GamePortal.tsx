@@ -67,125 +67,316 @@ export default function GamePortal({
         />
       )}
 
-      {/* ── FOOTER ĐỎ TRUYỀN THỐNG ĐỒNG BỘ ── */}
+      {/* ── FOOTER ĐỒNG BỘ 100% THEO PHONG CÁCH TRANG CHỦ ── */}
       <footer
-        className="mt-8 text-white border-t-4 border-amber-400/80"
+        className="relative text-white border-t-2 border-amber-300/40 overflow-hidden"
         style={{
-          background: 'linear-gradient(180deg, #96281e 0%, #701c15 60%, #4a120d 100%)',
-          boxShadow: '0 -10px 30px rgba(74, 18, 13, 0.35)',
+          background: 'linear-gradient(180deg, #182e4b 0%, #112239 60%, #0a1524 100%)',
+          boxShadow: '0 -10px 40px rgba(10, 21, 36, 0.45)',
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10">
-            {/* Cột 1: Thông tin thương hiệu */}
+        {/* Họa tiết hoa văn truyền thống trang trí mờ phía nền */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-5 mix-blend-overlay"
+          style={{
+            backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)',
+            backgroundSize: '24px 24px',
+          }}
+        />
+
+        <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+            {/* CỘT 1: LOGO, MÔ TẢ DỰ ÁN & HUY HIỆU COLOR UP 2026 */}
             <div className="lg:col-span-4 space-y-4 text-left">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-2xl bg-white/10 p-2 border border-white/20 flex items-center justify-center">
-                  <img src="/assets/choi-transparent.png" alt="Logo Chòi" className="w-full h-full object-contain" />
-                </div>
+                <img
+                  src="/assets/choi-transparent.png"
+                  alt="Logo Bài Chòi"
+                  className="h-14 sm:h-16 w-auto object-contain filter drop-shadow-sm"
+                />
                 <div>
-                  <h3 className="text-xl font-black tracking-wider text-amber-200 font-serif" style={{ fontFamily: 'var(--font-display)' }}>
+                  <h3
+                    className="text-2xl sm:text-3xl font-black tracking-widest text-white uppercase font-serif"
+                    style={{ fontFamily: 'var(--font-display, serif)' }}
+                  >
                     BÀI CHÒI
                   </h3>
-                  <p className="text-xs text-white/80 font-medium">Di sản văn hóa phi vật thể nhân loại</p>
+                  <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-amber-200">
+                    Di sản văn hóa phi vật thể UNESCO
+                  </p>
                 </div>
               </div>
-              <p className="text-xs sm:text-[13px] leading-relaxed text-white/90">
+
+              <p className="text-xs sm:text-sm text-white/90 leading-relaxed max-w-md font-normal">
                 {isVie
-                  ? 'Công cụ Quản trò Bài Chòi trực quan, gìn giữ trọn vẹn nét văn hóa diễn xướng hò thai truyền thống miền Trung.'
-                  : 'Intuitive Bài Chòi Folk Caller tool, preserving the authentic traditional chanting culture of Central Vietnam.'}
+                  ? 'Dự án truyền thông & thiết kế văn hóa tôn vinh di sản nghệ thuật '
+                  : 'Media & cultural design project honoring the art heritage of '}
+                <strong className="text-white font-bold">
+                  {isVie ? 'Bài Chòi Trung Bộ' : 'Central Vietnam Bài Chòi'}
+                </strong>
+                {isVie
+                  ? ' — Di sản văn hóa phi vật thể đại diện của nhân loại được UNESCO vinh danh.'
+                  : ' — Intangible Cultural Heritage of Humanity recognized by UNESCO.'}
               </p>
+
+              {/* Huy hiệu tham dự Color Up 2026 */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => onOpenPolicy?.('du-an')}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/10 hover:bg-white/20 px-4 py-2 text-xs text-white font-medium transition cursor-pointer backdrop-blur-xs shadow-sm group"
+                >
+                  <span className="text-sm">🎖️</span>
+                  <span>
+                    Dự án tham dự cuộc thi <strong className="font-bold underline-offset-2 group-hover:underline">Color Up 2026</strong>
+                  </span>
+                </button>
+              </div>
             </div>
 
-            {/* Cột 2: Điều hướng nhanh */}
+            {/* CỘT 2: KHÁM PHÁ / ĐIỀU HƯỚNG */}
             <div className="lg:col-span-2 space-y-3 text-left">
-              <h4 className="text-sm sm:text-base font-black uppercase tracking-wider text-amber-200 font-serif">
-                {isVie ? 'Điều Hướng' : 'Navigation'}
+              <h4
+                className="text-sm sm:text-base font-black uppercase tracking-wider text-amber-200 font-serif"
+                style={{ fontFamily: 'var(--font-display, serif)' }}
+              >
+                {isVie ? 'Khám Phá' : 'Explore'}
               </h4>
               <ul className="space-y-2 text-xs sm:text-[13px] text-white/85">
                 <li>
-                  <button type="button" onClick={onBackToSite} className="hover:text-amber-200 transition cursor-pointer">
+                  <button
+                    type="button"
+                    onClick={onBackToSite}
+                    className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer block"
+                  >
                     ← {isVie ? 'Về Trang chủ' : 'Home'}
                   </button>
                 </li>
                 <li>
-                  <button type="button" onClick={onGoToShop} className="hover:text-amber-200 transition cursor-pointer font-bold text-amber-100">
-                    🛍️ {isVie ? 'Cửa Hàng Di Sản' : 'Heritage Store'}
+                  <button
+                    type="button"
+                    onClick={onGoToShop}
+                    className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer block font-semibold text-amber-100"
+                  >
+                    {isVie ? 'Cửa hàng & Vé sự kiện 🎟️' : 'Heritage Shop 🛍️'}
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => onOpenPolicy?.('du-an')}
+                    className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer block"
+                  >
+                    {isVie ? 'Câu chuyện văn hóa' : 'Cultural Story'}
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => onOpenPolicy?.('dieu-khoan')}
+                    className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer block"
+                  >
+                    {isVie ? 'Luật chơi & Cách tham gia' : 'Game Rules & Guide'}
                   </button>
                 </li>
               </ul>
             </div>
 
-            {/* Cột 3: Chính sách & Quy định */}
+            {/* CỘT 3: CHÍNH SÁCH & QUY ĐỊNH (8 MỤC ĐẦY ĐỦ NHẤP MỞ MODAL) */}
             <div className="lg:col-span-3 space-y-3 text-left">
-              <h4 className="text-sm sm:text-base font-black uppercase tracking-wider text-amber-200 font-serif">
+              <h4
+                className="text-sm sm:text-base font-black uppercase tracking-wider text-amber-200 font-serif"
+                style={{ fontFamily: 'var(--font-display, serif)' }}
+              >
                 {isVie ? 'Chính Sách & Quy Định' : 'Policies & Terms'}
               </h4>
               <ul className="space-y-1.5 text-xs sm:text-[13px] text-white/85">
                 <li>
-                  <button type="button" onClick={() => onOpenPolicy('dieu-khoan')} className="hover:text-amber-200 transition cursor-pointer">
-                    • Điều khoản sử dụng
+                  <button
+                    type="button"
+                    onClick={() => onOpenPolicy?.('dieu-khoan')}
+                    className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left"
+                  >
+                    <span className="text-amber-300">•</span>
+                    <span>{isVie ? 'Điều khoản sử dụng' : 'Terms of Service'}</span>
                   </button>
                 </li>
                 <li>
-                  <button type="button" onClick={() => onOpenPolicy('bao-mat')} className="hover:text-amber-200 transition cursor-pointer">
-                    • Chính sách bảo mật
+                  <button
+                    type="button"
+                    onClick={() => onOpenPolicy?.('bao-mat')}
+                    className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left"
+                  >
+                    <span className="text-amber-300">•</span>
+                    <span>{isVie ? 'Chính sách bảo mật' : 'Privacy Policy'}</span>
                   </button>
                 </li>
                 <li>
-                  <button type="button" onClick={() => onOpenPolicy('thanh-toan')} className="hover:text-amber-200 transition cursor-pointer">
-                    • Chính sách thanh toán (COD)
+                  <button
+                    type="button"
+                    onClick={() => onOpenPolicy?.('cookie')}
+                    className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left"
+                  >
+                    <span className="text-amber-300">•</span>
+                    <span>{isVie ? 'Chính sách Cookie & Lưu trữ' : 'Cookie Policy'}</span>
                   </button>
                 </li>
                 <li>
-                  <button type="button" onClick={() => onOpenPolicy('doi-tra')} className="hover:text-amber-200 transition cursor-pointer">
-                    • Đổi trả & Hoàn tiền
+                  <button
+                    type="button"
+                    onClick={() => onOpenPolicy?.('thanh-toan')}
+                    className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left"
+                  >
+                    <span className="text-amber-300">•</span>
+                    <span>{isVie ? 'Chính sách thanh toán (COD)' : 'Payment Policy'}</span>
                   </button>
                 </li>
                 <li>
-                  <button type="button" onClick={() => onOpenPolicy('du-an')} className="hover:text-amber-200 transition cursor-pointer font-bold text-amber-200">
-                    • Giới thiệu dự án Color Up 2026
+                  <button
+                    type="button"
+                    onClick={() => onOpenPolicy?.('giao-hang')}
+                    className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left"
+                  >
+                    <span className="text-amber-300">•</span>
+                    <span>{isVie ? 'Chính sách giao hàng' : 'Shipping Policy'}</span>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => onOpenPolicy?.('doi-tra')}
+                    className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left"
+                  >
+                    <span className="text-amber-300">•</span>
+                    <span>{isVie ? 'Chính sách đổi trả & hoàn tiền' : 'Return & Refund Policy'}</span>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => onOpenPolicy?.('khieu-nai')}
+                    className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left"
+                  >
+                    <span className="text-amber-300">•</span>
+                    <span>{isVie ? 'Chính sách xử lý khiếu nại' : 'Dispute Policy'}</span>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => onOpenPolicy?.('du-an')}
+                    className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center gap-1.5 text-left font-semibold text-amber-200"
+                  >
+                    <span className="text-amber-300">•</span>
+                    <span>{isVie ? 'Thông tin dự án & Giới thiệu' : 'About Project & Info'}</span>
                   </button>
                 </li>
               </ul>
             </div>
 
-            {/* Cột 4: Liên hệ */}
-            <div className="lg:col-span-3 space-y-3 text-left">
-              <h4 className="text-sm sm:text-base font-black uppercase tracking-wider text-amber-200 font-serif">
+            {/* CỘT 4: LIÊN HỆ & KẾT NỐI */}
+            <div className="lg:col-span-3 space-y-3.5 text-left">
+              <h4
+                className="text-sm sm:text-base font-black uppercase tracking-wider text-amber-200 font-serif"
+                style={{ fontFamily: 'var(--font-display, serif)' }}
+              >
                 {isVie ? 'Liên Hệ & Kết Nối' : 'Contact & Connect'}
               </h4>
-              <div className="space-y-2 text-xs sm:text-[13px] text-white/90">
-                <a href="mailto:lienntk.ce190812@gmail.com" className="flex items-center gap-2 hover:text-amber-200 transition">
-                  <span>✉️</span>
+
+              <div className="space-y-2.5 text-xs sm:text-[13px] text-white/90">
+                <a
+                  href="mailto:lienntk.ce190812@gmail.com"
+                  className="flex items-center gap-2.5 hover:text-amber-200 transition group"
+                >
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white shrink-0 group-hover:bg-white/25">
+                    ✉️
+                  </span>
                   <span className="break-all">lienntk.ce190812@gmail.com</span>
                 </a>
-                <a href="tel:0848180081" className="flex items-center gap-2 hover:text-amber-200 transition">
-                  <span>📞</span>
+
+                <a
+                  href="tel:0848180081"
+                  className="flex items-center gap-2.5 hover:text-amber-200 transition group"
+                >
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white shrink-0 group-hover:bg-white/25">
+                    📞
+                  </span>
                   <span>0848 180 081 / 0905 123 456</span>
                 </a>
-                <p className="flex items-start gap-2">
-                  <span>📍</span>
-                  <span>Quy Nhơn (Bình Định) & Hội An (Quảng Nam)</span>
-                </p>
+
+                <div className="flex items-start gap-2.5">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white shrink-0 mt-0.5">
+                    📍
+                  </span>
+                  <span className="leading-relaxed">
+                    {isVie
+                      ? 'Quy Nhơn (Bình Định) & Phố cổ Hội An (Quảng Nam)'
+                      : 'Quy Nhon (Binh Dinh) & Hoi An Ancient Town (Quang Nam)'}
+                  </span>
+                </div>
               </div>
+
+              {/* Nút Theo dõi Fanpage dự án Facebook */}
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 flex items-center gap-3 rounded-2xl bg-white text-slate-900 p-2.5 sm:p-3 transition hover:bg-slate-50 shadow-md group"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1877F2] text-white font-black text-2xl shrink-0 shadow-xs">
+                  f
+                </div>
+                <div className="text-left">
+                  <div className="text-xs font-extrabold text-slate-900 group-hover:text-[#182e4b] transition">
+                    {isVie ? 'Theo dõi Fanpage dự án' : 'Follow our Fanpage'}
+                  </div>
+                  <div className="text-[10px] text-slate-500">
+                    {isVie ? 'Cập nhật tin tức & sự kiện mới nhất' : 'Get latest updates & events'}
+                  </div>
+                </div>
+              </a>
             </div>
           </div>
 
-          {/* Thanh đáy */}
-          <div className="mt-8 pt-4 border-t border-white/20 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/80">
-            <p>© 2026 Bài Chòi — Dự án tham dự cuộc thi Color Up 2026. Mọi quyền được bảo lưu.</p>
-            <div className="flex items-center gap-3">
-              <button type="button" onClick={() => onOpenPolicy('dieu-khoan')} className="hover:text-amber-200 transition cursor-pointer">
-                Điều khoản
+          {/* ── THANH BẢN QUYỀN ĐÁY ── */}
+          <div className="mt-12 pt-6 border-t border-white/20 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/80">
+            <p className="text-center md:text-left">
+              © 2026 Bài Chòi — Dự án tham dự cuộc thi Color Up 2026. Mọi quyền được bảo lưu.
+            </p>
+
+            {/* Họa tiết hoa văn truyền thống tâm đáy */}
+            <div className="flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-amber-400/20 border border-amber-300/40 rotate-45 flex items-center justify-center p-1 shadow-xs">
+                <div className="w-5 h-5 rounded-sm bg-amber-300/40 -rotate-45 flex items-center justify-center text-[10px] text-amber-200">
+                  🎴
+                </div>
+              </div>
+            </div>
+
+            {/* Liên kết điều khoản bảo mật nhanh */}
+            <div className="flex items-center gap-3 font-medium text-white/90">
+              <button
+                type="button"
+                onClick={() => onOpenPolicy?.('dieu-khoan')}
+                className="hover:text-amber-200 transition cursor-pointer"
+              >
+                {isVie ? 'Điều khoản' : 'Terms'}
               </button>
-              <span>·</span>
-              <button type="button" onClick={() => onOpenPolicy('bao-mat')} className="hover:text-amber-200 transition cursor-pointer">
-                Bảo mật
+              <span className="text-white/40">·</span>
+              <button
+                type="button"
+                onClick={() => onOpenPolicy?.('bao-mat')}
+                className="hover:text-amber-200 transition cursor-pointer"
+              >
+                {isVie ? 'Bảo mật & Cookie' : 'Privacy & Cookies'}
               </button>
-              <span>·</span>
-              <button type="button" onClick={() => onOpenPolicy('du-an')} className="hover:text-amber-200 transition cursor-pointer">
-                Thông tin dự án
+              <span className="text-white/40">·</span>
+              <button
+                type="button"
+                onClick={() => onOpenPolicy?.('du-an')}
+                className="hover:text-amber-200 transition cursor-pointer"
+              >
+                {isVie ? 'Thông tin dự án' : 'Project Info'}
               </button>
             </div>
           </div>

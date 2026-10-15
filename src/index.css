@@ -99,7 +99,7 @@
 
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -111,7 +111,7 @@ body {
   color: #006368;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body,
@@ -647,6 +647,31 @@ a {
   }
   50% {
     margin-top: -10px;
+  }
+}
+
+@keyframes modeCardWave {
+  0%,
+  100% {
+    transform: translateY(-13px) rotate(-2.2deg);
+    filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.32));
+  }
+  50% {
+    transform: translateY(13px) rotate(2.2deg);
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.22));
+  }
+}
+
+@keyframes dotWaveBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translateY(-40%);
+    opacity: 1;
+    filter: drop-shadow(0 0 5px rgba(203, 246, 240, 0.95));
   }
 }
 
@@ -2537,4 +2562,84 @@ a {
   .scroll-panorama-bg {
     background-size: 100% 100%;
   }
+}
+
+/* Hiệu ứng nhịp đập thu hút bấm vào mũi tên Vào Hội */
+@keyframes heartbeatArrow {
+  0% {
+    transform: scale(1) translateX(0);
+    filter: drop-shadow(0 0 6px rgba(32, 210, 196, 0.4));
+  }
+  15% {
+    transform: scale(1.09) translateX(3px);
+    filter: drop-shadow(0 0 16px rgba(32, 210, 196, 0.9));
+  }
+  30% {
+    transform: scale(1.02) translateX(1px);
+    filter: drop-shadow(0 0 8px rgba(32, 210, 196, 0.5));
+  }
+  45% {
+    transform: scale(1.13) translateX(6px);
+    filter: drop-shadow(0 0 22px rgba(32, 210, 196, 1));
+  }
+  70% {
+    transform: scale(1) translateX(0);
+    filter: drop-shadow(0 0 6px rgba(32, 210, 196, 0.4));
+  }
+  100% {
+    transform: scale(1) translateX(0);
+    filter: drop-shadow(0 0 6px rgba(32, 210, 196, 0.4));
+  }
+}
+
+.animate-heartbeat-arrow {
+  animation: heartbeatArrow 1.5s infinite ease-in-out;
+  transform-origin: center center;
+}
+
+/* =================================================== */
+/* HIỆU ỨNG NHẤP NHÔ NÚT "VÀO HỘI KHAI CANH"           */
+/* =================================================== */
+@keyframes vaoHoiNhapNho {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 6px rgba(90, 227, 221, 0.5));
+  }
+  50% {
+    transform: translateY(-6px) scale(1.04);
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 18px rgba(251, 191, 36, 0.9));
+  }
+}
+
+@keyframes vaoHoiRipplePulse {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@keyframes vaoHoiShimmerBeam {
+  0% {
+    transform: translateX(-150%) skewX(-25deg);
+  }
+  40%, 100% {
+    transform: translateX(350%) skewX(-25deg);
+  }
+}
+
+.animate-vao-hoi-nhap-nho {
+  animation: vaoHoiNhapNho 1.9s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  transform-origin: center center;
+}
+
+.animate-vao-hoi-ripple {
+  animation: vaoHoiRipplePulse 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+.animate-vao-hoi-shimmer {
+  animation: vaoHoiShimmerBeam 2.8s ease-in-out infinite;
 }

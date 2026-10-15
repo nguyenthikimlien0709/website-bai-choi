@@ -31,12 +31,17 @@ export default function OfflinePlay({
   const [drawnCards, setDrawnCards] = useState<Card[]>([])
   const [currentCard, setCurrentCard] = useState<Card | null>(null)
   const [isCalling, setIsCalling] = useState(false)
-  const [isShaking, setIsShaking] = useState(false)
   const [lyricIndex, setLyricIndex] = useState(0)
 
   // Drawer xem lịch sử thẻ đã rút
   const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false)
   const [celebrateWon, setCelebrateWon] = useState(false)
+
+  // Hiệu ứng trình diễn thẻ bài xoay 360 độ và bay vào lịch sử
+  const [showcaseCard, setShowcaseCard] = useState<Card | null>(null)
+  const [showcasePhase, setShowcasePhase] = useState<'idle' | 'entering' | 'spinning' | 'flying'>('idle')
+  const [historyPulse, setHistoryPulse] = useState(false)
+  const showcaseTimersRef = useRef<number[]>([])
 
   // User menu state cho desktop canvas
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -108,6 +113,30 @@ export default function OfflinePlay({
     })
   }
 
+  const clearShowcaseTimers = () => {
+    showcaseTimersRef.current.forEach((t) => window.clearTimeout(t))
+    showcaseTimersRef.current = []
+  }
+
+  // Bỏ qua hoặc kết thúc nhanh hoạt cảnh trình diễn
+  const handleSkipShowcase = () => {
+    clearShowcaseTimers()
+    if (showcasePhase === 'entering' || showcasePhase === 'spinning') {
+      setShowcasePhase('flying')
+      const t1 = window.setTimeout(() => {
+        setShowcasePhase('idle')
+        setShowcaseCard(null)
+        setHistoryPulse(true)
+        const t2 = window.setTimeout(() => setHistoryPulse(false), 700)
+        showcaseTimersRef.current.push(t2)
+      }, 350)
+      showcaseTimersRef.current.push(t1)
+    } else {
+      setShowcasePhase('idle')
+      setShowcaseCard(null)
+    }
+  }
+
   // Lắc ống và rút thẻ ngẫu nhiên
   const handleDrawRandom = () => {
     if (remainingCards.length === 0) {
@@ -119,20 +148,53 @@ export default function OfflinePlay({
       return
     }
 
-    setIsShaking(true)
+    if (showcasePhase !== 'idle') return
+
     handlePlayMo() // gõ tiếng lộc cộc nhẹ khi lắc ống
 
-    setTimeout(() => {
-      setIsShaking(false)
-      const randomIndex = Math.floor(Math.random() * remainingCards.length)
-      const drawn = remainingCards[randomIndex]
-      setDrawnCards((prev) => [drawn, ...prev])
-      playCardChant(drawn)
-    }, 600)
+    const randomIndex = Math.floor(Math.random() * remainingCards.length)
+    const drawn = remainingCards[randomIndex]
+
+    // 1. Giữ nguyên hiển thị ở ống bài hiệu truyền thống ngay lập tức
+    setDrawnCards((prev) => [drawn, ...prev])
+    playCardChant(drawn)
+
+    // 2. Kích hoạt chuỗi hiệu ứng trình diễn trung tâm
+    clearShowcaseTimers()
+    setShowcaseCard(drawn)
+    setShowcasePhase('entering')
+
+    // Bước 1: 50ms chuyển sang xoay 360 độ (spinning) và làm tối nền
+    const t1 = window.setTimeout(() => {
+      setShowcasePhase('spinning')
+    }, 50)
+    showcaseTimersRef.current.push(t1)
+
+    // Bước 2: Sau khi xoay xong 360 độ và người chơi xem rõ thẻ (1950ms), bay vào lịch sử
+    const t2 = window.setTimeout(() => {
+      setShowcasePhase('flying')
+    }, 1950)
+    showcaseTimersRef.current.push(t2)
+
+    // Bước 3: Hoàn thành bay, kích hoạt hiệu ứng chớp sáng ở thanh lịch sử
+    const t3 = window.setTimeout(() => {
+      setShowcasePhase('idle')
+      setShowcaseCard(null)
+      setHistoryPulse(true)
+      const t4 = window.setTimeout(() => {
+        setHistoryPulse(false)
+      }, 750)
+      showcaseTimersRef.current.push(t4)
+    }, 2550)
+    showcaseTimersRef.current.push(t3)
   }
 
   // Bắt đầu ván mới
   const handleResetRound = () => {
+    clearShowcaseTimers()
+    setShowcasePhase('idle')
+    setShowcaseCard(null)
+    setHistoryPulse(false)
     stopAudio()
     setDrawnCards([])
     setCurrentCard(null)
@@ -190,6 +252,7 @@ export default function OfflinePlay({
   useEffect(() => {
     return () => {
       stopAudio()
+      clearShowcaseTimers()
     }
   }, [])
 
@@ -199,10 +262,13 @@ export default function OfflinePlay({
           1. GIAO DIỆN DESKTOP / MÀN HÌNH RỘNG (>= 1024px)
           Tái hiện 100% bố cục QUANTRO.png với các vùng tương tác trực tiếp
           ========================================================================= */}
-      <div className="hidden lg:block relative w-full max-w-[2000px] aspect-[2000/1009] mx-auto overflow-hidden shadow-2xl rounded-3xl border-2 border-emerald-900/30">
-        {/* Ảnh nền gốc QUANTRO.png */}
+      <div
+        className="@container hidden lg:block relative w-full max-w-[2000px] aspect-[2000/1009] mx-auto overflow-hidden shadow-2xl rounded-3xl border-2 border-emerald-900/30"
+        style={{ containerType: 'inline-size' }}
+      >
+        {/* Ảnh nền gốc QUANTRO.png (v=no-mid-box để ép trình duyệt bỏ cache cũ) */}
         <img
-          src="/assets/quantro/QUANTRO.png"
+          src="/assets/quantro/QUANTRO.png?v=no-mid-box"
           alt="Giao diện Quản trò Bài Chòi"
           className="w-full h-full object-contain pointer-events-none select-none"
         />
@@ -228,6 +294,36 @@ export default function OfflinePlay({
             ← Trang chủ
           </span>
         </button>
+
+        {/* ── HUY HIỆU: CHẾ ĐỘ BÀI CHÒI OFFLINE (KHUNG TRONG SUỐT GLASSMORPHISM CHUẨN ẢNH 2) ── */}
+        <div
+          className="absolute z-20 flex items-center justify-center pointer-events-none -translate-x-1/2 -translate-y-1/2"
+          style={{
+            left: '50.8%',
+            top: '15.2%',
+          }}
+        >
+          <div
+            className="rounded-full flex items-center justify-center gap-1.5 px-3 py-1 select-none"
+            style={{
+              background: 'rgba(255, 255, 255, 0.20)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1.2px solid rgba(255, 255, 255, 0.65)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.22), inset 0 1px 2px rgba(255, 255, 255, 0.45)',
+            }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-[#ef4444] shadow-[0_0_6px_rgba(239,68,68,0.95)] animate-pulse shrink-0" />
+            <span
+              className="font-bold text-white tracking-wider whitespace-nowrap uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] font-sans leading-none"
+              style={{
+                fontSize: 'clamp(7px, 0.42cqw, 8.2px)',
+              }}
+            >
+              CHẾ ĐỘ BÀI CHÒI OFFLINE
+            </span>
+          </div>
+        </div>
 
         {/* ── TOP-RIGHT 1: VIÊN THUỐC VÍ XU CHÒI (Chuẩn theo navbar Trang chủ) ── */}
         <button
@@ -445,17 +541,19 @@ export default function OfflinePlay({
         />
 
         {/* ── BẢNG TRÁI: ỐNG BÀI HIỆU TRUYỀN THỐNG ── */}
-        {/* Số lượng đã rút: Đã rút: X/30 quân bài (Khớp vị trí text dưới tiêu đề) */}
+        {/* Số lượng đã rút: Đã rút: X/30 quân bài (Căn chuẩn vị trí và tỉ lệ dưới tiêu đề) */}
         <div
-          className="absolute z-20 flex items-center text-[#74c3c9] font-bold text-xs sm:text-[13px] font-mono pointer-events-none"
+          className="absolute z-20 flex items-baseline pointer-events-none font-sans select-none"
           style={{
-            left: '32.25%',
-            top: '45.8%',
+            left: '32.4%',
+            top: '46.8%',
+            transform: 'translateY(-50%)',
+            fontSize: 'clamp(9px, 0.58cqw, 12px)',
           }}
         >
-          <span>Đã rút:&nbsp;</span>
-          <span className="text-amber-300 font-black">{drawnCards.length}/30</span>
-          <span>&nbsp;quân bài</span>
+          <span className="text-[#b6dfe5] font-medium">Đã rút:&nbsp;</span>
+          <span className="font-bold text-amber-300">{drawnCards.length}/30</span>
+          <span className="text-[#b6dfe5] font-medium">&nbsp;quân bài</span>
         </div>
 
         {/* Nút Ván mới 🔄 (Khớp vị trí ô "Ván mới" x: 50.1%, y: 42.4%, w: 5.6%, h: 4.0%) */}
@@ -484,10 +582,19 @@ export default function OfflinePlay({
           }}
         >
           {currentCard ? (
-            /* Khi đã rút thẻ: Hiện quân bài và câu hò tương tác ngay trong khung */
-            <div className="w-full h-full rounded-2xl bg-[#1b3d40]/90 border border-[#74c3c9]/40 p-2.5 flex items-center gap-3 backdrop-blur-md shadow-inner animate-in fade-in duration-300">
+            /* Khi đã rút thẻ: Hiện quân bài với khung trắng và nền trong suốt Glassmorphism */
+            <div
+              className="w-full h-full rounded-2xl p-2.5 flex items-center gap-3.5 transition-all animate-in fade-in duration-300"
+              style={{
+                background: 'rgba(255, 255, 255, 0.16)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1.5px solid rgba(255, 255, 255, 0.65)',
+                boxShadow: '0 6px 20px rgba(0, 0, 0, 0.22), inset 0 1px 2px rgba(255, 255, 255, 0.45)',
+              }}
+            >
               {/* Ảnh lá bài */}
-              <div className="h-full aspect-[3/4] rounded-xl overflow-hidden border-2 border-amber-400 bg-white p-0.5 shadow-lg shrink-0 flex flex-col items-center">
+              <div className="h-full aspect-[3/4] rounded-xl overflow-hidden border-2 border-amber-300 bg-white/95 p-0.5 shadow-md shrink-0 flex flex-col items-center">
                 <img
                   src={currentCard.image}
                   alt={currentCard.name}
@@ -495,165 +602,185 @@ export default function OfflinePlay({
                 />
               </div>
 
-              {/* Thông tin tên bài và câu hò thai */}
-              <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-0.5 text-left">
-                <div>
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="inline-block px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black text-xs sm:text-sm tracking-wide shadow-xs">
-                      {currentCard.name}
-                    </span>
-                    <span className="text-[10px] text-amber-200/90 font-mono font-bold">
-                      #{drawnCards.length}
-                    </span>
-                  </div>
-
-                  <div className="mt-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-                    <span>{isCalling ? 'Chị Hiệu đang hô' : 'Đã công bố thẻ'}</span>
+              {/* Thông tin tên bài, câu hò và nút nghe lại (Khung viền trắng, nền trong suốt Glassmorphism) */}
+              <div className="flex-1 min-w-0 flex flex-col justify-between items-center text-center h-full py-0.5 px-1">
+                {/* 1. Tên lá bài: Kiểu chữ & kích thước chuẩn theo "Nhạc của Chòi", chữ to nằm giữa, hiệu ứng chữ nhảy nhảy khi hát */}
+                <div className="w-full flex justify-center items-center py-0.5">
+                  <div
+                    className="tracking-normal flex items-center justify-center select-none"
+                    style={{
+                      fontFamily: 'var(--font-display, "Bricolage Grotesque", "Be Vietnam Pro", system-ui, sans-serif)',
+                      fontSize: 'clamp(17px, 1.35cqw, 25px)',
+                      fontWeight: 800,
+                      textShadow: '0 2px 8px rgba(0, 0, 0, 0.85), 0 0 16px rgba(245, 158, 11, 0.6)',
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {currentCard.name.split('').map((char, i) => (
+                      <span
+                        key={i}
+                        className={`inline-block transition-colors duration-300 ${
+                          isCalling ? 'animate-bounce text-amber-300 font-extrabold' : 'text-white'
+                        }`}
+                        style={{
+                          animationDelay: isCalling ? `${i * 110}ms` : '0ms',
+                          animationDuration: '650ms',
+                        }}
+                      >
+                        {char === ' ' ? '\u00A0' : char}
+                      </span>
+                    ))}
                   </div>
                 </div>
 
-                {/* Câu hò thai */}
-                <div className="p-1.5 rounded-xl bg-black/25 border border-white/10 my-auto">
-                  <p className="text-[11px] leading-tight text-amber-100 italic line-clamp-2">
-                    "{currentLyrics[lyricIndex] || currentLyrics[0] || currentCard.name}"
+                {/* 2. Phần lyric của bài */}
+                <div
+                  className="w-full my-auto px-2 py-1 rounded-xl text-center select-none"
+                  style={{
+                    background: 'rgba(0, 0, 0, 0.22)',
+                    backdropFilter: 'blur(4px)',
+                    border: '1px solid rgba(255, 255, 255, 0.20)',
+                  }}
+                >
+                  <p
+                    className="leading-snug text-amber-100 italic line-clamp-2 font-serif"
+                    style={{ fontSize: 'clamp(9px, 0.58cqw, 11.5px)' }}
+                  >
+                    &quot;{currentLyrics[lyricIndex] || currentLyrics[0] || currentCard.name}&quot;
                   </p>
                 </div>
 
-                {/* Nút điều khiển âm thanh nhỏ */}
-                <div className="flex items-center gap-2 pt-1">
+                {/* 3. Phần nghe lại / dừng hô */}
+                <div className="w-full flex justify-center items-center">
                   {isCalling ? (
                     <button
                       type="button"
                       onClick={stopAudio}
-                      className="px-2 py-0.5 rounded-lg bg-red-600/80 hover:bg-red-600 text-white text-[10px] font-bold transition cursor-pointer"
+                      className="px-3.5 py-1 rounded-full text-white font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1.5 active:scale-95 hover:brightness-110"
+                      style={{
+                        background: 'rgba(239, 68, 68, 0.30)',
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
+                        border: '1.4px solid rgba(255, 255, 255, 0.75)',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.4)',
+                        fontSize: 'clamp(9.5px, 0.65cqw, 12.5px)',
+                      }}
+                      title="Dừng bài hô"
                     >
-                      ⏹ Dừng hô
+                      <span className="text-red-300 animate-pulse text-xs">⏹</span>
+                      <span>Dừng hô</span>
                     </button>
                   ) : (
                     <button
                       type="button"
                       onClick={() => playCardChant(currentCard)}
-                      className="px-2 py-0.5 rounded-lg bg-emerald-600/80 hover:bg-emerald-600 text-white text-[10px] font-bold transition cursor-pointer"
+                      className="px-3.5 py-1 rounded-full text-white font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1.5 active:scale-95 hover:brightness-110"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.20)',
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
+                        border: '1.4px solid rgba(255, 255, 255, 0.75)',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.4)',
+                        fontSize: 'clamp(9.5px, 0.65cqw, 12.5px)',
+                      }}
+                      title="Nghe lại bài hô của quân bài"
                     >
-                      🔊 Nghe lại
+                      <span className="text-emerald-300 text-xs">🔊</span>
+                      <span>Nghe lại</span>
                     </button>
                   )}
                 </div>
               </div>
             </div>
           ) : (
-            /* Khi chưa rút: Hiển thị ống tre lắc linh hoạt */
+            /* Khi chưa rút: Giữ nguyên khung ảnh gốc tĩnh đẹp mắt của QUANTRO.png */
             <div
-              className={`w-full h-full flex flex-col items-center justify-center text-center cursor-pointer transition-transform ${
-                isShaking ? 'scale-110 rotate-6' : ''
-              }`}
+              className="w-full h-full cursor-pointer"
               onClick={handleDrawRandom}
               title="Bấm để lắc ống và rút thẻ!"
-            >
-              {/* Khung gốc của QUANTRO.png đã có sẵn icon ống tre và text mờ,
-                  khi lắc ta thêm hiệu ứng rung và tia hào quang */}
-              {isShaking && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <span className="text-5xl animate-bounce">🎋</span>
-                </div>
-              )}
-            </div>
+            />
           )}
         </div>
 
-        {/* ── 3 NÚT TÁC VỤ DƯỚI BẢNG TRÁI (Khớp 3 ô hình chữ nhật x: 76.2%) ── */}
-        {/* Nút 1: Lắc Ống & Rút Thẻ (x: 32.25%, y: 76.2%, w: 7.6%, h: 4.6%) */}
+        {/* ── 2 NÚT TÁC VỤ DƯỚI BẢNG TRÁI: LẮC ỐNG & HÔ TỚI (Đã bỏ Gõ Mõ theo yêu cầu) ── */}
+        {/* Nút 1: Lắc Ống (Khung trái: x: 32.25%, y: 77.7%, w: 11.2%, h: 3.4%) */}
         <button
           type="button"
           onClick={handleDrawRandom}
-          disabled={isCalling}
-          className={`absolute z-30 rounded-xl cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-all flex items-center justify-center font-black text-[11px] sm:text-[13px] text-white shadow-lg ${
-            isCalling
-              ? 'opacity-60 cursor-not-allowed bg-slate-600'
-              : 'bg-gradient-to-r from-[#d9534f] to-[#e67e3a] hover:brightness-110 hover:shadow-orange-500/30'
+          disabled={isCalling || showcasePhase !== 'idle'}
+          className={`absolute z-30 rounded-xl cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-all flex items-center justify-center font-bold text-white select-none hover:bg-white/10 ${
+            isCalling || showcasePhase !== 'idle' ? 'opacity-50 cursor-not-allowed' : 'hover:brightness-125'
           }`}
           style={{
             left: '32.25%',
-            top: '76.2%',
-            width: '7.6%',
-            height: '4.6%',
+            top: '77.7%',
+            width: '11.2%',
+            height: '3.4%',
+            fontSize: 'clamp(9px, 0.62cqw, 13px)',
           }}
           title="Lắc ống tre và rút ngẫu nhiên 1 quân bài"
         >
-          <span className="truncate">🎋 Lắc Ống</span>
+          <span className="leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">Lắc Ống</span>
         </button>
 
-        {/* Nút 2: Gõ Mõ (x: 40.25%, y: 76.2%, w: 7.6%, h: 4.6%) */}
-        <button
-          type="button"
-          onClick={handlePlayMo}
-          className="absolute z-30 rounded-xl cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-all flex items-center justify-center font-black text-[11px] sm:text-[13px] text-amber-200 bg-[#1c3e41]/90 hover:bg-[#255256] border border-amber-300/30 shadow-md hover:brightness-110"
-          style={{
-            left: '40.25%',
-            top: '76.2%',
-            width: '7.6%',
-            height: '4.6%',
-          }}
-          title="Gõ mõ lộc cộc báo hiệu nhịp chơi"
-        >
-          <span className="truncate">🪵 Gõ Mõ</span>
-        </button>
-
-        {/* Nút 3: Hô Tới Rồi! (x: 48.25%, y: 76.2%, w: 7.6%, h: 4.6%) */}
+        {/* Nút 2: Hô Tới! (Khung phải: x: 43.95%, y: 77.7%, w: 11.2%, h: 3.4%) */}
         <button
           type="button"
           onClick={handleToiGoi}
-          className="absolute z-30 rounded-xl cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-all flex items-center justify-center font-black text-[11px] sm:text-[13px] text-white bg-gradient-to-r from-[#c0392b] to-[#962d22] hover:brightness-110 border border-amber-400/50 shadow-md"
+          className="absolute z-30 rounded-xl cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-all flex items-center justify-center font-bold text-white select-none hover:bg-white/10 hover:brightness-125"
           style={{
-            left: '48.25%',
-            top: '76.2%',
-            width: '7.6%',
-            height: '4.6%',
+            left: '43.95%',
+            top: '77.7%',
+            width: '11.2%',
+            height: '3.4%',
+            fontSize: 'clamp(9px, 0.62cqw, 13px)',
           }}
           title="Chòi thắng cuộc hô TỚI RỒI! ăn thưởng"
         >
-          <span className="truncate">🎉 Hô Tới!</span>
+          <span className="leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">Hô Tới!</span>
         </button>
 
         {/* ── BẢNG PHẢI: KHUNG TRE TRÚC (Cách tổ chức chơi offline) ── */}
-        {/* Vị trí lòng khung tre: x: 57.2%, y: 46.0%, w: 13.8%, h: 36.0% */}
+        {/* Khoảng trống lọt lòng giữa 2 cụm thân tre: x: 60.0%, y: 47.5%, w: 8.2%, h: 31.5% */}
         <div
-          className="absolute z-20 flex flex-col justify-center px-3 py-2 text-left pointer-events-auto"
+          className="absolute z-20 flex flex-col justify-center text-left pointer-events-auto"
           style={{
-            left: '57.2%',
-            top: '46.0%',
-            width: '13.8%',
-            height: '36.0%',
+            left: '60.0%',
+            top: '47.5%',
+            width: '8.2%',
+            height: '31.5%',
           }}
         >
-          <div className="space-y-2 text-[10px] sm:text-[11px] leading-tight text-white/95">
-            <div className="flex items-start gap-1.5">
-              <span className="h-4 w-4 rounded-full bg-amber-400 text-slate-900 font-black flex items-center justify-center text-[9px] shrink-0">
+          <div
+            className="space-y-1.5 leading-tight text-white/95 font-medium"
+            style={{ fontSize: 'clamp(7px, 0.40cqw, 8.8px)' }}
+          >
+            <div className="flex items-start gap-1">
+              <span className="w-3 h-3 rounded-full bg-amber-400 text-slate-950 font-black flex items-center justify-center text-[7px] shrink-0 mt-0.5 shadow-2xs">
                 1
               </span>
-              <p>Chuẩn bị 30 thẻ bài giấy chia người chơi (mỗi chòi 3 quân).</p>
+              <p className="flex-1 min-w-0 break-words">Chuẩn bị 30 thẻ bài giấy chia người chơi (mỗi chòi 3 quân).</p>
             </div>
 
-            <div className="flex items-start gap-1.5">
-              <span className="h-4 w-4 rounded-full bg-amber-400 text-slate-900 font-black flex items-center justify-center text-[9px] shrink-0">
+            <div className="flex items-start gap-1">
+              <span className="w-3 h-3 rounded-full bg-amber-400 text-slate-950 font-black flex items-center justify-center text-[7px] shrink-0 mt-0.5 shadow-2xs">
                 2
               </span>
-              <p>Mở điện thoại hoặc loa Bluetooth làm Anh Hiệu / Chị Hiệu ảo.</p>
+              <p className="flex-1 min-w-0 break-words">Mở điện thoại hoặc loa Bluetooth làm Anh Hiệu / Chị Hiệu ảo.</p>
             </div>
 
-            <div className="flex items-start gap-1.5">
-              <span className="h-4 w-4 rounded-full bg-amber-400 text-slate-900 font-black flex items-center justify-center text-[9px] shrink-0">
+            <div className="flex items-start gap-1">
+              <span className="w-3 h-3 rounded-full bg-amber-400 text-slate-950 font-black flex items-center justify-center text-[7px] shrink-0 mt-0.5 shadow-2xs">
                 3
               </span>
-              <p>Bấm &quot;Lắc Ống&quot; để nghe bài hò thai nguyên bản truyền thống.</p>
+              <p className="flex-1 min-w-0 break-words">Bấm &quot;Lắc Ống&quot; để nghe bài hò thai nguyên bản truyền thống.</p>
             </div>
 
-            <div className="flex items-start gap-1.5">
-              <span className="h-4 w-4 rounded-full bg-amber-400 text-slate-900 font-black flex items-center justify-center text-[9px] shrink-0">
+            <div className="flex items-start gap-1">
+              <span className="w-3 h-3 rounded-full bg-amber-400 text-slate-950 font-black flex items-center justify-center text-[7px] shrink-0 mt-0.5 shadow-2xs">
                 4
               </span>
-              <p>Trùng quân hô &quot;Có Đây!&quot;. Đủ 3 quân gõ mõ hô &quot;TỚI RỒI!&quot; nhận giải.</p>
+              <p className="flex-1 min-w-0 break-words">Trùng quân hô &quot;Có Đây!&quot;. Đủ 3 quân gõ mõ hô &quot;TỚI RỒI!&quot; nhận giải.</p>
             </div>
           </div>
         </div>
@@ -663,7 +790,11 @@ export default function OfflinePlay({
         <button
           type="button"
           onClick={() => setHistoryDrawerOpen(true)}
-          className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-98 transition-transform rounded-xl hover:bg-white/10 flex items-center justify-end pr-8"
+          className={`absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-98 transition-all duration-300 rounded-xl flex items-center justify-end pr-8 ${
+            historyPulse
+              ? 'ring-4 ring-amber-400 bg-amber-400/25 shadow-[0_0_35px_rgba(251,191,36,0.95)] scale-[1.03]'
+              : 'hover:bg-white/10'
+          }`}
           style={{
             left: '33.75%',
             top: '86.7%',
@@ -673,7 +804,11 @@ export default function OfflinePlay({
           title="Bấm để xem danh sách toàn bộ các quân bài đã rút"
         >
           {/* Badge số thẻ đã rút */}
-          <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-emerald-950 font-black text-xs shadow-md">
+          <span
+            className={`px-2.5 py-0.5 rounded-full bg-amber-400 text-emerald-950 font-black text-xs shadow-md transition-all duration-300 ${
+              historyPulse ? 'scale-125 bg-amber-300 shadow-[0_0_15px_rgba(251,191,36,1)]' : ''
+            }`}
+          >
             {drawnCards.length} thẻ
           </span>
         </button>
@@ -776,10 +911,21 @@ export default function OfflinePlay({
 
         {/* HERO BANNER VỚI MÁI CHÒI & 2 NHÂN VẬT ANH HIỆU / CHỊ HIỆU */}
         <div className="w-full max-w-xl rounded-3xl bg-gradient-to-b from-[#1b3f42] to-[#142e31] p-5 border-2 border-emerald-600/40 shadow-xl text-center relative overflow-hidden">
-          {/* Huy hiệu Offline */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white text-[11px] font-bold mb-3">
-            <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
-            <span>CHẾ ĐỘ BÀI CHÒI OFFLINE</span>
+          {/* Huy hiệu Offline (Khung trong suốt Glassmorphism chuẩn Ảnh 2) */}
+          <div
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-3 select-none"
+            style={{
+              background: 'rgba(255, 255, 255, 0.20)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1.2px solid rgba(255, 255, 255, 0.65)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.22), inset 0 1px 2px rgba(255, 255, 255, 0.45)',
+            }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-[#ef4444] shadow-[0_0_6px_rgba(239,68,68,0.95)] animate-pulse shrink-0" />
+            <span className="text-white text-[8px] sm:text-[8.5px] font-bold tracking-wider uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] font-sans leading-none">
+              CHẾ ĐỘ BÀI CHÒI OFFLINE
+            </span>
           </div>
 
           {/* Biển hiệu "NHẠC CỦA CHÒI" */}
@@ -844,36 +990,95 @@ export default function OfflinePlay({
           {/* VÙNG THẺ BÀI RÚT */}
           <div className="my-5 min-h-[180px] flex items-center justify-center">
             {currentCard ? (
-              <div className="w-full rounded-2xl bg-black/30 border border-emerald-500/30 p-3.5 flex items-center gap-4">
+              <div
+                className="w-full rounded-2xl p-3.5 flex items-center gap-4 transition-all"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.14)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '1.5px solid rgba(255, 255, 255, 0.60)',
+                  boxShadow: '0 6px 20px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.4)',
+                }}
+              >
                 <div className="w-24 sm:w-28 aspect-[3/4] rounded-xl overflow-hidden border-2 border-amber-400 bg-white p-0.5 shrink-0 shadow-lg">
                   <img src={currentCard.image} alt={currentCard.name} className="w-full h-full object-cover rounded-lg" />
                 </div>
-                <div className="flex-1 text-left space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="px-3 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black text-sm">
-                      {currentCard.name}
-                    </span>
-                    <span className="text-xs text-amber-300 font-mono">#{drawnCards.length}</span>
+                <div className="flex-1 text-center flex flex-col justify-between items-center gap-2 py-1 min-h-[120px]">
+                  {/* 1. Tên lá bài: Kiểu chữ & kích thước chuẩn theo "Nhạc của Chòi", chữ to nằm giữa, nhảy nhảy khi hát */}
+                  <div className="w-full flex justify-center items-center py-1">
+                    <div
+                      className="tracking-normal text-xl sm:text-2xl flex items-center justify-center select-none"
+                      style={{
+                        fontFamily: 'var(--font-display, "Bricolage Grotesque", "Be Vietnam Pro", system-ui, sans-serif)',
+                        fontWeight: 800,
+                        textShadow: '0 2px 8px rgba(0, 0, 0, 0.85), 0 0 16px rgba(245, 158, 11, 0.6)',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {currentCard.name.split('').map((char, i) => (
+                        <span
+                          key={i}
+                          className={`inline-block transition-colors duration-300 ${
+                            isCalling ? 'animate-bounce text-amber-300 font-extrabold' : 'text-white'
+                          }`}
+                          style={{
+                            animationDelay: isCalling ? `${i * 110}ms` : '0ms',
+                            animationDuration: '650ms',
+                          }}
+                        >
+                          {char === ' ' ? '\u00A0' : char}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <p className="text-xs text-emerald-200/90 italic">
-                    &quot;{currentLyrics[lyricIndex] || currentLyrics[0] || currentCard.name}&quot;
-                  </p>
-                  <div className="pt-1 flex gap-2">
+
+                  {/* 2. Phần lyric của bài */}
+                  <div
+                    className="w-full my-auto px-2.5 py-1.5 rounded-xl text-center select-none"
+                    style={{
+                      background: 'rgba(0, 0, 0, 0.22)',
+                      backdropFilter: 'blur(4px)',
+                      border: '1px solid rgba(255, 255, 255, 0.20)',
+                    }}
+                  >
+                    <p className="text-xs leading-snug text-amber-100 italic line-clamp-2 font-serif">
+                      &quot;{currentLyrics[lyricIndex] || currentLyrics[0] || currentCard.name}&quot;
+                    </p>
+                  </div>
+
+                  {/* 3. Phần nghe lại / dừng hô */}
+                  <div className="w-full flex justify-center items-center">
                     {isCalling ? (
                       <button
                         type="button"
                         onClick={stopAudio}
-                        className="px-2.5 py-1 rounded-lg bg-red-600 text-white text-xs font-bold"
+                        className="px-4 py-1.5 rounded-full text-white text-xs font-bold flex items-center gap-1.5 shadow-xs active:scale-95"
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.30)',
+                          backdropFilter: 'blur(8px)',
+                          WebkitBackdropFilter: 'blur(8px)',
+                          border: '1.4px solid rgba(255, 255, 255, 0.75)',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.4)',
+                        }}
                       >
-                        ⏹ Dừng hô
+                        <span className="text-red-300 animate-pulse">⏹</span>
+                        <span>Dừng hô</span>
                       </button>
                     ) : (
                       <button
                         type="button"
                         onClick={() => playCardChant(currentCard)}
-                        className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold"
+                        className="px-4 py-1.5 rounded-full text-white text-xs font-bold flex items-center gap-1.5 shadow-xs active:scale-95"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.20)',
+                          backdropFilter: 'blur(8px)',
+                          WebkitBackdropFilter: 'blur(8px)',
+                          border: '1.4px solid rgba(255, 255, 255, 0.75)',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.4)',
+                        }}
                       >
-                        🔊 Nghe lại
+                        <span className="text-emerald-300">🔊</span>
+                        <span>Nghe lại</span>
                       </button>
                     )}
                   </div>
@@ -882,11 +1087,8 @@ export default function OfflinePlay({
             ) : (
               <div
                 onClick={handleDrawRandom}
-                className={`py-8 text-center cursor-pointer transition-transform ${isShaking ? 'scale-110 rotate-6' : ''}`}
+                className="py-8 text-center cursor-pointer"
               >
-                <div className="mx-auto h-20 w-20 rounded-2xl bg-emerald-950/60 border-2 border-dashed border-emerald-400/40 flex items-center justify-center text-4xl shadow-inner">
-                  🎋
-                </div>
                 <p className="mt-3 text-xs text-emerald-200 max-w-xs mx-auto">
                   Ống thẻ đang sẵn sàng. Hãy bấm nút dưới đây để lắc ống và rút thẻ!
                 </p>
@@ -894,27 +1096,19 @@ export default function OfflinePlay({
             )}
           </div>
 
-          {/* 3 NÚT TÁC VỤ */}
-          <div className="grid grid-cols-3 gap-2">
+          {/* 2 NÚT TÁC VỤ: LẮC ỐNG & HÔ TỚI */}
+          <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={handleDrawRandom}
-              disabled={isCalling}
+              disabled={isCalling || showcasePhase !== 'idle'}
               className={`py-3 rounded-xl font-black text-xs text-white shadow-md active:scale-95 transition ${
-                isCalling
+                isCalling || showcasePhase !== 'idle'
                   ? 'bg-slate-600 opacity-60 cursor-not-allowed'
                   : 'bg-gradient-to-r from-[#d9534f] to-[#e67e3a]'
               }`}
             >
               🎋 Lắc Ống
-            </button>
-
-            <button
-              type="button"
-              onClick={handlePlayMo}
-              className="py-3 rounded-xl font-black text-xs text-amber-200 bg-[#142e31] border border-amber-300/30 shadow-md active:scale-95 transition"
-            >
-              🪵 Gõ Mõ
             </button>
 
             <button
@@ -930,10 +1124,18 @@ export default function OfflinePlay({
           <button
             type="button"
             onClick={() => setHistoryDrawerOpen(true)}
-            className="w-full mt-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-800 to-teal-800 border border-emerald-500/40 flex items-center justify-between px-4 font-bold text-xs cursor-pointer active:scale-98 transition shadow"
+            className={`w-full mt-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-800 to-teal-800 border border-emerald-500/40 flex items-center justify-between px-4 font-bold text-xs cursor-pointer active:scale-98 transition-all duration-300 shadow ${
+              historyPulse
+                ? 'ring-4 ring-amber-400 bg-amber-400/25 shadow-[0_0_35px_rgba(251,191,36,0.95)] scale-[1.02]'
+                : ''
+            }`}
           >
             <span>Lịch sử thẻ đã rút 👆</span>
-            <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-900 font-black text-[11px]">
+            <span
+              className={`px-2 py-0.5 rounded-full bg-amber-400 text-slate-900 font-black text-[11px] transition-all duration-300 ${
+                historyPulse ? 'scale-125 bg-amber-300 shadow-[0_0_15px_rgba(251,191,36,1)]' : ''
+              }`}
+            >
               {drawnCards.length} thẻ
             </span>
           </button>
@@ -1173,6 +1375,165 @@ export default function OfflinePlay({
                   {isVie ? 'Đăng nhập / Đăng ký' : 'Sign in / Register'}
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          6. CINEMATIC SHOWCASE: HIỆU ỨNG RÚT BÀI TRUNG TÂM, NỀN TỐI & XOAY 360 ĐỘ
+          ========================================================================= */}
+      {showcaseCard && showcasePhase !== 'idle' && (
+        <div className="fixed inset-0 z-[140] flex items-center justify-center select-none overflow-hidden">
+          {/* Nền tối phía sau (Backdrop làm mờ và tối các thành phần hậu cảnh) */}
+          <div
+            onClick={handleSkipShowcase}
+            className="absolute inset-0 transition-opacity duration-500 cursor-pointer"
+            style={{
+              backgroundColor: 'rgba(5, 12, 16, 0.82)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              opacity: showcasePhase === 'flying' ? 0 : showcasePhase === 'spinning' ? 1 : 0,
+            }}
+            title="Bấm để tiếp tục nhanh"
+          />
+
+          {/* Vầng hào quang hoàng kim tỏa sáng sau lưng lá bài */}
+          <div
+            className="absolute pointer-events-none transition-all duration-700 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2"
+            style={{
+              width: '520px',
+              height: '520px',
+              opacity: showcasePhase === 'spinning' ? 0.9 : 0,
+              transform: `translate(-50%, -50%) scale(${showcasePhase === 'spinning' ? 1 : 0.3})`,
+              background:
+                'radial-gradient(circle, rgba(251, 191, 36, 0.35) 0%, rgba(217, 119, 6, 0.18) 45%, rgba(0, 0, 0, 0) 70%)',
+            }}
+          />
+
+          {/* Vỏ chứa Thẻ Bài 3D: Xoay 360 độ và sau đó Bay xuống Lịch sử */}
+          <div
+            onClick={handleSkipShowcase}
+            className="relative z-10 cursor-pointer flex flex-col items-center"
+            style={{
+              perspective: '1200px',
+              pointerEvents: showcasePhase === 'flying' ? 'none' : 'auto',
+              transform:
+                showcasePhase === 'entering'
+                  ? 'scale(0.25) translateY(0)'
+                  : showcasePhase === 'spinning'
+                  ? 'scale(1) translateY(0)'
+                  : 'scale(0.12) translateY(42vh) rotate(-8deg)',
+              opacity: showcasePhase === 'entering' ? 0 : showcasePhase === 'spinning' ? 1 : 0,
+              transition:
+                showcasePhase === 'entering'
+                  ? 'none'
+                  : showcasePhase === 'spinning'
+                  ? 'transform 1300ms cubic-bezier(0.2, 0.85, 0.25, 1), opacity 250ms ease-out'
+                  : 'transform 550ms cubic-bezier(0.4, 0, 0.2, 1), opacity 450ms ease-in',
+            }}
+          >
+            {/* Khối thẻ bài 3D quay 360 độ */}
+            <div
+              className="w-[280px] sm:w-[320px] aspect-[1/1.42] relative rounded-3xl"
+              style={{
+                transformStyle: 'preserve-3d',
+                transform:
+                  showcasePhase === 'spinning' || showcasePhase === 'flying'
+                    ? 'rotateY(360deg)'
+                    : 'rotateY(0deg)',
+                transition:
+                  showcasePhase === 'spinning'
+                    ? 'transform 1300ms cubic-bezier(0.2, 0.85, 0.25, 1)'
+                    : 'none',
+              }}
+            >
+              {/* MẶT TRƯỚC LÁ BÀI (Front Face) */}
+              <div
+                className="absolute inset-0 rounded-3xl p-3.5 flex flex-col justify-between text-center overflow-hidden border-2 border-amber-300 shadow-[0_0_40px_rgba(245,158,11,0.65)]"
+                style={{
+                  backfaceVisibility: 'hidden',
+                  WebkitBackfaceVisibility: 'hidden',
+                  backgroundColor: '#16363a',
+                  backgroundImage:
+                    'radial-gradient(circle at 50% 20%, rgba(45, 184, 199, 0.25) 0%, rgba(13, 34, 36, 0.95) 100%)',
+                }}
+              >
+                {/* Header quân bài rút */}
+                <div className="flex items-center justify-between px-1">
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/50 text-amber-300 font-black text-[11px] tracking-wider uppercase flex items-center gap-1 shadow-xs">
+                    <span>🎋</span>
+                    <span>Quân bài vừa rút</span>
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-black/40 border border-amber-400/40 font-mono font-bold text-xs text-amber-200">
+                    #{drawnCards.length}/30
+                  </span>
+                </div>
+
+                {/* Ảnh lá bài chính phóng to sắc nét */}
+                <div className="my-2 flex-1 w-full rounded-2xl overflow-hidden border-2 border-amber-400/80 bg-white shadow-2xl relative flex items-center justify-center p-1">
+                  <img
+                    src={showcaseCard.image}
+                    alt={showcaseCard.name}
+                    className="w-full h-full object-cover rounded-xl"
+                  />
+                  {/* Tia sáng quét ngang (Shimmer glare) */}
+                  <div
+                    className="absolute inset-0 pointer-events-none opacity-40 bg-gradient-to-tr from-transparent via-white to-transparent"
+                    style={{
+                      transform: showcasePhase === 'spinning' ? 'translateX(100%)' : 'translateX(-100%)',
+                      transition: 'transform 1000ms ease-in-out 300ms',
+                    }}
+                  />
+                </div>
+
+                {/* Banner tên quân bài và câu hò thai */}
+                <div className="space-y-1.5">
+                  <div className="inline-block px-5 py-1 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-black text-base sm:text-lg tracking-wide shadow-lg border border-amber-200/40">
+                    {showcaseCard.name}
+                  </div>
+                  <p className="text-[11px] text-amber-100/90 italic line-clamp-1 px-2 font-serif">
+                    &quot;{currentLyrics[0] || showcaseCard.name}&quot;
+                  </p>
+                </div>
+              </div>
+
+              {/* MẶT SAU LÁ BÀI (Back Face) - Lưng thẻ gỗ chạm khắc truyền thống */}
+              <div
+                className="absolute inset-0 rounded-3xl p-5 flex flex-col items-center justify-center text-center overflow-hidden border-2 border-amber-500/80 shadow-[0_0_35px_rgba(217,119,6,0.6)]"
+                style={{
+                  backfaceVisibility: 'hidden',
+                  WebkitBackfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)',
+                  backgroundColor: '#431407',
+                  backgroundImage:
+                    'radial-gradient(circle at 50% 50%, #78350f 0%, #290d04 100%)',
+                }}
+              >
+                {/* Họa tiết hoa văn truyền thống mặt lưng */}
+                <div className="w-full h-full rounded-2xl border-2 border-dashed border-amber-400/40 p-4 flex flex-col items-center justify-center relative">
+                  <div className="w-16 h-16 rounded-full bg-amber-400/15 border border-amber-400/60 flex items-center justify-center mb-3 text-3xl shadow-inner">
+                    🎋
+                  </div>
+                  <h4 className="font-serif font-black text-amber-300 text-base sm:text-lg tracking-widest uppercase">
+                    HỘI BÀI CHÒI
+                  </h4>
+                  <div className="w-16 h-0.5 bg-amber-400/60 my-2" />
+                  <p className="text-[10px] font-sans font-bold text-amber-200/80 tracking-widest uppercase">
+                    Di Sản Văn Hóa
+                  </p>
+                  <p className="text-[9px] text-amber-300/60 mt-1 font-mono">
+                    VIỆT NAM
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Dòng chữ gợi ý dưới thẻ bài */}
+            <div className="mt-4 text-center">
+              <span className="inline-block px-3 py-1 rounded-full bg-black/50 backdrop-blur-md text-amber-200/80 text-[11px] font-medium border border-white/10">
+                ✨ {showcasePhase === 'spinning' ? 'Đang quay công bố thẻ...' : 'Đang chuyển vào lịch sử...'} (Bấm để bỏ qua)
+              </span>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import type { UserProfile } from '../types/auth'
 import { eventTicketService, type EventItem } from '../lib/eventTicketService'
 import { orderService, type OrderItem } from '../lib/orderService'
 import { publicationService, type PublicationRecord } from '../lib/publicationService'
+import { heroBannerService, type HeroSlideItem } from '../lib/heroBannerService'
 import { CARDS, type Card } from '../BaiChoiGame'
 import { getChantLyrics } from '../chantLyrics'
 
@@ -17,7 +18,7 @@ export default function AdminDashboard({
   onBackToSite,
   onLogout,
 }: AdminDashboardProps) {
-  const [tab, setTab] = useState<'overview' | 'events' | 'publications' | 'orders' | 'users' | 'chants'>('events')
+  const [tab, setTab] = useState<'overview' | 'events' | 'publications' | 'orders' | 'users' | 'chants' | 'hero_banner'>('events')
   const [events, setEvents] = useState<EventItem[]>(() => eventTicketService.getAllEvents())
   const [deletedEvents, setDeletedEvents] = useState<EventItem[]>(() => eventTicketService.getDeletedEvents())
   const [publications, setPublications] = useState<PublicationRecord[]>(() => publicationService.getAllPublications())
@@ -79,6 +80,125 @@ export default function AdminDashboard({
       unsubPubs()
     }
   }, [])
+
+  // ── QUẢN LÝ DỮ LIỆU BANNER HERO CỬA HÀNG (SHOP HERO CAROUSEL) ──
+  const [heroSlides, setHeroSlides] = useState<HeroSlideItem[]>(() => heroBannerService.getAllSlides())
+  useEffect(() => {
+    const unsubHero = heroBannerService.subscribe(() => {
+      setHeroSlides(heroBannerService.getAllSlides())
+    })
+    return () => {
+      unsubHero()
+    }
+  }, [])
+
+  const [showHeroModal, setShowHeroModal] = useState(false)
+  const [editingHeroSlide, setEditingHeroSlide] = useState<HeroSlideItem | null>(null)
+  const [heroSlideTitle, setHeroSlideTitle] = useState('')
+  const [heroSlideTag, setHeroSlideTag] = useState('')
+  const [heroSlideDesc, setHeroSlideDesc] = useState('')
+  const [heroSlideCtaText, setHeroSlideCtaText] = useState('')
+  const [heroSlideCtaType, setHeroSlideCtaType] = useState<'ticket' | 'product'>('ticket')
+  const [heroSlideTargetId, setHeroSlideTargetId] = useState('')
+  const [heroSlidePriceText, setHeroSlidePriceText] = useState('')
+  const [heroSlideIsActive, setHeroSlideIsActive] = useState(true)
+
+  const [showQuickAddEventModal, setShowQuickAddEventModal] = useState(false)
+  const [showQuickAddPubModal, setShowQuickAddPubModal] = useState(false)
+
+  // Bật / Tắt hiển thị trực tiếp slide trên Hero
+  const handleToggleHeroSlide = (id: string, currentTitle: string) => {
+    const newState = heroBannerService.toggleSlideActive(id)
+    setToast({
+      message: newState
+        ? `🟢 Đã BẬT hiển thị "${currentTitle}" trên Banner Hero Cửa Hàng!`
+        : `⚪ Đã ẨN "${currentTitle}" khỏi Banner Hero!`,
+    })
+  }
+
+  // Đổi thứ tự slide trên Hero
+  const handleMoveHeroSlide = (id: string, direction: 'up' | 'down') => {
+    heroBannerService.moveSlide(id, direction)
+  }
+
+  // Mở modal thêm slide tùy chỉnh
+  const handleOpenAddHeroSlide = () => {
+    setEditingHeroSlide(null)
+    setHeroSlideTitle('')
+    setHeroSlideTag('• SỰ KIỆN TRỌNG ĐIỂM TRÊN HERO')
+    setHeroSlideDesc('')
+    setHeroSlideCtaText('🎟️ Đặt Vé Ngay (50.000 đ · 50 Xu)')
+    setHeroSlideCtaType('ticket')
+    setHeroSlideTargetId(events[0]?.id || '')
+    setHeroSlidePriceText('50.000 đ · 50 Xu')
+    setHeroSlideIsActive(true)
+    setShowHeroModal(true)
+  }
+
+  // Mở modal chỉnh sửa slide
+  const handleOpenEditHeroSlide = (slide: HeroSlideItem) => {
+    setEditingHeroSlide(slide)
+    setHeroSlideTitle(slide.title)
+    setHeroSlideTag(slide.tag)
+    setHeroSlideDesc(slide.desc)
+    setHeroSlideCtaText(slide.ctaText)
+    setHeroSlideCtaType(slide.ctaType)
+    setHeroSlideTargetId(slide.targetEventId || slide.targetProductId || '')
+    setHeroSlidePriceText(slide.priceText || '')
+    setHeroSlideIsActive(slide.isActive)
+    setShowHeroModal(true)
+  }
+
+  // Lưu slide (Tạo mới hoặc Cập nhật)
+  const handleSaveHeroSlide = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!heroSlideTitle.trim()) return
+
+    heroBannerService.saveSlide({
+      id: editingHeroSlide ? editingHeroSlide.id : undefined,
+      title: heroSlideTitle.trim(),
+      tag: heroSlideTag.trim() || '• NỔI BẬT TRÊN HERO',
+      desc: heroSlideDesc.trim(),
+      ctaText: heroSlideCtaText.trim() || 'Khám phá ngay',
+      ctaType: heroSlideCtaType,
+      targetEventId: heroSlideCtaType === 'ticket' ? heroSlideTargetId : undefined,
+      targetProductId: heroSlideCtaType === 'product' ? heroSlideTargetId : undefined,
+      priceText: heroSlidePriceText.trim() || undefined,
+      isActive: heroSlideIsActive,
+      bgImage: '/assets/shop/Shop.png',
+    })
+
+    setShowHeroModal(false)
+    setToast({
+      message: editingHeroSlide
+        ? `✅ Đã cập nhật thành công slide "${heroSlideTitle.trim()}"!`
+        : `✅ Đã thêm mới slide "${heroSlideTitle.trim()}" vào Banner Hero!`,
+    })
+  }
+
+  // Xóa slide khỏi Hero
+  const handleDeleteHeroSlide = (id: string, title: string) => {
+    heroBannerService.deleteSlide(id)
+    setToast({ message: `🗑️ Đã xóa slide "${title}" khỏi Banner Hero.` })
+  }
+
+  // Đưa nhanh Sự kiện lên Hero
+  const handleQuickAddEventToHero = (evt: EventItem) => {
+    heroBannerService.addSlideFromEvent(evt)
+    setToast({ message: `⭐ Đã đưa sự kiện "${evt.title}" lên Banner Hero thành công!` })
+  }
+
+  // Đưa nhanh Ấn phẩm lên Hero
+  const handleQuickAddPubToHero = (pub: PublicationRecord) => {
+    heroBannerService.addSlideFromProduct(pub)
+    setToast({ message: `⭐ Đã đưa ấn phẩm "${pub.name}" lên Banner Hero thành công!` })
+  }
+
+  // Khôi phục danh sách mặc định
+  const handleResetHeroSlides = () => {
+    heroBannerService.resetToDefault()
+    setToast({ message: '🔄 Đã khôi phục các slide mặc định cho Banner Hero!' })
+  }
 
   // Modal Thêm / Chỉnh Sửa Sự Kiện (Hỗ trợ đa ảnh không giới hạn cho Slider)
   const [showEventModal, setShowEventModal] = useState(false)
@@ -738,6 +858,23 @@ export default function AdminDashboard({
             </button>
 
             <button
+              onClick={() => setTab('hero_banner')}
+              className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition text-left shrink-0 cursor-pointer ${
+                tab === 'hero_banner'
+                  ? 'bg-[#c8382b] text-white shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              <span>🎨</span>
+              <span>Banner Hero Cửa Hàng</span>
+              <span className={`ml-auto rounded-md px-1.5 py-0.5 text-[10px] font-bold ${
+                tab === 'hero_banner' ? 'bg-red-950/40 text-white' : 'bg-amber-100 text-amber-800 border border-amber-300'
+              }`}>
+                {heroSlides.filter((s) => s.isActive).length}/{heroSlides.length}
+              </span>
+            </button>
+
+            <button
               onClick={() => setTab('orders')}
               className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition text-left shrink-0 cursor-pointer ${
                 tab === 'orders'
@@ -923,6 +1060,38 @@ export default function AdminDashboard({
                                   Đã đóng online - Mở quầy Staff
                                 </span>
                               )}
+
+                              {(() => {
+                                const heroSlide = heroSlides.find((s) => s.targetEventId === evt.id)
+                                if (heroSlide) {
+                                  return (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToggleHeroSlide(heroSlide.id)}
+                                      className={`rounded-lg border px-2.5 py-1 text-xs font-bold transition cursor-pointer flex items-center gap-1 ${
+                                        heroSlide.isActive
+                                          ? 'bg-emerald-50 hover:bg-emerald-100 border-emerald-300 text-emerald-800'
+                                          : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-600'
+                                      }`}
+                                      title={heroSlide.isActive ? 'Đang hiển thị trên Banner Hero Shop. Bấm để ẩn.' : 'Đang ẩn trên Banner Hero Shop. Bấm để hiển thị.'}
+                                    >
+                                      <span>🎨</span>
+                                      <span>Hero: {heroSlide.isActive ? 'BẬT' : 'TẮT'}</span>
+                                    </button>
+                                  )
+                                }
+                                return (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleQuickAddEventToHero(evt)}
+                                    className="rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-[#c8382b] px-2.5 py-1 text-xs font-bold transition cursor-pointer flex items-center gap-1"
+                                    title="Tạo slide Hero Banner cho sự kiện này"
+                                  >
+                                    <span>🎨</span>
+                                    <span>+ Lên Hero</span>
+                                  </button>
+                                )
+                              })()}
 
                               <button
                                 type="button"
@@ -1407,7 +1576,38 @@ export default function AdminDashboard({
                               </span>
                             </div>
 
-                            <div className="mt-3 flex items-center gap-1.5">
+                            <div className="mt-3 flex items-center gap-1.5 flex-wrap justify-end">
+                              {(() => {
+                                const heroSlide = heroSlides.find((s) => s.targetProductId === item.id)
+                                if (heroSlide) {
+                                  return (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToggleHeroSlide(heroSlide.id)}
+                                      className={`rounded-lg border text-xs px-2 py-1 font-semibold transition cursor-pointer flex items-center gap-1 ${
+                                        heroSlide.isActive
+                                          ? 'bg-emerald-50 hover:bg-emerald-100 border-emerald-300 text-emerald-800'
+                                          : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-600'
+                                      }`}
+                                      title={heroSlide.isActive ? 'Đang hiện trên Banner Hero Cửa Hàng. Bấm để ẩn.' : 'Đang ẩn trên Banner Hero. Bấm để hiện.'}
+                                    >
+                                      <span>🎨</span>
+                                      <span>Hero: {heroSlide.isActive ? 'BẬT' : 'TẮT'}</span>
+                                    </button>
+                                  )
+                                }
+                                return (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleQuickAddPubToHero(item)}
+                                    className="rounded-lg bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-800 text-xs px-2 py-1 font-semibold transition cursor-pointer flex items-center gap-1"
+                                    title="Tạo slide Hero Banner cho ấn phẩm này"
+                                  >
+                                    <span>🎨</span>
+                                    <span>+ Hero</span>
+                                  </button>
+                                )
+                              })()}
                               <button
                                 type="button"
                                 onClick={() => handleOpenEditPub(item)}
@@ -1966,6 +2166,250 @@ export default function AdminDashboard({
                   <p className="text-xs text-slate-500 mt-1">Hãy thử xóa từ khóa tìm kiếm hoặc đổi bộ lọc Phô</p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* 7. QUẢN LÝ BANNER HERO CỬA HÀNG (SHOP HERO CAROUSEL) */}
+          {tab === 'hero_banner' && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              {/* Tiêu đề & Các nút hành động chính */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-red-50 border border-red-200 px-3 py-1 text-xs font-bold text-red-700 mb-2">
+                    <span>🎨</span>
+                    <span>CẤU HÌNH GIAO DIỆN CỬA HÀNG</span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 font-serif">
+                    Quản Lý Banner Hero & Carousel Nổi Bật
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
+                    Chủ động lựa chọn Sự kiện hoặc Ấn phẩm muốn xuất hiện trên Banner Hero đầu trang Cửa Hàng. Bật/Tắt công tắc để quyết định slide nào được hiển thị, hoặc đổi thứ tự tùy ý!
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowQuickAddEventModal(true)}
+                    className="rounded-xl bg-gradient-to-r from-[#c8382b] to-[#92261b] hover:from-[#d94437] hover:to-[#a82d21] text-white font-bold text-xs px-3.5 py-2.5 shadow-sm transition active:scale-95 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>🎟️</span>
+                    <span>+ Thêm từ Sự Kiện</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowQuickAddPubModal(true)}
+                    className="rounded-xl bg-[#006368] hover:bg-[#004e52] text-white font-bold text-xs px-3.5 py-2.5 shadow-sm transition active:scale-95 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>🛍️</span>
+                    <span>+ Thêm từ Ấn Phẩm</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleOpenAddHeroSlide}
+                    className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-3.5 py-2.5 shadow-sm transition active:scale-95 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>➕</span>
+                    <span>Tạo Slide Mới</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleResetHeroSlides}
+                    className="rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold text-xs px-3 py-2.5 shadow-2xs transition cursor-pointer flex items-center gap-1"
+                    title="Khôi phục 3 slide mặc định ban đầu"
+                  >
+                    <span>🔄</span>
+                    <span className="hidden sm:inline">Mặc định</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Hộp thống kê & Thông báo hướng dẫn */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="rounded-2xl bg-white p-4 border border-slate-200 shadow-2xs flex items-center gap-3.5">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-800 text-xl font-bold border border-slate-200">
+                    🎯
+                  </span>
+                  <div>
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Tổng số Slide</span>
+                    <span className="text-xl font-black text-slate-900">{heroSlides.length} slide</span>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-emerald-50/70 p-4 border border-emerald-200 shadow-2xs flex items-center gap-3.5">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 text-xl font-bold border border-emerald-300">
+                    🟢
+                  </span>
+                  <div>
+                    <span className="text-[11px] font-semibold text-emerald-800 uppercase tracking-wider block">Đang Hiển Thị Trên Web</span>
+                    <span className="text-xl font-black text-emerald-700">
+                      {heroSlides.filter((s) => s.isActive).length} slide
+                    </span>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200 shadow-2xs flex items-center gap-3.5">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-200 text-slate-600 text-xl font-bold border border-slate-300">
+                    ⚪
+                  </span>
+                  <div>
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Đang Ẩn (Không Hiện)</span>
+                    <span className="text-xl font-black text-slate-600">
+                      {heroSlides.filter((s) => !s.isActive).length} slide
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gợi ý hướng dẫn */}
+              <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
+                <span className="text-base shrink-0">💡</span>
+                <p className="leading-relaxed">
+                  <strong>Mẹo quản trị:</strong> Bạn có thể bật / tắt nút công tắc <strong>"ĐANG HIỆN / ĐANG ẨN"</strong> ở từng slide để quyết định nội dung nào xuất hiện ngoài trang chủ Cửa hàng. Nếu tất cả slide đều bị tắt, hệ thống sẽ tự động dùng slide đầu tiên làm dự phòng để đảm bảo banner không bị lỗi.
+                </p>
+              </div>
+
+              {/* Danh sách các Slide trên Hero Banner */}
+              <div className="space-y-3.5">
+                {heroSlides.map((slide, index) => {
+                  const isFirst = index === 0
+                  const isLast = index === heroSlides.length - 1
+
+                  return (
+                    <div
+                      key={slide.id}
+                      className={`rounded-2xl p-4 sm:p-5 transition-all duration-200 border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs ${
+                        slide.isActive
+                          ? 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-md'
+                          : 'bg-slate-50/80 border-dashed border-slate-300 opacity-75'
+                      }`}
+                    >
+                      {/* Cột trái: Vị trí & Chi tiết nội dung */}
+                      <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                        {/* Huy hiệu thứ tự */}
+                        <div className="flex flex-col items-center justify-center shrink-0">
+                          <span className={`flex h-10 w-10 items-center justify-center rounded-xl font-black text-sm border shadow-2xs ${
+                            slide.isActive
+                              ? 'bg-gradient-to-br from-[#c8382b] to-[#92261b] text-white border-red-700'
+                              : 'bg-slate-200 text-slate-600 border-slate-300'
+                          }`}>
+                            #{index + 1}
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase">
+                            {slide.ctaType === 'ticket' ? '🎟️ Vé' : '🛍️ Ấn phẩm'}
+                          </span>
+                        </div>
+
+                        {/* Chi tiết nội dung */}
+                        <div className="space-y-1.5 flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="inline-block text-[10px] font-black uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
+                              {slide.tag}
+                            </span>
+                            {slide.badge && (
+                              <span className="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">
+                                {slide.badge}
+                              </span>
+                            )}
+                            {slide.priceText && (
+                              <span className="text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md">
+                                💰 {slide.priceText}
+                              </span>
+                            )}
+                          </div>
+
+                          <h4 className="font-bold text-slate-900 text-base leading-snug truncate">
+                            {slide.title}
+                          </h4>
+
+                          <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                            {slide.desc}
+                          </p>
+
+                          <div className="flex items-center gap-2 pt-1 text-[11px] text-slate-500">
+                            <span>Nút bấm: <strong className="text-slate-800">{slide.ctaText}</strong></span>
+                            {slide.targetEventId && (
+                              <span>· Liên kết Vé: <strong className="text-sky-700">ID #{slide.targetEventId}</strong></span>
+                            )}
+                            {slide.targetProductId && (
+                              <span>· Liên kết Ấn phẩm: <strong className="text-teal-700">ID #{slide.targetProductId}</strong></span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Cột phải: CÔNG TẮC BẬT/TẮT & CÁC NÚT ĐIỀU HƯỚNG */}
+                      <div className="flex items-center gap-2 sm:gap-3 shrink-0 self-end md:self-center flex-wrap">
+                        {/* Nút Công Tắc BẬT / TẮT (Toggle ON / OFF) */}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleHeroSlide(slide.id, slide.title)}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shadow-2xs border ${
+                            slide.isActive
+                              ? 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-700 shadow-emerald-950/20'
+                              : 'bg-white hover:bg-slate-100 text-slate-500 border-slate-300'
+                          }`}
+                          title="Bấm để Bật hoặc Tắt hiển thị mục này trên Banner Hero ngoài trang Cửa Hàng"
+                        >
+                          <span className={`inline-block h-3 w-3 rounded-full transition-transform ${
+                            slide.isActive ? 'bg-white animate-pulse' : 'bg-slate-300'
+                          }`} />
+                          <span>{slide.isActive ? 'ĐANG HIỆN' : 'ĐANG ẨN'}</span>
+                        </button>
+
+                        {/* Nút Di Chuyển Lên / Xuống Thứ Tự */}
+                        <div className="flex items-center border border-slate-200 rounded-xl bg-white p-0.5 shadow-2xs">
+                          <button
+                            type="button"
+                            disabled={isFirst}
+                            onClick={() => handleMoveHeroSlide(slide.id, 'up')}
+                            className={`p-1.5 rounded-lg text-xs transition cursor-pointer ${
+                              isFirst ? 'text-slate-300 cursor-not-allowed' : 'text-slate-700 hover:bg-slate-100 active:scale-90'
+                            }`}
+                            title="Di chuyển slide lên trước"
+                          >
+                            ▲
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isLast}
+                            onClick={() => handleMoveHeroSlide(slide.id, 'down')}
+                            className={`p-1.5 rounded-lg text-xs transition cursor-pointer ${
+                              isLast ? 'text-slate-300 cursor-not-allowed' : 'text-slate-700 hover:bg-slate-100 active:scale-90'
+                            }`}
+                            title="Di chuyển slide xuống sau"
+                          >
+                            ▼
+                          </button>
+                        </div>
+
+                        {/* Nút Chỉnh Sửa */}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditHeroSlide(slide)}
+                          className="rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3 py-2 text-xs font-bold transition cursor-pointer flex items-center gap-1 shadow-2xs"
+                          title="Chỉnh sửa nội dung slide"
+                        >
+                          <span>✏️ Sửa</span>
+                        </button>
+
+                        {/* Nút Xóa */}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteHeroSlide(slide.id, slide.title)}
+                          className="rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 px-2.5 py-2 text-xs font-bold transition cursor-pointer flex items-center gap-1 shadow-2xs"
+                          title="Xóa slide này khỏi danh sách Hero"
+                        >
+                          <span>🗑️</span>
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )}
         </main>
@@ -2958,6 +3402,292 @@ export default function AdminDashboard({
               >
                 Đóng
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL TẠO / SỬA SLIDE BANNER HERO ── */}
+      {showHeroModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-xl rounded-3xl bg-white border border-slate-200 p-6 shadow-2xl max-h-[92vh] overflow-y-auto space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div>
+                <h3 className="font-bold text-slate-900 text-base">
+                  {editingHeroSlide ? '✏️ Chỉnh Sửa Slide Banner Hero' : '➕ Tạo Slide Mới Cho Banner Hero'}
+                </h3>
+                <p className="text-[11px] text-slate-500">
+                  Tùy biến nội dung tiêu đề, mô tả và nút đặt vé / mua hàng hiển thị trên Hero banner Cửa hàng
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowHeroModal(false)}
+                className="text-slate-400 hover:text-slate-700 cursor-pointer text-lg p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveHeroSlide} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Tiêu đề lớn trên Banner *</label>
+                <input
+                  type="text"
+                  value={heroSlideTitle}
+                  onChange={(e) => setHeroSlideTitle(e.target.value)}
+                  placeholder="Ví dụ: Đêm Hội Bài Chòi Cổ Truyền Quy Nhơn..."
+                  className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-[#c8382b]"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Tag nổi bật phía trên</label>
+                  <input
+                    type="text"
+                    value={heroSlideTag}
+                    onChange={(e) => setHeroSlideTag(e.target.value)}
+                    placeholder="• SỰ KIỆN TRỌNG ĐIỂM TRÊN HERO"
+                    className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-[#c8382b]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Giá hiển thị / Đổi xu</label>
+                  <input
+                    type="text"
+                    value={heroSlidePriceText}
+                    onChange={(e) => setHeroSlidePriceText(e.target.value)}
+                    placeholder="50.000 đ · 50 Xu"
+                    className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-[#c8382b]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Mô tả tóm tắt (2-3 dòng)</label>
+                <textarea
+                  value={heroSlideDesc}
+                  onChange={(e) => setHeroSlideDesc(e.target.value)}
+                  rows={3}
+                  placeholder="Hòa mình vào không khí hội làng miền Trung rực rỡ dưới ánh trăng rằm..."
+                  className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-[#c8382b]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Loại hành động khi bấm nút</label>
+                  <select
+                    value={heroSlideCtaType}
+                    onChange={(e) => setHeroSlideCtaType(e.target.value as 'ticket' | 'product')}
+                    className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-[#c8382b] font-medium"
+                  >
+                    <option value="ticket">🎟️ Đặt vé Sự kiện</option>
+                    <option value="product">🛍️ Mua Ấn phẩm Di sản</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    {heroSlideCtaType === 'ticket' ? 'Chọn Sự Kiện liên kết' : 'Chọn Ấn Phẩm liên kết'}
+                  </label>
+                  {heroSlideCtaType === 'ticket' ? (
+                    <select
+                      value={heroSlideTargetId}
+                      onChange={(e) => setHeroSlideTargetId(e.target.value)}
+                      className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-[#c8382b] font-medium"
+                    >
+                      <option value="">-- Chọn sự kiện vé --</option>
+                      {activeEvents.map((evt) => (
+                        <option key={evt.id} value={evt.id}>
+                          {evt.title} ({evt.ticketPrice.toLocaleString('vi-VN')} đ)
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <select
+                      value={heroSlideTargetId}
+                      onChange={(e) => setHeroSlideTargetId(e.target.value)}
+                      className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-[#c8382b] font-medium"
+                    >
+                      <option value="">-- Chọn ấn phẩm --</option>
+                      {activePubs.map((pub) => (
+                        <option key={pub.id} value={pub.id}>
+                          {pub.name} ({pub.price.toLocaleString('vi-VN')} đ)
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Chữ trên nút bấm chính (CTA)</label>
+                <input
+                  type="text"
+                  value={heroSlideCtaText}
+                  onChange={(e) => setHeroSlideCtaText(e.target.value)}
+                  placeholder="🎟️ Đặt Vé Ngay (50.000 đ · 50 Xu)"
+                  className="w-full rounded-xl bg-slate-50 border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-[#c8382b]"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <input
+                  type="checkbox"
+                  id="heroSlideIsActive"
+                  checked={heroSlideIsActive}
+                  onChange={(e) => setHeroSlideIsActive(e.target.checked)}
+                  className="h-4 w-4 rounded text-[#c8382b] focus:ring-[#c8382b] cursor-pointer"
+                />
+                <label htmlFor="heroSlideIsActive" className="text-xs font-bold text-slate-800 cursor-pointer">
+                  Cho phép slide này xuất hiện ngay trên Banner Hero ngoài Cửa hàng
+                </label>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setShowHeroModal(false)}
+                  className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-gradient-to-r from-[#c8382b] to-[#92261b] hover:from-[#d94437] hover:to-[#a82d21] text-white font-bold text-xs px-5 py-2.5 transition shadow-sm cursor-pointer active:scale-95"
+                >
+                  {editingHeroSlide ? 'Lưu Thay Đổi' : 'Thêm Vào Banner Hero'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL CHỌN NHANH SỰ KIỆN ĐƯA LÊN HERO ── */}
+      {showQuickAddEventModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-lg rounded-3xl bg-white border border-slate-200 p-6 shadow-2xl max-h-[85vh] overflow-y-auto space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div>
+                <h3 className="font-bold text-slate-900 text-base">
+                  🎟️ Chọn Sự Kiện Đưa Lên Banner Hero
+                </h3>
+                <p className="text-[11px] text-slate-500">
+                  Bấm chọn bất kỳ sự kiện nào bên dưới để hệ thống tự động đưa lên Banner Hero
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowQuickAddEventModal(false)}
+                className="text-slate-400 hover:text-slate-700 cursor-pointer text-lg p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-2.5">
+              {activeEvents.map((evt) => {
+                const isAlreadyInHero = heroSlides.some((s) => s.targetEventId === evt.id)
+                return (
+                  <div
+                    key={evt.id}
+                    className="p-3.5 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-sm bg-white flex items-center justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <h5 className="font-bold text-xs text-slate-900 truncate">{evt.title}</h5>
+                      <p className="text-[11px] text-slate-500">
+                        {evt.eventDate} · Giá vé: <strong className="text-red-700">{evt.ticketPrice.toLocaleString('vi-VN')} đ</strong>
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleQuickAddEventToHero(evt)
+                        setShowQuickAddEventModal(false)
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer ${
+                        isAlreadyInHero
+                          ? 'bg-amber-100 text-amber-900 hover:bg-amber-200'
+                          : 'bg-[#c8382b] hover:bg-[#b02e22] text-white shadow-2xs active:scale-95'
+                      }`}
+                    >
+                      {isAlreadyInHero ? '✓ Đang có trên Hero' : '+ Đưa lên Hero'}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL CHỌN NHANH ẤN PHẨM ĐƯA LÊN HERO ── */}
+      {showQuickAddPubModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-lg rounded-3xl bg-white border border-slate-200 p-6 shadow-2xl max-h-[85vh] overflow-y-auto space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div>
+                <h3 className="font-bold text-slate-900 text-base">
+                  🛍️ Chọn Ấn Phẩm Di Sản Đưa Lên Banner Hero
+                </h3>
+                <p className="text-[11px] text-slate-500">
+                  Bấm chọn ấn phẩm độc bản / đồ lưu niệm bên dưới để đưa lên Banner Hero
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowQuickAddPubModal(false)}
+                className="text-slate-400 hover:text-slate-700 cursor-pointer text-lg p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-2.5">
+              {activePubs.map((pub) => {
+                const isAlreadyInHero = heroSlides.some((s) => s.targetProductId === pub.id)
+                return (
+                  <div
+                    key={pub.id}
+                    className="p-3.5 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-sm bg-white flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <img
+                        src={pub.imageUrl}
+                        alt={pub.name}
+                        className="h-10 w-10 object-contain rounded-lg border border-slate-100 bg-slate-50 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <h5 className="font-bold text-xs text-slate-900 truncate">{pub.name}</h5>
+                        <p className="text-[11px] text-slate-500">
+                          {pub.category} · Giá: <strong className="text-teal-700">{pub.price.toLocaleString('vi-VN')} đ</strong>
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleQuickAddPubToHero(pub)
+                        setShowQuickAddPubModal(false)
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer ${
+                        isAlreadyInHero
+                          ? 'bg-amber-100 text-amber-900 hover:bg-amber-200'
+                          : 'bg-[#006368] hover:bg-[#004e52] text-white shadow-2xs active:scale-95'
+                      }`}
+                    >
+                      {isAlreadyInHero ? '✓ Đang có trên Hero' : '+ Đưa lên Hero'}
+                    </button>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>

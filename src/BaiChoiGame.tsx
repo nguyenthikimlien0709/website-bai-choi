@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import './index.css';
-import BaiChoiPuzzle, { PuzzleLevel } from './BaiChoiPuzzle';
 import { getChantLyrics } from './chantLyrics';
 import { authService } from './lib/authService';
 import ChoiCoin from './components/ChoiCoin';
@@ -259,7 +258,7 @@ function shuffle<T>(items: readonly T[]) {
   const result = [...items]
   for (let i = result.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[result[i], result[j]] = [result[j], result[i]]
+      ;[result[i], result[j]] = [result[j], result[i]]
   }
   return result
 }
@@ -361,6 +360,46 @@ function FlyingClouds() {
   )
 }
 
+function ModeCardsStage({ cards, isMobile }: { cards: Card[]; isMobile?: boolean }) {
+  const cardWidth = isMobile ? 54 : 80
+  const cardHeight = Math.round(cardWidth * 2.06)
+
+  return (
+    <div className="relative w-full h-[180px] sm:h-[220px] md:h-[250px] flex items-center justify-center gap-2.5 sm:gap-4 select-none pointer-events-none">
+      {cards.map((card, index) => (
+        <div
+          key={card.id}
+          className="relative will-change-transform pointer-events-auto group"
+          style={{
+            width: `${cardWidth}px`,
+            height: `${cardHeight}px`,
+            animation: 'modeCardWave 3.4s cubic-bezier(0.445, 0.05, 0.55, 0.95) infinite',
+            animationDelay: `-${index * 0.55}s`,
+          }}
+        >
+          <div
+            className="w-full h-full overflow-hidden select-none transition-all duration-200 group-hover:scale-105 group-hover:shadow-[0_0_24px_rgba(246,210,116,0.85)]"
+            style={{
+              borderRadius: Math.max(5, Math.round(cardWidth * 0.08)),
+              background: '#FFFDEB',
+              border: '2px solid rgba(216,176,105,0.92)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.32), inset 0 0 0 1px rgba(0,99,104,0.16)',
+            }}
+          >
+            <img
+              src={card.image}
+              alt={card.name}
+              draggable={false}
+              decoding="async"
+              className="w-full h-full object-contain pointer-events-none select-none"
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function BaiChoiGame({
   onClose,
   initialAudioMode = 'online'
@@ -373,6 +412,12 @@ export default function BaiChoiGame({
   const [nameInput, setNameInput] = useState('')
   const [playerName, setPlayerName] = useState('')
   const [error, setError] = useState('')
+
+  // 5 lá bài ngẫu nhiên từ 3 phô cho màn hình chọn chế độ
+  const [modeCards, setModeCards] = useState<Card[]>(() => {
+    const shuffled = [...CARDS].sort(() => Math.random() - 0.5)
+    return shuffled.slice(0, 5)
+  })
   const [countdown, setCountdown] = useState(8)
   const [roomCode, setRoomCode] = useState('')
   const [joinCode, setJoinCode] = useState('')
@@ -382,7 +427,7 @@ export default function BaiChoiGame({
   const [claimed, setClaimed] = useState<string[]>([])
   const [botFlags, setBotFlags] = useState([0, 0, 0, 0])
   const [botHands, setBotHands] = useState<Card[][]>([])
-  const [message, setMessage] = useState('Anh Hiệu đang chuẩn bị ống thẻ…')
+  const [message, setMessage] = useState('')
   const [winner, setWinner] = useState('')
   const [onlineMode, setOnlineMode] = useState(false)
   const [onlinePlayers, setOnlinePlayers] = useState<OnlinePlayer[]>([])
@@ -397,10 +442,7 @@ export default function BaiChoiGame({
   const socketRef = useRef<WebSocket | null>(null)
   const playerIdRef = useRef('')
   const drawnCardRef = useRef<Card | null>(null)
-  const [puzzleLevel, setPuzzleLevel] = useState<PuzzleLevel>(1)
   const [currentCallingCard, setCurrentCallingCard] = useState<Card | null>(null)
-  const [showPuzzleModal, setShowPuzzleModal] = useState(false)
-  const puzzleCompletedManuallyRef = useRef(false)
   const fallbackTimerRef = useRef<number | null>(null)
   const [chantLyricIndex, setChantLyricIndex] = useState(0)
 
@@ -443,14 +485,14 @@ export default function BaiChoiGame({
   const currentCard = revealedCard
   const canClaim = Boolean(
     currentCard &&
-      (onlineMode
-        ? hand.some((card) => card.id === currentCard.id) && !claimed.includes(currentCard.id)
-        : playerTrees.length > 0
+    (onlineMode
+      ? hand.some((card) => card.id === currentCard.id) && !claimed.includes(currentCard.id)
+      : playerTrees.length > 0
         ? playerTrees.some(
-            (tree) =>
-              tree.cards.some((c) => c.id === currentCard.id) &&
-              !tree.claimedCardIds.includes(currentCard.id)
-          )
+          (tree) =>
+            tree.cards.some((c) => c.id === currentCard.id) &&
+            !tree.claimedCardIds.includes(currentCard.id)
+        )
         : hand.some((card) => card.id === currentCard.id) && !claimed.includes(currentCard.id))
   )
   const players = useMemo(() => onlineMode ? onlinePlayers.map((player) => player.name) : [playerName, ...BOT_NAMES], [onlineMode, onlinePlayers, playerName])
@@ -492,33 +534,33 @@ export default function BaiChoiGame({
     }
   }
 
-const unlockAudio = async () => {
-  const audio = new Audio('/sound-online/silent.mp3')
-  audio.volume = 0
-  audio.preload = 'auto'
+  const unlockAudio = async () => {
+    const audio = new Audio('/sound-online/silent.mp3')
+    audio.volume = 0
+    audio.preload = 'auto'
 
-  try {
-    await audio.play()
-    audio.pause()
-    audio.currentTime = 0
-    console.log('Âm thanh đã được mở')
-  } catch (error) {
-    console.error('Không thể mở âm thanh:', error)
+    try {
+      await audio.play()
+      audio.pause()
+      audio.currentTime = 0
+      console.log('Âm thanh đã được mở')
+    } catch (error) {
+      console.error('Không thể mở âm thanh:', error)
+    }
   }
-}
 
-const [isMobilePortrait, setIsMobilePortrait] = useState(() => {
-  if (typeof window === 'undefined') return false
+  const [isMobilePortrait, setIsMobilePortrait] = useState(() => {
+    if (typeof window === 'undefined') return false
 
-  return (
-    window.innerWidth < 768 &&
-    window.innerHeight > window.innerWidth
-  )
-})
+    return (
+      window.innerWidth < 768 &&
+      window.innerHeight > window.innerWidth
+    )
+  })
 
-const introVideoSrc = isMobilePortrait
-  ? '/sound-online/video-daugame-dienthoai.mp4'
-  : '/sound-online/video-daugame.mp4'
+  const introVideoSrc = isMobilePortrait
+    ? '/sound-online/video-daugame-dienthoai.mp4'
+    : '/sound-online/video-daugame.mp4'
 
   useEffect(() => {
     const checkOrientation = () => {
@@ -533,44 +575,44 @@ const introVideoSrc = isMobilePortrait
     }
   }, [])
 
-useEffect(() => {
-  const origOverflow = document.body.style.overflow
-  const origTouchAction = document.body.style.touchAction
+  useEffect(() => {
+    const origOverflow = document.body.style.overflow
+    const origTouchAction = document.body.style.touchAction
 
-  if (screen === 'playing') {
-    // Màn chơi sẽ tự scroll ở container game
-    document.body.style.overflow = 'hidden'
-    document.body.style.touchAction = 'pan-y'
-  } else {
-    document.body.style.overflow = 'hidden'
-    document.body.style.touchAction = 'none'
-  }
+    if (screen === 'playing') {
+      // Màn chơi sẽ tự scroll ở container game
+      document.body.style.overflow = 'hidden'
+      document.body.style.touchAction = 'pan-y'
+    } else {
+      document.body.style.overflow = 'hidden'
+      document.body.style.touchAction = 'none'
+    }
 
-  return () => {
-    document.body.style.overflow = origOverflow
-    document.body.style.touchAction = origTouchAction
-  }
-}, [screen])
+    return () => {
+      document.body.style.overflow = origOverflow
+      document.body.style.touchAction = origTouchAction
+    }
+  }, [screen])
 
   useEffect(() => () => {
     stopAudio()
     socketRef.current?.close()
   }, [])
-useEffect(() => {
-  const preventZoom = (e: WheelEvent) => {
-    if (e.ctrlKey) {
-      e.preventDefault();
-    }
-  };
+  useEffect(() => {
+    const preventZoom = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+      }
+    };
 
-  document.addEventListener("wheel", preventZoom, {
-    passive: false,
-  });
+    document.addEventListener("wheel", preventZoom, {
+      passive: false,
+    });
 
-  return () => {
-    document.removeEventListener("wheel", preventZoom);
-  };
-}, []);
+    return () => {
+      document.removeEventListener("wheel", preventZoom);
+    };
+  }, []);
 
   const leaveGame = () => {
     stopAudio()
@@ -587,7 +629,6 @@ useEffect(() => {
     setOnlinePlayers([])
     setSocketStatus('idle')
     setCurrentCallingCard(null)
-    setPuzzleLevel(1)
     setScreen('mode')
   }
 
@@ -669,169 +710,153 @@ useEffect(() => {
     }
   }
 
-const playCall = async (card: Card) => {
-  stopAudio(false)
+  const playCall = async (card: Card) => {
+    stopAudio(false)
 
-  setRevealedCard(null)
-  setCurrentCallingCard(card)
-  puzzleCompletedManuallyRef.current = false
-  setIsCalling(true)
-  setShowPuzzleModal(true) // Tự động mở popup xếp hình nổi khi bắt đầu hô
-  setMessage('Lắng nghe Chị Hiệu hô & Xếp hình giải mã…')
+    setRevealedCard(null)
+    setCurrentCallingCard(card)
+    setIsCalling(true)
+    setMessage('Lắng nghe Chị Hiệu hô câu thai…')
 
-  const chosenSound = (audioMode === 'offline' && card.soundOffline) ? card.soundOffline : card.sound
-  const fallbackDuration = audioMode === 'offline' ? 32000 : 16000
+    const chosenSound = (audioMode === 'offline' && card.soundOffline) ? card.soundOffline : card.sound
+    const fallbackDuration = audioMode === 'offline' ? 32000 : 16000
 
-  const audio = audioRef.current || new Audio()
+    const audio = audioRef.current || new Audio()
 
-  audio.src = chosenSound
-  audio.preload = 'auto'
-  audio.volume = 1
-  audio.currentTime = 0
+    audio.src = chosenSound
+    audio.preload = 'auto'
+    audio.volume = 1
+    audio.currentTime = 0
 
-  audioRef.current = audio
+    audioRef.current = audio
 
-  const revealCard = () => {
-    if (fallbackTimerRef.current) {
-      window.clearTimeout(fallbackTimerRef.current)
-      fallbackTimerRef.current = null
+    const revealCard = () => {
+      if (fallbackTimerRef.current) {
+        window.clearTimeout(fallbackTimerRef.current)
+        fallbackTimerRef.current = null
+      }
+
+      setRevealedCard(card)
+      setIsCalling(false)
+      setMessage(`Quân ${card.name}! Nếu có thẻ, hãy gõ mõ.`)
+
+      // Cập nhật cờ cho các bot sau khi bài đã được công bố chính thức
+      setBotFlags((previous) =>
+        previous.map((flags, index) => {
+          const botHasCard =
+            botHands[index]?.some(
+              (botCard) => botCard.id === card.id
+            ) ?? false
+
+          return botHasCard && flags < 3
+            ? flags + 1
+            : flags
+        })
+      )
     }
 
-    setRevealedCard(card)
-    setIsCalling(false)
-    setShowPuzzleModal(false) // Tự động đóng modal xếp hình khi kết thúc câu hò
-    setMessage(`Quân ${card.name}! Nếu có thẻ, hãy gõ mõ.`)
+    audio.onended = revealCard
+    audio.onerror = () => {
+      console.warn('Không thể tải file âm thanh:', chosenSound)
+      if (!fallbackTimerRef.current) {
+        fallbackTimerRef.current = window.setTimeout(revealCard, fallbackDuration)
+      }
+    }
 
-    // Cập nhật cờ cho các bot sau khi bài đã được công bố chính thức
-    setBotFlags((previous) =>
-      previous.map((flags, index) => {
-        const botHasCard =
-          botHands[index]?.some(
-            (botCard) => botCard.id === card.id
-          ) ?? false
-
-        return botHasCard && flags < 3
-          ? flags + 1
-          : flags
-      })
-    )
-
-    // Cơ chế Phục thù & Thăng cấp theo thực lực người chơi
-    if (puzzleCompletedManuallyRef.current) {
-      setPuzzleLevel((prev) => {
-        if (prev < 4) return (prev + 1) as PuzzleLevel
-        return Math.random() > 0.5 ? 3 : 4
-      })
+    try {
+      await audio.play()
+    } catch (error) {
+      console.error('Không thể phát âm thanh:', error)
+      // Nếu trình duyệt chặn âm thanh, duy trì thời gian hô
+      setMessage('Đang hô… (Bấm "🔊 Bật âm thanh" nếu chưa nghe tiếng)')
+      if (!fallbackTimerRef.current) {
+        fallbackTimerRef.current = window.setTimeout(revealCard, fallbackDuration)
+      }
     }
   }
 
-  audio.onended = revealCard
-  audio.onerror = () => {
-    console.warn('Không thể tải file âm thanh:', chosenSound)
-    if (!fallbackTimerRef.current) {
-      fallbackTimerRef.current = window.setTimeout(revealCard, fallbackDuration)
+  const connectRoom = (action: 'createRoom' | 'joinRoom') => {
+    setRoomError('')
+
+    const isLocalHost =
+      ['localhost', '127.0.0.1'].includes(
+        window.location.hostname
+      )
+
+    const configuredRealtimeUrl =
+      import.meta.env.VITE_REALTIME_URL?.trim() ||
+      (
+        isLocalHost
+          ? ''
+          : 'wss://bai-choi-realtime.lienntk-ce190812.workers.dev/bai-choi-ws'
+      )
+
+    if (!configuredRealtimeUrl && !isLocalHost) {
+      setRoomError(
+        'Phòng chơi online chưa được kết nối với máy chủ realtime trên bản public.'
+      )
+      return
     }
-  }
 
-  try {
-    await audio.play()
-  } catch (error) {
-    console.error('Không thể phát âm thanh:', error)
-    // Nếu trình duyệt chặn âm thanh, duy trì thời gian hô
-    setMessage('Đang hô… (Bấm "🔊 Bật âm thanh" nếu chưa nghe tiếng)')
-    if (!fallbackTimerRef.current) {
-      fallbackTimerRef.current = window.setTimeout(revealCard, fallbackDuration)
+    // ==========================================
+    // MÃ HỘI CHỈ GỒM ĐÚNG 6 CHỮ SỐ
+    // ==========================================
+    const normalizedRoomCode =
+      action === 'joinRoom'
+        ? joinCode.toUpperCase()
+        : ''
+
+    if (
+      action === 'joinRoom' &&
+      !/^CHOI-\d{6}$/.test(normalizedRoomCode)
+    ) {
+      setRoomError(
+        'Mã hội phải có dạng CHOI-123456.'
+      )
+      return
     }
-  }
-}
-
-const handlePuzzleComplete = () => {
-  puzzleCompletedManuallyRef.current = true
-  setMessage(`Đã ghép xong Quân ${currentCallingCard?.name || ''}! Chờ Chị Hiệu xướng tên.`)
-}
-
-const connectRoom = (action: 'createRoom' | 'joinRoom') => {
-  setRoomError('')
-
-  const isLocalHost =
-    ['localhost', '127.0.0.1'].includes(
-      window.location.hostname
-    )
-
-  const configuredRealtimeUrl =
-    import.meta.env.VITE_REALTIME_URL?.trim() ||
-    (
-      isLocalHost
-        ? ''
-        : 'wss://bai-choi-realtime.lienntk-ce190812.workers.dev/bai-choi-ws'
-    )
-
-  if (!configuredRealtimeUrl && !isLocalHost) {
-    setRoomError(
-      'Phòng chơi online chưa được kết nối với máy chủ realtime trên bản public.'
-    )
-    return
-  }
-
-  // ==========================================
-  // MÃ HỘI CHỈ GỒM ĐÚNG 6 CHỮ SỐ
-  // ==========================================
-const normalizedRoomCode =
-  action === 'joinRoom'
-    ? joinCode.toUpperCase()
-    : ''
-
-if (
-  action === 'joinRoom' &&
-  !/^CHOI-\d{6}$/.test(normalizedRoomCode)
-) {
-  setRoomError(
-    'Mã hội phải có dạng CHOI-123456.'
-  )
-  return
-}
 
 
-  // Chỉ chuyển sang connecting sau khi mã hợp lệ
-  setSocketStatus('connecting')
+    // Chỉ chuyển sang connecting sau khi mã hợp lệ
+    setSocketStatus('connecting')
 
-  socketRef.current?.close()
+    socketRef.current?.close()
 
-  const protocol =
-    window.location.protocol === 'https:'
-      ? 'wss:'
-      : 'ws:'
+    const protocol =
+      window.location.protocol === 'https:'
+        ? 'wss:'
+        : 'ws:'
 
-  const baseRealtimeUrl =
-    configuredRealtimeUrl ||
-    `${protocol}//${window.location.host}/bai-choi-ws`
+    const baseRealtimeUrl =
+      configuredRealtimeUrl ||
+      `${protocol}//${window.location.host}/bai-choi-ws`
 
-  const realtimeUrl =
-    new URL(baseRealtimeUrl)
+    const realtimeUrl =
+      new URL(baseRealtimeUrl)
 
-  realtimeUrl.searchParams.set(
-    'action',
-    action
-  )
-
-  realtimeUrl.searchParams.set(
-    'name',
-    playerName
-  )
-
-  if (action === 'joinRoom') {
     realtimeUrl.searchParams.set(
-      'roomId',
-      normalizedRoomCode
-    )
-  }
-
-  const socket =
-    new WebSocket(
-      realtimeUrl.toString()
+      'action',
+      action
     )
 
-  socketRef.current = socket
+    realtimeUrl.searchParams.set(
+      'name',
+      playerName
+    )
+
+    if (action === 'joinRoom') {
+      realtimeUrl.searchParams.set(
+        'roomId',
+        normalizedRoomCode
+      )
+    }
+
+    const socket =
+      new WebSocket(
+        realtimeUrl.toString()
+      )
+
+    socketRef.current = socket
 
 
     socket.onopen = () => {
@@ -857,24 +882,24 @@ if (
       if (data.type === 'gameStarted') {
         setHostId(data.hostId); setOnlinePlayers(data.players); setHand(data.hand.map((id: string) => CARDS.find((card) => card.id === id)).filter(Boolean)); setClaimed([]); setRevealedCard(null); setIsCalling(false); setDrawIndex(-1); setWinner(''); setMessage('Hội đã khai. Chủ hội sẽ rút quân đầu tiên!'); setScreen('playing')
       }
-     if (data.type === 'cardDrawn') {
-  const card = CARDS.find((item) => item.id === data.cardId)
+      if (data.type === 'cardDrawn') {
+        const card = CARDS.find((item) => item.id === data.cardId)
 
-  if (card) {
-    drawnCardRef.current = card
-    setRevealedCard(null)
-    setDrawIndex(data.drawIndex)
+        if (card) {
+          drawnCardRef.current = card
+          setRevealedCard(null)
+          setDrawIndex(data.drawIndex)
 
-    const delay = Math.max(
-      0,
-      (data.callStartedAt ?? Date.now()) - Date.now()
-    )
+          const delay = Math.max(
+            0,
+            (data.callStartedAt ?? Date.now()) - Date.now()
+          )
 
-    window.setTimeout(() => {
-      void playCall(card)
-    }, delay)
-  }
-}
+          window.setTimeout(() => {
+            void playCall(card)
+          }, delay)
+        }
+      }
       if (data.type === 'flagsUpdated') {
         setOnlinePlayers((previous) => previous.map((player) => player.id === data.playerId ? { ...player, flags: data.flags } : player))
         if (data.playerId === playerIdRef.current) setClaimed((previous) => drawnCardRef.current && !previous.includes(drawnCardRef.current.id) ? [...previous, drawnCardRef.current.id] : previous)
@@ -896,6 +921,8 @@ if (
     }
     setPlayerName(nextName)
     setError('')
+    const shuffled = [...CARDS].sort(() => Math.random() - 0.5)
+    setModeCards(shuffled.slice(0, 5))
     setScreen('mode')
   }
 
@@ -925,8 +952,6 @@ if (
     setClaimed([])
     setRevealedCard(null)
     setCurrentCallingCard(null)
-    setPuzzleLevel(1)
-    puzzleCompletedManuallyRef.current = false
     setIsCalling(false)
     setBotFlags([0, 0, 0, 0])
     setWinner('')
@@ -1122,6 +1147,11 @@ if (
   const handleAddNewTree = () => {
     setPickingError('')
 
+    if (draftTrees.length >= 5) {
+      setPickingError('Mỗi người chơi chỉ được chọn tối đa 5 Cây Bài trong một ván đấu.')
+      return
+    }
+
     const coinsLeft = userCoins - totalCardsPicked
     if (coinsLeft < 3) {
       setPickingError(
@@ -1303,8 +1333,6 @@ if (
     setClaimed([])
     setRevealedCard(null)
     setCurrentCallingCard(null)
-    setPuzzleLevel(1)
-    puzzleCompletedManuallyRef.current = false
     setIsCalling(false)
     setBotFlags([0, 0, 0, 0])
     setWinner('')
@@ -1333,8 +1361,8 @@ if (
   }
 
   return (
-  <div
-  className={`
+    <div
+      className={`
     fixed inset-0 z-[300]
     select-none
     bg-[#052f32]
@@ -1342,80 +1370,112 @@ if (
     h-[100dvh]
     w-full
 
-    ${
-      screen === 'playing' || screen === 'card-picking'
-        ? 'overflow-y-auto overflow-x-hidden touch-pan-y overscroll-y-contain'
-        : 'overflow-hidden touch-none'
-    }
+    ${screen === 'playing' || screen === 'card-picking'
+          ? 'overflow-y-auto overflow-x-hidden touch-pan-y overscroll-y-contain'
+          : 'overflow-hidden touch-none'
+        }
   `}
-  role="dialog"
-  aria-modal="true"
-  aria-label="Trò chơi Bài Chòi"
->
+      role="dialog"
+      aria-modal="true"
+      aria-label="Trò chơi Bài Chòi"
+    >
       <div className="pointer-events-none fixed inset-0 opacity-20" style={{ backgroundImage: 'url(/assets/Background-toan.jpg)', backgroundSize: 'cover' }} />
 
+      {/* NÚT QUAY LẠI */}
       <button
-  onClick={handleRequestBack}
-  className="
-    fixed
-    left-3
-    top-3
-    z-[80]
-
-    flex
-    h-10
-    items-center
-    justify-center
-    gap-1.5
-
-    rounded-full
-    border-2
-    border-white/70
-
-    bg-[#075f63]/80
-
-    px-3
-
-    text-sm
-    font-bold
-    text-white
-
-    shadow-xl
-    backdrop-blur-sm
-
-    transition
-
-    hover:scale-105
-    hover:bg-[#c44837]
-
-    sm:left-5
-    sm:top-5
-    sm:h-12
-    sm:px-4
-    sm:text-base
-  "
-  aria-label="Quay lại"
->
-  <span className="text-xl leading-none">←</span>
-  <span>Quay lại</span>
-</button>
+        onClick={handleRequestBack}
+        className={`
+          fixed
+          z-[80]
+          flex
+          items-center
+          justify-center
+          gap-1
+          rounded-full
+          border-2
+          border-white/70
+          bg-[#075f63]/85
+          text-white
+          shadow-xl
+          backdrop-blur-sm
+          transition
+          hover:scale-105
+          hover:bg-[#c44837]
+          cursor-pointer
+          ${screen === 'card-picking'
+            ? 'left-2.5 top-2 sm:left-3.5 sm:top-2.5 h-7 sm:h-8 px-2.5 sm:px-3 text-xs font-bold'
+            : 'left-3 top-3 sm:left-5 sm:top-5 h-10 sm:h-12 px-3 sm:px-4 text-sm sm:text-base font-bold'
+          }
+        `}
+        aria-label="Quay lại"
+        title="Quay lại trang trước"
+      >
+        <span className={screen === 'card-picking' ? 'text-sm sm:text-base leading-none' : 'text-xl leading-none'}>←</span>
+        <span>Quay lại</span>
+      </button>
 
       {/* HUY HIỆU VÍ XU TRÊN ĐẦU (GÓC TRÊN BÊN PHẢI) */}
-      {(screen === 'card-picking' || screen === 'playing') && (
-        <div className="fixed right-16 top-3 sm:right-20 sm:top-5 z-[80] flex items-center gap-1.5 sm:gap-2 rounded-full border border-[#f6d274]/50 bg-[#073f43]/90 px-2.5 sm:px-3.5 py-1 sm:py-1.5 backdrop-blur-md shadow-xl transition-all">
-          <ChoiCoin size="sm" glow animate />
-          <span className="text-xs sm:text-sm font-bold text-[#fce893] whitespace-nowrap">{userCoins} Xu</span>
+      {(screen === 'playing' || screen === 'card-picking') && (
+        <div
+          className={`
+            fixed
+            z-[80]
+            flex
+            items-center
+            rounded-full
+            border
+            border-[#f6d274]/50
+            bg-[#073f43]/90
+            backdrop-blur-md
+            shadow-xl
+            transition-all
+            ${screen === 'card-picking'
+              ? 'right-11 top-2 sm:right-13 sm:top-2.5 h-7 sm:h-8 px-2 sm:px-2.5 gap-1 text-[11px] sm:text-xs'
+              : 'right-16 top-3 sm:right-20 sm:top-5 h-10 sm:h-12 px-2.5 sm:px-3.5 gap-1.5 sm:gap-2 text-xs sm:text-sm'
+            }
+          `}
+        >
+          <ChoiCoin size={screen === 'card-picking' ? 12 : 'sm'} glow animate />
+          <span className="font-bold text-[#fce893] whitespace-nowrap">{userCoins} Xu</span>
           <button
             type="button"
             onClick={() => setIsTopupModalOpen(true)}
-            className="ml-0.5 sm:ml-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-2 py-0.5 text-[10px] sm:text-xs font-bold text-slate-900 shadow hover:brightness-110 active:scale-95 transition"
+            className="ml-0.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-1.5 py-0.2 sm:px-2 sm:py-0.5 text-[9px] sm:text-[10px] font-bold text-slate-900 shadow hover:brightness-110 active:scale-95 transition cursor-pointer"
           >
             + Nạp
           </button>
         </div>
       )}
 
-      <button onClick={handleRequestLeave} className="fixed right-3 top-3 sm:right-5 sm:top-5 z-[80] grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-full border-2 border-white/70 bg-[#075f63]/80 text-2xl sm:text-3xl font-light leading-none text-white shadow-xl backdrop-blur-sm transition hover:scale-105 hover:bg-[#c44837]" aria-label="Đóng trò chơi">×</button>
+      {/* NÚT ĐÓNG (×) */}
+      <button
+        onClick={handleRequestLeave}
+        className={`
+          fixed
+          z-[80]
+          grid
+          place-items-center
+          rounded-full
+          border-2
+          border-white/70
+          bg-[#075f63]/85
+          text-white
+          shadow-xl
+          backdrop-blur-sm
+          transition
+          hover:scale-105
+          hover:bg-[#c44837]
+          cursor-pointer
+          ${screen === 'card-picking'
+            ? 'right-2.5 top-2 sm:right-3.5 sm:top-2.5 h-7 w-7 sm:h-8 sm:w-8 text-base sm:text-lg font-light leading-none'
+            : 'right-3 top-3 sm:right-5 sm:top-5 h-10 w-10 sm:h-12 sm:w-12 text-2xl sm:text-3xl font-light leading-none'
+          }
+        `}
+        aria-label="Đóng trò chơi"
+        title="Đóng trò chơi"
+      >
+        ×
+      </button>
       <main
         className={`
           relative
@@ -1424,882 +1484,402 @@ if (
           w-full
           justify-center
           p-0
-          ${
-            screen === 'card-picking'
-              ? 'min-h-full h-auto items-start overflow-visible pt-16 sm:pt-20 pb-16 max-w-[1360px] px-3 sm:px-6'
-              : screen === 'playing'
+          ${screen === 'card-picking'
+            ? 'h-full items-center overflow-hidden w-full'
+            : screen === 'playing'
               ? 'min-h-full h-auto items-start overflow-visible py-4 sm:py-6 max-w-6xl'
               : 'h-full items-center overflow-hidden max-w-6xl'
           }
         `}
       >
-  {screen === 'name' && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#052f32] overflow-hidden">
-            {/* Background video & stage */}
-            <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-              {/* Video 16:9 dành riêng cho Laptop / Desktop / Màn hình ngang
-              <video
-                ref={(node) => {
-                  if (!node) return
-                  node.muted = true
-                  node.playsInline = true
-                  node.setAttribute('muted', '')
-                  node.setAttribute('playsinline', '')
-                  node.play().catch(() => {})
-                }}
-                autoPlay
-                muted
-                playsInline
-                loop
-                preload="auto"
-                className="hidden landscape:block sm:block w-full h-full object-cover"
-                src="/sound-online/video-daugame.mp4"
-              /> */}
+        {screen === 'name' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#031d22] overflow-hidden select-none">
+            {/* Lớp nền mờ lan tỏa màu teal sâu của tranh Bài Chòi */}
+            <div
+              className="pointer-events-none absolute inset-0 opacity-40"
+              style={{
+                background: 'radial-gradient(circle at 50% 50%, #0d4a52 0%, #031c21 75%, #011114 100%)',
+              }}
+            />
 
-              {/* Video 9:16 đứng dành riêng cho Điện thoại / Màn hình dọc */}
-             <video
-  key={introVideoSrc}
+            {/* Sân khấu game chính: Luôn tràn 100% toàn màn hình, không bao giờ bị hở 2 bên */}
+            <div
+              className="relative flex-none flex items-center justify-center overflow-hidden"
+              style={{
+                width: 'max(100vw, calc(100vh * (2000 / 1009)))',
+                height: 'max(100vh, calc(100vw * (1009 / 2000)))',
+              }}
+            >
+              {/* Ảnh nền giao diện mới: /assets/game/game.png */}
+              <img
+                src="/assets/game/game.png"
+                alt="Giao diện Đi Chơi Bài Chòi"
+                className="w-full h-full object-cover pointer-events-none select-none"
+                draggable={false}
+              />
 
-  ref={(node) => {
-    if (!node) return
-
-    node.muted = true
-    node.defaultMuted = true
-    node.playsInline = true
-
-    node.setAttribute('muted', '')
-    node.setAttribute('playsinline', '')
-
-    node.play().catch((error) => {
-      console.error('Không phát được video:', introVideoSrc, error)
-    })
-  }}
-
-  autoPlay
-  muted
-  playsInline
-  loop
-  preload="auto"
-
-  src={introVideoSrc}
-
-  className="
-    absolute
-    inset-0
-    h-full
-    w-full
-    object-cover
-  "
-
-  onError={(event) => {
-    console.error(
-      'VIDEO LOAD ERROR:',
-      introVideoSrc,
-      event.currentTarget.error
-    )
-  }}
-/>
-
-              {/* Khung nhập tên: Tự động tương thích màn hình dọc điện thoại & màn hình ngang laptop */}
+              {/* Ô NHẬP TÊN ĐẶT CHÍNH XÁC VÀO GIỮA 50.0% THẲNG HÀNG VỚI TIÊU ĐỀ "NHẬP TÊN" */}
               <div
-  className="
-    absolute
-    left-1/2
-    top-1/2
-    z-10
-    w-[92vw]
-    max-w-[420px]
-    -translate-x-1/2
-    -translate-y-1/2
+                className="absolute z-10 -translate-x-1/2 flex items-center justify-center"
+                style={{
+                  left: '50.0%',
+                  top: '64.8%',
+                  width: '20.0%',
+                  height: '5.2%',
+                }}
+              >
+                <input
+                  autoFocus
+                  value={nameInput}
+                  onChange={(e) => {
+                    setNameInput(e.target.value)
+                    if (error) setError('')
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') submitName()
+                  }}
+                  maxLength={20}
+                  placeholder="Nhập tên của bạn..."
+                  className="w-full h-full bg-transparent text-center font-bold text-[#0c403f] placeholder:text-[#0c403f]/40 outline-none border-none text-xs sm:text-base md:text-lg lg:text-xl selection:bg-[#20d2c4]/40"
+                  style={{ fontFamily: 'var(--font-body)' }}
+                />
+              </div>
 
-    sm:left-[8%]
-    sm:top-auto
-    sm:bottom-[8%]
-    sm:w-[42%]
-    sm:max-w-[540px]
-    sm:translate-x-0
-    sm:translate-y-0
-  "
->
-  <div className="relative w-full">
+              {/* THÔNG BÁO LỖI NẾU CHƯA NHẬP TÊN */}
+              {error && (
+                <div
+                  className="absolute z-20 left-1/2 -translate-x-1/2 text-center pointer-events-none"
+                  style={{
+                    top: '71.2%',
+                    width: '24.0%',
+                  }}
+                >
+                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-red-600/90 text-white font-bold text-[10px] sm:text-xs shadow-md animate-bounce">
+                    ⚠️ {error}
+                  </span>
+                </div>
+              )}
 
-    {/* ẢNH KHUNG */}
-    <img
-      src="/assets/khung(1).png"
-      alt="Khung nhập tên"
-      className="
-        block
-        h-auto
-        w-full
-        object-contain
-        drop-shadow-2xl
-        mix-blend-screen
-      "
-    />
-
-
-    {/* ============================== */}
-    {/* NỘI DUNG NẰM TRONG KHUNG */}
-    {/* ============================== */}
-
-    <div className="absolute inset-0">
-
-      {/* NHẬP TÊN */}
-      <div
-        className="
-          absolute
-          left-1/2
-          top-[29%]
-          w-full
-          -translate-x-1/2
-          text-center
-        "
-      >
-        <span
-          className="
-            text-sm
-            font-black
-            text-[#2d4a3e]
-            sm:text-lg
-          "
-          style={{ fontFamily: 'var(--font-body)' }}
-        >
-          Nhập tên
-        </span>
-      </div>
-
-
-      {/* Ô NHẬP */}
-      <div
-        className="
-          absolute
-          left-1/2
-          top-[48%]
-          w-[58%]
-          -translate-x-1/2
-          -translate-y-1/2
-        "
-      >
-        <input
-          autoFocus
-          value={nameInput}
-          onChange={(event) => setNameInput(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') submitName()
-          }}
-          maxLength={20}
-          placeholder="Nhập tên của bạn"
-          className="
-            w-full
-            border-b
-            border-dotted
-            border-[#2d4a3e]/60
-            bg-transparent
-            pb-1
-            text-center
-            text-base
-            font-semibold
-            text-[#2d4a3e]
-            outline-none
-            placeholder:text-[#2d4a3e]/55
-
-            sm:text-xl
-          "
-          style={{ fontFamily: 'var(--font-body)' }}
-        />
-      </div>
-
-
-      {/* LỖI */}
-      {error && (
-        <p
-          className="
-            absolute
-            left-1/2
-            top-[61%]
-            w-[75%]
-            -translate-x-1/2
-            text-center
-            text-[9px]
-            font-bold
-            text-red-600
-            sm:text-xs
-          "
-        >
-          {error}
-        </p>
-      )}
-
-
-      {/* NÚT VÀO HỘI */}
-      <button
-        onClick={submitName}
-        className="
-          animate-bounce-scale
-
-          absolute
-          bottom-[25%]
-          left-1/2
-          -translate-x-1/2
-
-          flex
-          h-10
-          min-w-[125px]
-          items-center
-          justify-center
-
-          rounded-full
-          bg-[#2d4a3e]
-
-          px-7
-
-          text-base
-          font-extrabold
-          leading-none
-          text-white
-
-          shadow-xl
-
-          transition
-          active:scale-95
-
-          sm:h-11
-          sm:min-w-[155px]
-          sm:px-8
-          sm:text-lg
-        "
-        style={{ fontFamily: 'var(--font-body)' }}
-      >
-        Vào hội
-      </button>
-
-    </div>
-  </div>
-</div>
+              {/* NÚT MŨI TÊN "VÀO HỘI" CÓ CHUYỂN ĐỘNG NHỊP NHỊP GÂY ẤN TƯỢNG */}
+              <button
+                type="button"
+                onClick={submitName}
+                title="Bấm để vào hội Bài Chòi"
+                className="absolute z-20 cursor-pointer select-none outline-none focus:outline-none transition-transform active:scale-95 group"
+                style={{
+                  left: '58.05%',
+                  top: '60.65%',
+                  width: '9.35%',
+                  height: '10.9%',
+                }}
+              >
+                <img
+                  src="/assets/game/arrow-vaohoi.png"
+                  alt="Vào hội"
+                  className="w-full h-full object-contain pointer-events-none animate-heartbeat-arrow"
+                  draggable={false}
+                />
+              </button>
             </div>
           </div>
-          
         )}
 
         {screen === 'mode' && (
-  <section className="fixed inset-0 z-10 overflow-hidden bg-[#087b7f] text-center text-white">
+          <section className="fixed inset-0 z-10 flex items-center justify-center bg-[#8f9eb6] overflow-hidden select-none">
+            {/* Lớp nền tràn viền 100% toàn màn hình với Chedo.png */}
+            <div
+              className="relative flex-none flex items-center justify-center overflow-hidden"
+              style={{
+                width: 'max(100vw, calc(100vh * (2000 / 1009)))',
+                height: 'max(100vh, calc(100vw * (1009 / 2000)))',
+              }}
+            >
+              <img
+                src="/assets/game/Chedo.png"
+                alt="Chọn Chế Độ Chơi Bài Chòi"
+                className="w-full h-full object-cover pointer-events-none select-none"
+                draggable={false}
+              />
 
-    {/* NỀN */}
-    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,rgba(125,242,224,.34),transparent_40%),linear-gradient(180deg,#075f68_0%,#087f82_55%,#043f49_100%)]" />
-
-    <div className="pointer-events-none absolute inset-0 opacity-25 [background-image:radial-gradient(circle,rgba(255,245,176,.9)_1px,transparent_1.5px)] [background-size:42px_42px]" />
-
-
-    {/* TOÀN BỘ GIAO DIỆN */}
-    <div
-      className="
-        relative z-10
-        flex h-[100dvh]
-        flex-col
-        items-center
-
-        px-3
-        pb-4
-        pt-10
-
-        sm:min-h-[100dvh]
-        sm:h-auto
-        sm:px-4
-        sm:pb-8
-        sm:pt-14
-      "
-    >
-
-      {/* ========================= */}
-      {/* TIÊU ĐỀ */}
-      {/* ========================= */}
-
-      <div className="w-full max-w-xl shrink-0">
-
-        <p className="
-          text-[10px]
-          font-bold
-          uppercase
-          tracking-[.25em]
-          text-[#ffda86]
-
-          sm:text-sm
-        ">
-          Xin chào, {playerName}
-        </p>
-
-        <h2
-          className="
-            mode-screen-title
-            mt-1
-            font-black
-          "
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
-          CHỌN CHẾ ĐỘ CHƠI
-        </h2>
-
-        <p className="
-          mt-1
-          text-[11px]
-          font-semibold
-          text-white/75
-
-          sm:text-sm
-        ">
-          Chọn một cách vào hội để bắt đầu
-        </p>
-
-        <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-white/25 bg-black/30 p-1 text-[11px] sm:text-xs">
-          <button
-            type="button"
-            onClick={() => setAudioMode('online')}
-            className={`rounded-full px-3 py-1 font-semibold transition ${
-              audioMode === 'online'
-                ? 'bg-[#f29963] text-white shadow-md'
-                : 'text-white/70 hover:text-white'
-            }`}
-          >
-            ⚡ Hô Online (Gọn)
-          </button>
-          <button
-            type="button"
-            onClick={() => setAudioMode('offline')}
-            className={`rounded-full px-3 py-1 font-semibold transition ${
-              audioMode === 'offline'
-                ? 'bg-[#c44837] text-white shadow-md'
-                : 'text-white/70 hover:text-white'
-            }`}
-          >
-            🎙️ Hô Offline (Đầy đủ)
-          </button>
-        </div>
-      </div>
-
-
-      {/* ========================= */}
-      {/* KHU 5 LÁ BÀI */}
-      {/* ========================= */}
-
-      <div
-        className="
-          relative
-
-          mt-2
-          mb-2
-
-          flex
-          h-[44dvh]
-          min-h-[320px]
-          max-h-[410px]
-
-          w-full
-          max-w-[820px]
-
-          shrink-0
-
-          items-center
-          justify-center
-
-          sm:my-auto
-          sm:h-auto
-          sm:min-h-[220px]
-          sm:max-h-none
-          sm:flex-1
-          sm:py-4
-        "
-      >
-
-        {/* Ánh sáng sau bài */}
-        <div
-          className="
-            pointer-events-none
-            absolute
-
-            left-1/2
-            top-1/2
-
-            h-[50%]
-            w-[92%]
-
-            -translate-x-1/2
-            -translate-y-1/2
-
-            rounded-full
-
-            bg-[#fff1a6]/35
-            blur-3xl
-
-            sm:h-[48%]
-            sm:w-[78%]
-          "
-        />
-
-
-        {/* Luồng sáng */}
-        <div
-          className="
-            mode-stage-beam
-            pointer-events-none
-            absolute
-
-            bottom-[10%]
-            left-1/2
-
-            h-[58%]
-            w-[90%]
-
-            -translate-x-1/2
-
-            bg-[radial-gradient(ellipse_at_bottom,rgba(255,249,190,.92),rgba(255,208,107,.25)_35%,transparent_70%)]
-            blur-xl
-
-            sm:h-[65%]
-            sm:w-[65%]
-          "
-        />
-
-
-        {/* Vòng xoay */}
-        <div
-          className="
-            mode-spin-ring
-            pointer-events-none
-            absolute
-
-            bottom-[2%]
-            left-1/2
-
-            h-[68%]
-            w-[105vw]
-
-            -translate-x-1/2
-
-            sm:bottom-[-5%]
-            sm:h-[95%]
-            sm:w-[min(140vw,1280px)]
-          "
-          role="img"
-          aria-label="Vòng xoay Bài Chòi"
-        />
-
-
-        {/* ========================= */}
-        {/* 5 QUÂN BÀI */}
-        {/* ========================= */}
-
-        <div
-          className="
-            relative
-            mx-auto
-
-            h-[250px]
-            w-[min(96vw,720px)]
-
-            sm:h-[280px]
-            sm:w-[min(94vw,720px)]
-          "
-        >
-
-          {CARDS.slice(0, 5).map((card, index) => {
-
-            const cardPositions = [
-            'left-[8%] top-[14%] sm:top-[4%] z-[1] -rotate-[14deg]',
-  'left-[24%] top-[24%] sm:top-[14%] z-[3] -rotate-[7deg]',
-  'left-1/2 top-[-2%] sm:top-[-12%] z-[5] -translate-x-1/2 rotate-[2deg]',
-  'right-[24%] top-[23%] sm:top-[13%] z-[4] rotate-[7deg]',
-  'right-[8%] top-[12%] sm:top-[2%] z-[2] rotate-[14deg]',
-            ]
-
-            return (
+              {/* VÙNG NỘI DUNG CHÍNH Ở KHOẢNG GIỮA CỦA 2 NHÂN VẬT */}
               <div
-                key={card.id}
-                className={`
-                  mode-card-float
-                  absolute
-
-                  w-[30%]
-max-w-[130px]
-
-sm:w-[19%]
-sm:max-w-[160px]
-
-                  ${cardPositions[index]}
-                `}
+                className="absolute z-10 flex flex-col items-center justify-between"
                 style={{
-                  animationDelay: `${index * 0.14}s`
+                  left: '21.0%',
+                  width: '58.0%',
+                  top: '10.5%',
+                  height: '75.0%',
                 }}
               >
+                {/* 1. TIÊU ĐỀ */}
+                <div className="w-full text-center flex flex-col items-center shrink-0">
+                  <p className="text-xs sm:text-sm font-bold uppercase tracking-[.25em] text-[#ffea9f] drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] mb-2 sm:mb-2.5">
+                    Xin chào, {playerName || 'Người chơi'}
+                  </p>
 
-                <div
-                  className="
-                    mode-card-glow
+                  <h2
+                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white drop-shadow-[0_3px_12px_rgba(7,40,55,0.85)] tracking-wide leading-none"
+                    style={{ fontFamily: 'var(--font-display)' }}
+                  >
+                    CHỌN CHẾ ĐỘ CHƠI
+                  </h2>
 
-                    overflow-hidden
-
-                    rounded-[8px]
-                    border-2
-                    border-[#fff0a4]
-
-                    bg-white
-                    p-[2px]
-
-                    shadow-lg
-
-                    sm:rounded-[10px]
-                    sm:p-1
-                  "
-                >
-                  <img
-                    src={card.image}
-                    alt={card.name}
-                    className="
-                      aspect-[3/4]
-                      h-auto
-                      w-full
-                      rounded-md
-                      object-cover
-                    "
-                  />
+                  <p className="mt-2 text-xs sm:text-sm font-semibold text-white/90 drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">
+                    Chọn một cách vào hội để bắt đầu
+                  </p>
                 </div>
 
+                {/* 2. SÂN KHẤU 5 LÁ BÀI XOAY VÒNG RỒI DÀN HÀNG NGANG & LƯỢN SÓNG */}
+                <div className="w-full flex-1 flex items-center justify-center my-auto min-h-[160px] sm:min-h-[190px]">
+                  <ModeCardsStage cards={modeCards} isMobile={isMobilePortrait} />
+                </div>
 
-                {/* TÊN QUÂN */}
-                <span
-                  className="
-                    mt-1
-                    block
+                {/* 3. HAI NÚT LỰA CHỌN CHẾ ĐỘ (ĐÃ XÍCH LÊN CAO RÁO) */}
+                <div className="w-full max-w-[680px] grid grid-cols-2 gap-3 sm:gap-6 shrink-0 mb-3 sm:mb-6">
+                  {/* CHẾ ĐỘ 01: CHƠI NGAY */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCountdown(8)
+                      setScreen('matchmaking')
+                    }}
+                    className="group rounded-2xl sm:rounded-3xl border-2 border-[#f6d274] bg-[#fffdf0]/95 hover:bg-white p-2.5 sm:p-4 text-center shadow-[0_10px_28px_rgba(0,0,0,0.18)] hover:shadow-[0_14px_34px_rgba(246,210,116,0.35)] transition-all transform hover:-translate-y-1 active:scale-95 cursor-pointer"
+                  >
+                    <span className="block text-[9px] sm:text-[11px] font-black uppercase tracking-[.18em] text-[#bd6648]">
+                      CHẾ ĐỘ 01
+                    </span>
+                    <strong
+                      className="mt-0.5 block text-base sm:text-xl md:text-2xl font-black text-[#075f63] group-hover:text-[#c44837] transition-colors"
+                      style={{ fontFamily: 'var(--font-display)' }}
+                    >
+                      Chơi ngay
+                    </strong>
+                    <span className="mt-1 block text-[9px] sm:text-xs leading-tight text-[#075f63]/75 font-medium">
+                      Ghép hội nhanh với các chòi máy
+                    </span>
+                  </button>
 
-                    truncate
-                    rounded-full
-
-                    bg-[#075f63]/90
-
-                    px-1
-                    py-[2px]
-
-                    text-[8px]
-                    font-semibold
-                    text-white
-
-                    shadow
-
-                    sm:px-1.5
-                    sm:py-0.5
-                    sm:text-base
-                  "
-                  style={{
-                    fontFamily: 'var(--font-display)'
-                  }}
-                >
-                  {card.name}
-                </span>
-
+                  {/* CHẾ ĐỘ 02: MỞ HỘI CÙNG BẠN */}
+                  <button
+                    type="button"
+                    onClick={() => setScreen('friend')}
+                    className="group rounded-2xl sm:rounded-3xl border-2 border-[#7edbd5] bg-[#f0fffb]/95 hover:bg-white p-2.5 sm:p-4 text-center shadow-[0_10px_28px_rgba(0,0,0,0.18)] hover:shadow-[0_14px_34px_rgba(126,219,213,0.35)] transition-all transform hover:-translate-y-1 active:scale-95 cursor-pointer"
+                  >
+                    <span className="block text-[9px] sm:text-[11px] font-black uppercase tracking-[.18em] text-[#006368]">
+                      CHẾ ĐỘ 02
+                    </span>
+                    <strong
+                      className="mt-0.5 block text-base sm:text-xl md:text-2xl font-black text-[#075f63] group-hover:text-[#008f96] transition-colors"
+                      style={{ fontFamily: 'var(--font-display)' }}
+                    >
+                      Mở hội cùng bạn
+                    </strong>
+                    <span className="mt-1 block text-[9px] sm:text-xs leading-tight text-[#075f63]/75 font-medium">
+                      Tạo mã hoặc tham gia phòng bạn bè
+                    </span>
+                  </button>
+                </div>
               </div>
-            )
-          })}
-
-        </div>
-
-      </div>
-
-
-      {/* ========================= */}
-      {/* 2 NÚT CHẾ ĐỘ */}
-      {/* ========================= */}
-
-      <div
-        className="
-          relative z-20
-
-          grid
-          w-full
-          max-w-[680px]
-          shrink-0
-          grid-cols-2
-
-          gap-2
-
-          sm:gap-5
-        "
-      >
-
-        {/* CHƠI NGAY */}
-        <button
-          onClick={() => {
-            setCountdown(8)
-            setScreen('matchmaking')
-          }}
-          className="
-            mode-choice-button
-            group
-
-            min-h-[72px]
-
-            rounded-[1.1rem]
-            border-2
-            border-[#f6d274]
-
-            bg-[#fff9df]/95
-
-            px-2
-            py-2
-
-            text-[#075f63]
-
-            shadow-[0_10px_28px_rgba(0,99,104,.22)]
-
-            transition
-            active:scale-95
-
-            sm:min-h-0
-            sm:rounded-[1.4rem]
-            sm:px-6
-            sm:py-4
-          "
-        >
-
-          <span className="
-            block
-            text-[8px]
-            font-bold
-            uppercase
-            tracking-[.15em]
-            text-[#bd6648]
-
-            sm:text-[10px]
-            sm:tracking-[.18em]
-          ">
-            CHẾ ĐỘ 01
-          </span>
-
-          <strong className="
-            mt-0.5
-            block
-
-            text-[14px]
-            font-black
-
-            sm:text-xl
-          ">
-            Chơi ngay
-          </strong>
-
-          <span className="
-            mt-1
-            block
-
-            text-[8px]
-            leading-tight
-
-            text-[#075f63]/65
-
-            sm:text-xs
-          ">
-            Ghép hội nhanh với các chòi máy
-          </span>
-
-        </button>
-
-
-        {/* MỞ HỘI CÙNG BẠN */}
-        <button
-          onClick={() => setScreen('friend')}
-          className="
-            mode-choice-button
-            group
-
-            min-h-[72px]
-
-            rounded-[1.1rem]
-            border-2
-            border-[#85d4ce]
-
-            bg-[#eafff9]/95
-
-            px-2
-            py-2
-
-            text-[#075f63]
-
-            shadow-[0_10px_28px_rgba(0,99,104,.22)]
-
-            transition
-            active:scale-95
-
-            sm:min-h-0
-            sm:rounded-[1.4rem]
-            sm:px-6
-            sm:py-4
-          "
-        >
-
-          <span className="
-            block
-            text-[8px]
-            font-bold
-            uppercase
-            tracking-[.15em]
-            text-[#b85a3f]
-
-            sm:text-[10px]
-            sm:tracking-[.18em]
-          ">
-            CHẾ ĐỘ 02
-          </span>
-
-          <strong className="
-            mt-0.5
-            block
-
-            text-[14px]
-            font-black
-
-            sm:text-xl
-          ">
-            Mở hội cùng bạn
-          </strong>
-
-          <span className="
-            mt-1
-            block
-
-            text-[8px]
-            leading-tight
-
-            text-[#075f63]/65
-
-            sm:text-xs
-          ">
-            Tạo mã hoặc tham gia phòng bạn bè
-          </span>
-
-        </button>
-
-      </div>
-
-    </div>
-
-  </section>
-)}
+            </div>
+          </section>
+        )}
 
         {screen === 'matchmaking' && (
-          <section className="relative z-10 w-full max-w-xl text-center">
-            <FlyingClouds />
-            <div className="mx-auto mb-7 grid h-32 w-32 place-items-center rounded-full border-4 border-[#f29963]/30 bg-[#0b5558] text-5xl font-black text-[#f29963] shadow-[0_0_50px_rgba(242,153,99,.2)]">{countdown}</div>
-            <h2 className="text-3xl font-black">Bạn đang tìm bạn chơi…</h2>
-            <p className="mt-3 text-white/65">Hết thời gian chờ, hệ thống sẽ mời các chòi máy vào.</p>
-            <button onClick={goToCardPicking} className="mt-8 rounded-full border border-white/25 px-6 py-3 font-semibold hover:bg-white/10">Chơi với máy ngay</button>
+          <section className="fixed inset-0 z-10 flex items-center justify-center bg-[#151a30] overflow-hidden select-none">
+            {/* Lớp nền tràn viền 100% toàn màn hình với choivoimay.png */}
+            <div
+              className="relative flex-none flex items-center justify-center overflow-hidden"
+              style={{
+                width: 'max(100vw, calc(100vh * (2000 / 1009)))',
+                height: 'max(100vh, calc(100vw * (1009 / 2000)))',
+              }}
+            >
+              <img
+                src="/assets/game/choivoimay.png"
+                alt="Chơi Với Máy"
+                className="w-full h-full object-cover pointer-events-none select-none"
+                draggable={false}
+              />
+
+              {/* VÙNG ĐẾM NGƯỢC (COUNTDOWN NUMBER) ĐẶT TRÙNG KHỚP VÀO HÌNH TRÒN CỦA BIỂU TƯỢNG ĐÌNH CHÒI */}
+              <div
+                className="absolute z-20 flex items-center justify-center rounded-full pointer-events-none select-none"
+                style={{
+                  left: '50.0%',
+                  top: '43.0%',
+                  width: '6.7%',
+                  height: '13.3%',
+                  transform: 'translate(-50%, -50%)',
+                  background: 'radial-gradient(circle, #345e65 0%, #284c52 75%, #1d393e 100%)',
+                  boxShadow: 'inset 0 0 10px rgba(0, 0, 0, 0.45), 0 0 16px rgba(52, 94, 101, 0.55)',
+                }}
+              >
+                <span
+                  key={countdown}
+                  className="font-black text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] text-4xl sm:text-5xl md:text-6xl animate-scale-pop select-none"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                >
+                  {countdown}
+                </span>
+              </div>
+
+              {/* 3 CHẤM NHẢY LƯỢN SÓNG (ĐÈ LÊN 3 CHẤM TĨNH TRONG ẢNH CHOIVOIMAY.PNG) */}
+              <div
+                className="absolute z-20 flex items-center justify-between pointer-events-none select-none"
+                style={{
+                  left: '60.75%',
+                  top: '54.11%',
+                  width: '4.2%',
+                  height: '2.4%',
+                  transform: 'translate(-50%, -50%)',
+                }}
+              >
+                {/* Lớp nền hòa sắc che 3 chấm tĩnh gốc */}
+                <div
+                  className="absolute inset-[-4px] rounded-full pointer-events-none"
+                  style={{
+                    background: 'radial-gradient(ellipse at center, #ad9eb0 0%, #ad9eb0 70%, transparent 100%)',
+                  }}
+                />
+                {[0, 1, 2].map((i) => (
+                  <span
+                    key={i}
+                    className="relative z-10 rounded-full bg-[#cbf6f0]"
+                    style={{
+                      width: '24%',
+                      aspectRatio: '1 / 1',
+                      animation: 'dotWaveBounce 1.2s ease-in-out infinite',
+                      animationDelay: `${i * 0.22}s`,
+                      boxShadow: '0 0 6px rgba(203, 246, 240, 0.85)',
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* NÚT BẤM "CHƠI VỚI MÁY NGAY" (ĐÈ CHÍNH XÁC LÊN VIÊN THUỐC TRONG ẢNH CHOIVOIMAY.PNG) */}
+              <button
+                type="button"
+                onClick={goToCardPicking}
+                title="Bấm để vào chọn cây bài ngay"
+                aria-label="Chơi với máy ngay"
+                className="absolute z-30 cursor-pointer rounded-full outline-none focus:outline-none transition-all duration-200 transform hover:scale-[1.03] active:scale-[0.97] group pointer-events-auto"
+                style={{
+                  left: '39.75%',
+                  top: '63.23%',
+                  width: '20.5%',
+                  height: '6.94%',
+                }}
+              >
+                <div className="w-full h-full rounded-full border-2 border-transparent group-hover:border-[#cbf6f0]/80 group-hover:bg-[#cbf6f0]/15 group-hover:shadow-[0_0_25px_rgba(203,246,240,0.6)] transition-all flex items-center justify-center cursor-pointer" />
+              </button>
+            </div>
           </section>
         )}
 
         {screen === 'card-picking' && (
-          <section className="relative z-10 w-full max-w-[1360px] pb-24 lg:pb-12 animate-fadeIn">
-            <FlyingClouds />
+          <section className="fixed inset-0 z-50 flex items-center justify-center bg-[#151a30] overflow-hidden select-none animate-fadeIn">
+            {/* SÂN KHẤU CHỌN BÀI: TRÀN VIỀN 100% TOÀN MÀN HÌNH ĐỒNG BỘ VỚI CHOIVOIMAY VÀ CHOIVOIBAN (KHÔNG CÒN 2 KHOẢNG ĐEN Ở 2 BÊN) */}
+            <div
+              className="relative flex-none flex items-center justify-center overflow-hidden"
+              style={{
+                width: 'max(100vw, calc(100vh * (2000 / 1009)))',
+                height: 'max(100vh, calc(100vw * (1009 / 2000)))',
+              }}
+            >
+              {/* ẢNH GIAO DIỆN NỀN GỐC 18.PNG TRÀN VIỀN 100% */}
+              <img
+                src="/assets/game/18.png"
+                alt="Chọn 30 lá bài vào hội"
+                className="w-full h-full object-cover pointer-events-none select-none"
+                draggable={false}
+              />
 
-            {/* HEADER KHỐI CHỌN THẺ */}
-            <div className="text-center mb-5 sm:mb-7">
-              <span className="inline-block px-3.5 py-1 rounded-full bg-[#f6d274]/20 border border-[#f6d274]/40 text-[#fce893] text-xs font-bold uppercase tracking-[.2em] mb-2 shadow-sm">
-                🏮 Khai Canh Lập Cây • 1 Thẻ = 1 Xu
-              </span>
-              <h2
-                className="text-2xl sm:text-4xl font-black text-[#ffecb3] drop-shadow-md"
-                style={{ fontFamily: 'var(--font-display)' }}
+
+
+              {/* === KHU VỰC 1: TIÊU ĐỀ & HUY HIỆU ĐẶT TRONG KHOẢNG TRỐNG BẦU TRỜI === */}
+              <div
+                className="absolute z-20 flex flex-col justify-start text-left pointer-events-auto"
+                style={{
+                  left: '7.5%',
+                  top: '8.5%',
+                  width: '45.0%',
+                }}
               >
-                CHỌN 30 LÁ BÀI • LẬP CÂY BÀI VÀO HỘI
-              </h2>
-              <p className="mt-1.5 text-xs sm:text-sm text-white/80 max-w-2xl mx-auto leading-relaxed">
-                Mỗi Cây Bài gồm đúng <strong>3 thẻ</strong> (<strong>3 Xu</strong>). Bạn được phép chọn lại thẻ đã chọn ở cây khác, miễn là <strong>tổ hợp 3 thẻ</strong> ghép lại của mỗi Cây không bị trùng lặp nhau!
-              </p>
-            </div>
-
-            {/* THÔNG BÁO LỖI NẾU CÓ */}
-            {pickingError && (
-              <div className="mb-5 mx-auto max-w-2xl rounded-xl border border-rose-500/60 bg-rose-950/90 p-3 sm:p-3.5 text-center text-xs sm:text-sm font-semibold text-rose-200 shadow-xl animate-shake">
-                ⚠️ {pickingError}
-              </div>
-            )}
-
-            {/* BỐ CỤC 2 CỘT: TRÁI = BÀI (30 QUÂN), PHẢI = CHỖ CHỌN (CÂY BÀI) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
-              
-              {/* === CỘT TRÁI: BÀI (30 QUÂN BÀI CHÒI + BỘ LỌC PHO) === */}
-              <div className="lg:col-span-7 xl:col-span-7 flex flex-col rounded-2xl border border-white/15 bg-[#0b5558]/85 p-3.5 sm:p-5 backdrop-blur-md shadow-2xl">
-                {/* Header thanh lọc pho */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4 pb-3 border-b border-white/10">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">🎴</span>
-                    <div>
-                      <h3 className="font-bold text-sm sm:text-base text-white">
-                        Toàn Bộ 30 Quân Bài Chòi
-                      </h3>
-                      <p className="text-[11px] text-white/60">
-                        Nhấp thẻ để gán vào cây đang chọn (hoặc bỏ chọn)
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* BỘ LỌC 3 PHO BÀI */}
-                  <div className="flex items-center gap-1 rounded-full border border-white/20 bg-black/30 p-1 text-[11px] sm:text-xs self-start sm:self-auto overflow-x-auto max-w-full">
-                    <button
-                      type="button"
-                      onClick={() => setPhoFilter('all')}
-                      className={`rounded-full px-2.5 sm:px-3 py-1 font-semibold transition whitespace-nowrap ${
-                        phoFilter === 'all'
-                          ? 'bg-[#f29963] text-white shadow-md'
-                          : 'text-white/70 hover:text-white'
-                      }`}
-                    >
-                      Tất cả (30)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPhoFilter('van')}
-                      className={`rounded-full px-2 sm:px-2.5 py-1 font-semibold transition whitespace-nowrap ${
-                        phoFilter === 'van'
-                          ? 'bg-amber-600 text-white shadow-md'
-                          : 'text-white/70 hover:text-white'
-                      }`}
-                    >
-                      Pho Văn (1-10)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPhoFilter('van2')}
-                      className={`rounded-full px-2 sm:px-2.5 py-1 font-semibold transition whitespace-nowrap ${
-                        phoFilter === 'van2'
-                          ? 'bg-emerald-600 text-white shadow-md'
-                          : 'text-white/70 hover:text-white'
-                      }`}
-                    >
-                      Pho Vạn (11-20)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPhoFilter('hach')}
-                      className={`rounded-full px-2 sm:px-2.5 py-1 font-semibold transition whitespace-nowrap ${
-                        phoFilter === 'hach'
-                          ? 'bg-rose-600 text-white shadow-md'
-                          : 'text-white/70 hover:text-white'
-                      }`}
-                    >
-                      Pho Hạch (21-30)
-                    </button>
-                  </div>
+                <div>
+                  <span className="inline-block px-3 py-0.5 rounded-full bg-white/90 backdrop-blur-md border border-[#1b4e4a]/30 text-[#123e3b] font-black text-[10px] sm:text-xs uppercase tracking-[.14em] shadow-sm mb-1.5">
+                    🏮 Khai Canh Lập Cây • 1 Thẻ = 5 Xu
+                  </span>
+                </div>
+                {/* DÙNG THẺ DIV VỚI FONT-SIZE TRỰC TIẾP (TRÁNH BỊ DÍNH LUẬT CSS H2 TOÀN CỤC CỦA INDEX.CSS) */}
+                <div
+                  className="font-black text-[#0f3431] drop-shadow-[0_1px_2px_rgba(255,255,255,0.9)] tracking-tight leading-tight whitespace-nowrap"
+                  style={{
+                    fontSize: 'clamp(14px, 1.1vw, 19px)',
+                    fontFamily: 'var(--font-display)',
+                  }}
+                >
+                  Chọn lá bài • Lập cây bài vào hội
                 </div>
 
-                {/* LƯỚI 30 LÁ BÀI */}
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-2.5 max-h-[72vh] overflow-y-auto pr-1 scrollbar-thin">
+                {/* THÔNG BÁO LỖI NẾU CÓ */}
+                {pickingError && (
+                  <div
+                    className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg border border-rose-500/80 bg-rose-900/90 text-rose-100 font-bold shadow-md animate-shake max-w-max text-[10px] sm:text-xs"
+                  >
+                    ⚠️ {pickingError}
+                  </div>
+                )}
+              </div>
+
+              {/* === KHU VỰC 2: 4 TAB PHO BÀI (XÍCH LÊN ĐỐI DIỆN VỚI LOGO CHÒI, TRÊN DÒNG KẺ GẠCH NỐI) === */}
+              <div
+                className="absolute z-20 flex items-center justify-end gap-1.5 pointer-events-auto"
+                style={{
+                  left: '16.0%',
+                  top: '26.5%',
+                  width: '35.0%',
+                  height: '5.0%',
+                }}
+              >
+                {[
+                  { id: 'all', label: 'Tất cả (30)' },
+                  { id: 'van', label: 'Pho Văn' },
+                  { id: 'van2', label: 'Pho Vạn' },
+                  { id: 'hach', label: 'Pho Hạch' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setPhoFilter(tab.id as any)}
+                    className={`px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold transition-all cursor-pointer whitespace-nowrap border shadow-sm ${phoFilter === tab.id
+                      ? 'bg-[#1b4e4a] text-amber-200 border-[#1b4e4a] shadow'
+                      : 'bg-white/80 text-[#1b4e4a] border-white/60 hover:bg-white'
+                      }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* === KHU VỰC 3: LƯỚI 30 LÁ BÀI (DƯỚI DÒNG KẺ GẠCH NỐI TRONG KHUNG HỒNG, SÁT VÀO LINE) === */}
+              <div
+                className="absolute z-20 overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-teal-600/50 pointer-events-auto"
+                style={{
+                  left: '7.8%',
+                  top: '40.9%',
+                  width: '44.0%',
+                  height: '45.6%',
+                }}
+              >
+                <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
                   {filteredCards.map((card) => {
                     const globalIndex = CARDS.findIndex((c) => c.id === card.id)
                     const phoInfo = getCardPho(globalIndex)
 
-                    // Thẻ đã chọn trong CÂY HIỆN TẠI chưa
                     const isPickedInCurrent = Boolean(
                       draftTrees[activeDraftTreeIndex]?.cards.some((c) => c.id === card.id)
                     )
 
-                    // Danh sách các cây KHÁC cũng có chọn thẻ này
                     const otherTreesWithCard = draftTrees
                       .map((t, idx) => ({ name: t.name, idx }))
                       .filter(
@@ -2313,49 +1893,57 @@ sm:max-w-[160px]
                         key={card.id}
                         type="button"
                         onClick={() => handleToggleCardPick(card)}
-                        className={`relative group flex flex-col rounded-xl p-1 transition-all text-left duration-200 border-2 select-none ${
-                          isPickedInCurrent
-                            ? 'bg-amber-400/25 border-[#f6d274] ring-2 ring-[#f6d274] scale-95 shadow-lg'
-                            : otherTreesWithCard.length > 0
-                            ? 'bg-emerald-950/40 border-emerald-400/60 hover:border-amber-300 hover:scale-105 shadow-md'
-                            : 'bg-white/10 border-white/15 hover:border-amber-300/80 hover:bg-white/20 hover:scale-105 shadow-md'
-                        }`}
+                        className={`relative group flex flex-col rounded-xl p-1 transition-all text-left duration-200 border-2 select-none cursor-pointer ${isPickedInCurrent
+                          ? 'bg-amber-400/40 border-amber-500 ring-2 ring-amber-400 scale-[0.97] shadow-lg'
+                          : otherTreesWithCard.length > 0
+                            ? 'bg-emerald-950/20 border-emerald-500/70 hover:border-amber-400 hover:scale-[1.02] shadow-sm'
+                            : 'bg-white/90 border-[#1b4e4a]/20 hover:border-amber-400 hover:bg-white hover:scale-[1.02] shadow-sm'
+                          }`}
                       >
-                        {/* ẢNH THẺ BÀI */}
-                        <div className="overflow-hidden rounded-lg bg-white p-0.5">
+                        <div className="overflow-hidden rounded-lg bg-white p-0.5 flex items-center justify-center">
                           <img
                             src={card.image}
                             alt={card.name}
-                            className="aspect-[3/4] w-full rounded-md object-cover"
+                            className="aspect-[3/4] w-full max-h-[66px] sm:max-h-[74px] rounded-md object-contain pointer-events-none"
                             draggable={false}
                           />
                         </div>
 
-                        {/* TÊN THẺ BÀI */}
-                        <span className="mt-1 block text-center text-[10px] sm:text-xs font-bold text-white truncate px-0.5">
+                        <span
+                          className="mt-0.5 block text-center font-black text-[#103431] truncate px-0.5"
+                          style={{ fontSize: 'clamp(8px, 0.65cqw, 10px)' }}
+                        >
                           {card.name}
                         </span>
 
-                        {/* TAG PHO & HUY HIỆU */}
                         <div className="mt-0.5 flex items-center justify-between px-0.5">
-                          <span className={`text-[8px] font-semibold px-1 rounded border ${phoInfo.tagClass}`}>
+                          <span
+                            className={`font-bold px-1 rounded border ${phoInfo.tagClass}`}
+                            style={{ fontSize: 'clamp(7px, 0.55cqw, 8px)' }}
+                          >
                             {phoInfo.phoName.replace('Pho ', '')}
                           </span>
 
                           {isPickedInCurrent ? (
-                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-[#f6d274] text-[#173a3a] shadow-sm">
-                              ✓ Đang chọn
+                            <span
+                              className="font-black px-1 rounded bg-amber-400 text-[#173a3a]"
+                              style={{ fontSize: 'clamp(7px, 0.55cqw, 8px)' }}
+                            >
+                              ✓ Chọn
                             </span>
                           ) : otherTreesWithCard.length > 0 ? (
                             <span
-                              className="text-[8px] font-bold px-1 rounded bg-emerald-600/80 text-emerald-100"
-                              title={`Đã có ở ${otherTreesWithCard.map((t) => t.name).join(', ')} (Vẫn chọn được tiếp!)`}
+                              className="font-bold px-0.5 rounded bg-emerald-600 text-white"
+                              style={{ fontSize: 'clamp(7px, 0.55cqw, 8px)' }}
                             >
-                              Cây #{otherTreesWithCard.map((t) => t.idx + 1).join(',#')} +1x
+                              +{otherTreesWithCard.length}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-[#fce893]">
-                              <ChoiCoin size={10} /> 1
+                            <span
+                              className="inline-flex items-center font-bold text-[#103431]"
+                              style={{ fontSize: 'clamp(7px, 0.55cqw, 8px)' }}
+                            >
+                              1 Xu
                             </span>
                           )}
                         </div>
@@ -2365,621 +1953,885 @@ sm:max-w-[160px]
                 </div>
               </div>
 
-              {/* === CỘT PHẢI: CHỖ CHỌN (CÁC CÂY BÀI CỦA BẠN & THAO TÁC) === */}
-              <div className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-20 flex flex-col gap-4">
-                <div className="rounded-2xl border border-[#f6d274]/35 bg-[#0b5558]/95 p-4 sm:p-5 backdrop-blur-md shadow-2xl">
-                  {/* HEADER CHỖ CHỌN */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-3 border-b border-white/10">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">🎋</span>
-                      <div>
-                        <h3 className="font-bold text-sm sm:text-base text-white">
-                          Các Cây Bài Của Bạn
-                        </h3>
-                        <p className="text-[11px] text-[#ffda86]">
-                          {draftTrees.length} cây • {totalCardsPicked} thẻ đã chọn
-                        </p>
-                      </div>
-                    </div>
+              {/* === KHU VỰC 4A: NÚT "THÊM CÂY" (GẮN VỪA KHÍT VIÊN THUỐC CÓ SẴN TRÊN NỀN 18.PNG, TỐI ĐA 5 CÂY) === */}
+              <button
+                type="button"
+                onClick={handleAddNewTree}
+                disabled={draftTrees.length >= 5}
+                className={`absolute z-20 flex items-center justify-center pl-5 rounded-full font-black transition-all border-0 shadow-none outline-none select-none ${
+                  draftTrees.length >= 5
+                    ? 'opacity-40 cursor-not-allowed text-[#083a3f]/60'
+                    : 'text-[#083a3f] hover:text-[#041a1c] cursor-pointer hover:bg-white/15 active:scale-95 group pointer-events-auto'
+                }`}
+                style={{
+                  left: '73.0%',
+                  top: '10.6%',
+                  width: '10.9%',
+                  height: '4.56%',
+                  fontSize: 'clamp(9px, 0.72cqw, 12.5px)',
+                }}
+                title={draftTrees.length >= 5 ? 'Đã đạt tối đa 5 cây bài' : 'Mua thêm cây mới (Tối đa 5 cây)'}
+              >
+                <span className="drop-shadow-sm tracking-wide">
+                  {draftTrees.length >= 5 ? 'Đủ 5 cây' : 'Thêm cây'}
+                </span>
+              </button>
 
-                    <button
-                      type="button"
-                      onClick={handleAddNewTree}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#e69756] to-[#f29963] text-[#173a3a] font-bold text-xs shadow-md hover:brightness-110 active:scale-95 transition"
-                    >
-                      <span>+</span>
-                      <span>Mua Thêm Cây Mới (3 Xu)</span>
-                    </button>
-                  </div>
+              {/* === KHU VỰC 4B: HÀNG TAB CÂY BÀI (HỖ TRỢ 1 ĐẾN TỐI ĐA 5 CÂY BÀI) === */}
+              <div
+                className={`absolute z-20 flex items-center pointer-events-auto transition-all ${
+                  draftTrees.length === 1
+                    ? 'overflow-hidden'
+                    : 'rounded-full bg-[#073238]/85 backdrop-blur-sm p-1 border border-[#5ae3dd]/40 shadow-md gap-1'
+                }`}
+                style={{
+                  left: '59.5%',
+                  top: '17.94%',
+                  width: draftTrees.length === 1 ? '9.4%' : '23.3%',
+                  height: '4.56%',
+                }}
+              >
+                {draftTrees.map((tree, idx) => {
+                  const isComplete = tree.cards.length === 3
+                  const isActive = activeDraftTreeIndex === idx
+                  const isSingle = draftTrees.length === 1
 
-                  {/* TABS DANH SÁCH CÁC CÂY BÀI */}
-                  <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none mb-3">
-                    {draftTrees.map((tree, idx) => {
-                      const isComplete = tree.cards.length === 3
-                      const isActive = activeDraftTreeIndex === idx
-                      return (
-                        <button
-                          key={tree.id}
-                          type="button"
-                          onClick={() => {
-                            setActiveDraftTreeIndex(idx)
-                            setPickingError('')
-                          }}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap border ${
-                            isActive
-                              ? 'bg-[#f6d274] text-[#173a3a] border-[#fff0a4] shadow-lg scale-105'
-                              : isComplete
-                              ? 'bg-emerald-900/60 text-emerald-200 border-emerald-500/40 hover:bg-emerald-800/60'
-                              : 'bg-white/10 text-white/80 border-white/15 hover:bg-white/20'
-                          }`}
-                        >
-                          <span>{tree.name}</span>
-                          <span
-                            className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
-                              isComplete ? 'bg-emerald-600 text-white' : 'bg-black/30 text-white/90'
-                            }`}
-                          >
-                            {tree.cards.length}/3
-                          </span>
-                        </button>
-                      )
-                    })}
-                  </div>
-
-                  {/* CHI TIẾT CÂY BÀI ĐANG ĐƯỢC CHỌN (SLOTS) */}
-                  {draftTrees[activeDraftTreeIndex] && (
-                    <div className="rounded-xl bg-black/30 border border-white/10 p-3 sm:p-4 mb-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="font-black text-sm text-[#ffda86]">
-                            {draftTrees[activeDraftTreeIndex].name}
-                          </span>
-                          <span className={`text-xs font-semibold ${
-                            draftTrees[activeDraftTreeIndex].cards.length === 3
-                              ? 'text-emerald-300'
-                              : 'text-amber-300/80'
-                          }`}>
-                            ({draftTrees[activeDraftTreeIndex].cards.length === 3
-                              ? '✓ Đã đủ 3 thẻ'
-                              : `Còn thiếu ${3 - draftTrees[activeDraftTreeIndex].cards.length} thẻ`})
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleAutoPickTree(activeDraftTreeIndex)}
-                            className="text-[11px] font-semibold px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[#fce893] transition flex items-center gap-1"
-                            title="Chọn nhanh ngẫu nhiên đủ 3 thẻ cho cây này"
-                          >
-                            <span>⚡</span>
-                            <span>Chọn 3 thẻ</span>
-                          </button>
-
-                          {draftTrees.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveDraftTree(activeDraftTreeIndex)}
-                              className="text-[11px] font-semibold px-2 py-1 rounded-lg bg-rose-900/40 hover:bg-rose-800 text-rose-300 transition"
-                              title="Hủy cây bài này"
-                            >
-                              ✕ Xóa cây
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* 3 SLOTS CỦA CÂY NÀY */}
-                      <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                        {[0, 1, 2].map((slotIdx) => {
-                          const card = draftTrees[activeDraftTreeIndex].cards[slotIdx]
-                          if (card) {
-                            return (
-                              <div
-                                key={card.id}
-                                className="relative group rounded-xl border-2 border-amber-300/80 bg-white p-1 shadow-md transition transform hover:-translate-y-0.5"
-                              >
-                                <img
-                                  src={card.image}
-                                  alt={card.name}
-                                  className="aspect-[3/4] w-full rounded-lg object-cover"
-                                />
-                                <div className="mt-1 text-center">
-                                  <span className="block text-[10px] sm:text-xs font-bold text-slate-800 truncate">
-                                    {card.name}
-                                  </span>
-                                </div>
-                                {/* Nút gỡ thẻ */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleToggleCardPick(card)}
-                                  className="absolute -top-1.5 -right-1.5 grid h-5 w-5 place-items-center rounded-full bg-rose-600 text-white font-black text-[10px] shadow-lg hover:bg-rose-700 active:scale-95 transition"
-                                  title="Gỡ thẻ ra khỏi cây"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                            )
-                          }
-                          return (
-                            <div
-                              key={`empty-slot-${slotIdx}`}
-                              className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#f6d274]/50 bg-white/5 aspect-[3/4] p-2 text-center text-white/50 hover:border-[#f6d274] hover:bg-white/10 transition"
-                            >
-                              <span className="text-xl sm:text-2xl text-[#f6d274]">+</span>
-                              <span className="text-[10px] sm:text-xs font-semibold mt-0.5 text-[#fce893]">
-                                Thẻ {slotIdx + 1}
-                              </span>
-                              <span className="text-[9px] text-white/50">1 Xu</span>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* KHỐI TỔNG KẾT CHI PHÍ VÀ SỐ DƯ */}
-                  <div className="rounded-xl bg-black/20 border border-white/10 p-3 sm:p-3.5 mb-4 space-y-2">
-                    <div className="flex items-center justify-between text-xs sm:text-sm">
-                      <span className="text-white/70">Tổng chi phí mua thẻ:</span>
-                      <span className="font-black text-[#ffda86] flex items-center gap-1">
-                        <ChoiCoin size={14} />
-                        {totalCostCoins} Xu
-                        <span className="text-[11px] font-normal text-white/60">
-                          ({draftTrees.length} cây • {totalCardsPicked} thẻ)
+                  if (isSingle) {
+                    return (
+                      <button
+                        key={tree.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveDraftTreeIndex(idx)
+                          setPickingError('')
+                        }}
+                        className="w-full h-full flex items-center justify-center gap-1.5 px-2 rounded-full font-black text-[#083a3f] bg-transparent hover:bg-white/10 active:scale-95 transition-all cursor-pointer select-none border-0 shadow-none"
+                        style={{ fontSize: 'clamp(9px, 0.72cqw, 12px)' }}
+                      >
+                        <span className="tracking-tight">{tree.name}</span>
+                        <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-[#083a3f]/15 text-[#083a3f] font-bold">
+                          {tree.cards.length}/3
                         </span>
+                      </button>
+                    )
+                  }
+
+                  return (
+                    <button
+                      key={tree.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveDraftTreeIndex(idx)
+                        setPickingError('')
+                      }}
+                      className={`flex-1 h-full min-w-0 flex items-center justify-center gap-1 px-1 rounded-full font-black transition-all cursor-pointer whitespace-nowrap shadow-sm select-none ${
+                        isActive
+                          ? 'bg-gradient-to-r from-amber-400 to-amber-300 text-[#073238] shadow-md ring-1 ring-amber-100/70 scale-[1.02]'
+                          : isComplete
+                            ? 'bg-emerald-600/85 hover:bg-emerald-600 text-white'
+                            : 'bg-white/20 hover:bg-white/30 text-white/90'
+                      }`}
+                      style={{ fontSize: 'clamp(8px, 0.65cqw, 11px)' }}
+                      title={`Cây Bài #${idx + 1} (${tree.cards.length}/3 thẻ)`}
+                    >
+                      <span className="truncate">
+                        {draftTrees.length <= 3 ? `Cây #${idx + 1}` : `Cây ${idx + 1}`}
                       </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs sm:text-sm pt-1.5 border-t border-white/10">
-                      <span className="text-white/70">Số dư sau khi mua:</span>
-                      <span className={`font-bold flex items-center gap-1 ${
-                        userCoins < totalCostCoins ? 'text-rose-400' : 'text-emerald-300'
-                      }`}>
-                        <ChoiCoin size={14} />
-                        {Math.max(0, userCoins - totalCostCoins)} Xu
+                      <span
+                        className={`px-1 py-0.2 rounded-full font-bold text-[8.5px] ${
+                          isActive
+                            ? 'bg-[#073238]/15 text-[#073238]'
+                            : 'bg-black/25 text-white'
+                        }`}
+                      >
+                        {tree.cards.length}/3
                       </span>
-                    </div>
+                    </button>
+                  )
+                })}
+              </div>
 
-                    {userCoins < totalCostCoins && (
-                      <div className="pt-1 flex items-center justify-between text-[11px] text-rose-300">
-                        <span>Số dư không đủ!</span>
-                        <button
-                          type="button"
-                          onClick={() => setIsTopupModalOpen(true)}
-                          className="font-bold underline text-amber-300 hover:text-amber-200"
-                        >
-                          Nạp thêm Xu ngay →
-                        </button>
-                      </div>
-                    )}
-                  </div>
+              {/* === NÚT "⚡ CHỌN 3 THẺ" (GẮN VỪA KHÍT VÀO KHUNG BUTTON CÓ SẴN TRÊN NỀN 18.PNG) === */}
+              <button
+                type="button"
+                onClick={() => handleAutoPickTree(activeDraftTreeIndex)}
+                className="absolute z-30 flex items-center justify-center font-bold text-white hover:text-amber-200 transition cursor-pointer select-none active:scale-95 bg-transparent hover:bg-white/15 rounded-full border-0 shadow-none outline-none pointer-events-auto"
+                style={{
+                  left: '75.35%',
+                  top: '24.98%',
+                  width: '6.2%',
+                  height: '2.68%',
+                  fontSize: 'clamp(8px, 0.62cqw, 10.5px)',
+                }}
+                title="Chọn nhanh ngẫu nhiên đủ 3 thẻ cho cây này"
+              >
+                ⚡ Chọn 3 thẻ
+              </button>
 
-                  {/* NÚT VÀO HỘI KHAI CANH NGAY TRONG PANEL BÊN PHẢI */}
+              {/* === KHU VỰC 5: 3 Ô THẺ BÀI ĐÃ CHỌN (TRÊN HỘP XÁM CỦA BẢNG XANH DƯƠNG) === */}
+              {/* Tiêu đề cây bài đang chọn */}
+              <div
+                className="absolute z-20 flex items-center pointer-events-auto"
+                style={{
+                  left: '60.5%',
+                  top: '25.0%',
+                  width: '14.5%',
+                  height: '2.68%',
+                }}
+              >
+                <span
+                  className="font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)] truncate"
+                  style={{ fontSize: 'clamp(9.5px, 0.72cqw, 12px)' }}
+                >
+                  {draftTrees[activeDraftTreeIndex]?.name || 'Cây Bài #1'}
+                  <span className="ml-1 font-bold text-amber-200">
+                    ({draftTrees[activeDraftTreeIndex]?.cards.length === 3
+                      ? 'Đủ 3 thẻ'
+                      : `Thiếu ${3 - (draftTrees[activeDraftTreeIndex]?.cards.length || 0)}`})
+                  </span>
+                </span>
+
+                {draftTrees.length > 1 && (
                   <button
                     type="button"
-                    onClick={handleStartGameFromPicking}
-                    className="w-full py-3 sm:py-3.5 px-5 rounded-xl bg-gradient-to-r from-[#e86a38] via-[#d34e3a] to-[#c44837] text-white font-black text-sm sm:text-base tracking-wide shadow-[0_4px_20px_rgba(232,106,56,0.5)] hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2"
+                    onClick={() => handleRemoveDraftTree(activeDraftTreeIndex)}
+                    className="ml-1.5 font-bold px-1.5 py-0.2 rounded bg-rose-800/80 hover:bg-rose-700 text-rose-100 transition cursor-pointer text-[10px]"
+                    title="Xóa cây bài này"
                   >
-                    <span>VÀO HỘI KHAI CANH</span>
-                    <span className="text-lg leading-none">→</span>
+                    ✕
                   </button>
-
-                  <p className="mt-2.5 text-center text-[10px] text-white/50 leading-relaxed">
-                    💡 Bạn được chọn lại thẻ đã chọn ở cây khác, miễn là tổ hợp 3 lá của mỗi cây không trùng nhau!
-                  </p>
-                </div>
+                )}
               </div>
 
-            </div>
-
-            {/* THANH ĐIỀU KHIỂN DƯỚI CÙNG TRÊN MOBILE (STICKY DÀNH CHO MÀN HÌNH NHỎ) */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#04282b]/95 border-t border-[#f6d274]/30 backdrop-blur-md px-3 sm:px-6 py-2.5 shadow-[0_-10px_25px_rgba(0,0,0,0.5)]">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5">
-                  <ChoiCoin size="sm" glow animate />
-                  <div>
-                    <div className="text-[10px] text-white/70">Tổng: {totalCostCoins} Xu</div>
-                    <div className="text-xs font-bold text-emerald-300">
-                      Còn: {Math.max(0, userCoins - totalCostCoins)} Xu
+              {/* Lưới 3 ô thẻ bài */}
+              <div
+                className="absolute z-20 pointer-events-auto grid grid-cols-3 gap-2 px-1"
+                style={{
+                  left: '59.8%',
+                  top: '28.5%',
+                  width: '22.7%',
+                  height: '25.0%',
+                  gridTemplateRows: '100%',
+                }}
+              >
+                {[0, 1, 2].map((slotIdx) => {
+                  const card = draftTrees[activeDraftTreeIndex]?.cards[slotIdx]
+                  if (card) {
+                    return (
+                      <div
+                        key={card.id}
+                        className="relative h-full w-full min-h-0 min-w-0"
+                      >
+                        <div className="h-full w-full rounded border-2 border-[#5ae3dd]/60 bg-[#0c404e]/30 overflow-hidden flex items-center justify-center p-0.5 group">
+                          <img
+                            src={card.image}
+                            alt={card.name}
+                            className="h-full w-full max-h-full max-w-full object-contain pointer-events-none drop-shadow-sm select-none"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleCardPick(card)}
+                          className="absolute -top-2 -right-1.5 grid h-5 w-5 place-items-center rounded-full bg-rose-600 hover:bg-rose-700 text-white font-black text-[10px] shadow-lg ring-2 ring-white/90 hover:scale-110 active:scale-95 transition cursor-pointer z-30"
+                          title="Gỡ thẻ"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )
+                  }
+                  return (
+                    <div
+                      key={`empty-slot-${slotIdx}`}
+                      className="h-full w-full min-h-0 min-w-0 flex flex-col items-center justify-center rounded border-2 border-dashed border-[#5ae3dd]/40 bg-[#0c404e]/25 text-center text-teal-100/70 hover:border-[#5ae3dd]/70 transition-all select-none"
+                    >
+                      <span className="text-sm font-bold text-amber-300 leading-none mb-1">+</span>
+                      <span
+                        className="font-bold text-teal-100 leading-tight"
+                        style={{ fontSize: 'clamp(8px, 0.65cqw, 10px)' }}
+                      >
+                        Thẻ {slotIdx + 1}
+                      </span>
+                      <span
+                        className="text-teal-300/70"
+                        style={{ fontSize: 'clamp(7px, 0.55cqw, 8px)' }}
+                      >
+                        1 Xu
+                      </span>
                     </div>
-                  </div>
+                  )
+                })}
+              </div>
+
+              {/* === KHU VỰC 6: TỔNG KẾT CHI PHÍ VÀ SỐ DƯ (TRÊN VIÊN THUỐC TEAL CỦA BẢNG XANH DƯƠNG) === */}
+              <div
+                className="absolute z-20 flex flex-col justify-between px-3 py-1.5 text-[#063339] font-bold pointer-events-auto"
+                style={{
+                  left: '59.5%',
+                  top: '56.0%',
+                  width: '23.3%',
+                  height: '9.6%',
+                  fontSize: 'clamp(10px, 0.75cqw, 12px)',
+                }}
+              >
+                {/* NỬA TRÊN CỦA VIÊN THUỐC (TRÊN DÒNG KẺ GỐC) */}
+                <div className="flex items-center justify-between">
+                  <span>Tổng chi phí:</span>
+                  <span className="text-[#c44837] font-black flex items-center gap-0.5">
+                    <ChoiCoin size={12} /> {totalCostCoins} Xu
+                    <span className="text-[10px] text-[#063339]/70 font-normal">
+                      ({draftTrees.length} cây • {totalCardsPicked} thẻ)
+                    </span>
+                  </span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleStartGameFromPicking}
-                  className="px-4 py-2 rounded-full bg-gradient-to-r from-[#e86a38] to-[#c44837] text-white font-black text-xs shadow-md hover:brightness-110 active:scale-95 transition"
-                >
-                  Vào Hội →
-                </button>
+                {/* NỬA DƯỚI CỦA VIÊN THUỐC (DƯỚI DÒNG KẺ GỐC) */}
+                <div className="flex items-center justify-between">
+                  <span>Số dư sau khi mua:</span>
+                  <span className={`flex items-center gap-0.5 font-black ${userCoins < totalCostCoins ? 'text-rose-600' : 'text-emerald-800'
+                    }`}>
+                    <ChoiCoin size={12} /> {Math.max(0, userCoins - totalCostCoins)} Xu
+                  </span>
+                </div>
+
+                {userCoins < totalCostCoins && (
+                  <div className="flex items-center justify-between text-[10px] text-rose-700 font-bold">
+                    <span>Số dư không đủ!</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsTopupModalOpen(true)}
+                      className="underline text-amber-800 hover:text-amber-900 cursor-pointer"
+                    >
+                      Nạp Xu ngay →
+                    </button>
+                  </div>
+                )}
               </div>
+
+              {/* === KHU VỰC 7: NÚT MŨI TÊN "VÀO HỘI KHAI CANH" CÓ CHUYỂN ĐỘNG NHỊP NHỊP TƯƠNG TỰ NÚT VÀO HỘI === */}
+              <button
+                type="button"
+                onClick={handleStartGameFromPicking}
+                title="Bấm để Vào Hội Khai Canh"
+                aria-label="Vào hội khai canh"
+                className="absolute z-20 cursor-pointer select-none outline-none focus:outline-none transition-transform active:scale-95 group pointer-events-auto"
+                style={{
+                  left: '69.8%',
+                  top: '65.8%',
+                  width: '14.0%',
+                  height: '15.6%',
+                }}
+              >
+                <img
+                  src="/assets/game/khaihoi.png"
+                  alt="Vào Hội Khai Canh"
+                  className="w-full h-full object-contain pointer-events-none animate-heartbeat-arrow"
+                  draggable={false}
+                />
+              </button>
             </div>
           </section>
         )}
 
         {screen === 'friend' && (
-          <>
-            <FlyingClouds />
-            <section className="friend-light-frame relative z-10 w-full max-w-2xl overflow-hidden rounded-[2rem] p-7 sm:p-10">
-            
-            <h2 className="text-3xl font-black">Mở hội cùng bạn</h2>
-            <p className="mt-3 text-white/65">Tạo mã rồi gửi cho bạn bè đang mở cùng địa chỉ website này.</p>
-            {!roomCode ? <div className="mt-7 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/15 bg-black/10 p-5">
-                <h3 className="font-bold">Tạo hội mới</h3>
-                <button onClick={createRoom} disabled={socketStatus === 'connecting'} className="mt-4 w-full rounded-xl bg-[#c44837] px-4 py-3 font-bold disabled:opacity-50">{socketStatus === 'connecting' ? 'Đang kết nối…' : 'Tạo mã hội'}</button>
-              </div>
-              <div className="rounded-2xl border border-white/15 bg-black/10 p-5">
-                <h3 className="font-bold">Vào hội bằng mã</h3>
-                <input
-  type="text"
-  inputMode="text"
-  value={joinCode}
-  onChange={(event) => {
-    const value = event.target.value
-      .toUpperCase()
-      .replace(/\s/g, '')
-      .replace(/[^A-Z0-9-]/g, '')
-      .slice(0, 11)
+          <section className="fixed inset-0 z-10 flex items-center justify-center bg-[#092233] overflow-hidden select-none">
+            {/* Lớp nền tràn viền 100% toàn màn hình với choivoiban.png */}
+            <div
+              className="relative flex-none flex items-center justify-center overflow-hidden"
+              style={{
+                width: 'max(100vw, calc(100vh * (2000 / 1009)))',
+                height: 'max(100vh, calc(100vw * (1009 / 2000)))',
+              }}
+            >
+              <img
+                src="/assets/game/choivoiban.png"
+                alt="Mở Hội Cùng Bạn"
+                className="w-full h-full object-cover pointer-events-none select-none"
+                draggable={false}
+              />
 
-    setJoinCode(value)
-  }}
-  placeholder="CHOI-123456"
-  autoCapitalize="characters"
-  autoCorrect="off"
-  spellCheck={false}
-  className="mt-4 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-center font-bold tracking-widest outline-none"
-/>
-                <button
-                  onClick={() => { connectRoom('joinRoom') }}
+              {!roomCode ? (
+                <>
+                  {/* BÊN TRÁI: NÚT TƯƠNG TÁC "TẠO MÃ HỘI" (KHỚP NÚT MINH HỌA TRONG CHOIVOIBAN.PNG) */}
+                  <button
+                    type="button"
+                    onClick={createRoom}
+                    disabled={socketStatus === 'connecting'}
+                    title="Bấm để tạo mã hội mới"
+                    aria-label="Tạo mã hội"
+                    className="absolute z-20 cursor-pointer rounded-full outline-none focus:outline-none transition-all duration-200 transform hover:scale-[1.03] active:scale-[0.97] group disabled:cursor-not-allowed disabled:opacity-60"
+                    style={{
+                      left: '41.33%',
+                      top: '60.85%',
+                      width: '13.75%',
+                      height: '7.14%',
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                  >
+                    {socketStatus === 'connecting' ? (
+                      <div className="w-full h-full rounded-full bg-[#2c8485] border-2 border-white/80 flex items-center justify-center text-white font-black text-xs sm:text-sm shadow-lg animate-pulse">
+                        Đang kết nối…
+                      </div>
+                    ) : (
+                      <div className="w-full h-full rounded-full border-2 border-transparent group-hover:border-white/80 group-hover:bg-white/15 group-hover:shadow-[0_0_24px_rgba(255,255,255,0.4)] transition-all" />
+                    )}
+                  </button>
 
+                  {/* BÊN PHẢI: KHỐI NHẬP MÃ & VÀO HỘI (ĂN KHỚP KHUNG "VÀO HỘI BẰNG MÃ") */}
+                  <div
+                    className="absolute z-20 flex flex-col items-center justify-center"
+                    style={{
+                      left: '60.50%',
+                      top: '61.2%',
+                      width: '14.0%',
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                  >
+                    <input
+                      type="text"
+                      inputMode="text"
+                      value={joinCode}
+                      onChange={(event) => {
+                        const value = event.target.value
+                          .toUpperCase()
+                          .replace(/\s/g, '')
+                          .replace(/[^A-Z0-9-]/g, '')
+                          .slice(0, 11)
+                        setJoinCode(value)
+                      }}
+                      placeholder="CHOI-123456"
+                      autoCapitalize="characters"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      className="w-full h-8 sm:h-10 md:h-12 rounded-xl sm:rounded-2xl border-2 border-[#165a64] bg-[#0b383f]/95 text-white font-black text-center tracking-widest text-xs sm:text-sm md:text-base outline-none placeholder:text-white/40 shadow-inner focus:border-[#20d2c4] focus:shadow-[0_0_15px_rgba(32,210,196,0.5)] transition"
+                    />
 
-                  disabled={!/^CHOI-\d{6}$/.test(joinCode) || socketStatus === 'connecting'}
-                  className="mt-3 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a] disabled:cursor-not-allowed disabled:opacity-35"
+                    <button
+                      type="button"
+                      onClick={() => connectRoom('joinRoom')}
+                      disabled={!/^CHOI-\d{6}$/.test(joinCode) || socketStatus === 'connecting'}
+                      className="mt-2 sm:mt-2.5 w-full h-8 sm:h-10 md:h-12 rounded-xl sm:rounded-2xl font-black text-white text-xs sm:text-sm md:text-base transition-all duration-200 shadow-md transform hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100 bg-gradient-to-r from-[#2c8485] to-[#1c5d64] hover:from-[#359aa0] hover:to-[#226e76] border-2 border-[#41b2bb]/60 cursor-pointer flex items-center justify-center"
+                    >
+                      {socketStatus === 'connecting' ? 'Đang kết nối…' : 'Vào hội'}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                /* GIAO DIỆN PHÒNG CHỜ MỚI (LOBBY THEO KHUNGGAME.PNG) */
+                <>
+                  {/* LỚP ẢNH KHUNG GAME CHUẨN THEO ASSETS/GAME/KHUNGGAME.PNG */}
+                  <img
+                    src="/assets/game/khunggame.png"
+                    alt="Khung Phòng Hội"
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none z-20 animate-fadeIn"
+                    draggable={false}
+                  />
+
+                  {/* VÙNG NỘI DUNG TƯƠNG TÁC PHÒNG CHỜ NẰM TRỌN TRONG KHUNG VÀNG */}
+                  <div
+                    className="absolute z-30 flex flex-col justify-between items-center select-none"
+                    style={{
+                      left: '50.8%',
+                      top: '60.85%',
+                      width: '36.5%',
+                      height: '39.5%',
+                      transform: 'translate(-50%, -50%)',
+                      padding: '0.6% 1.8%',
+                    }}
+                  >
+                    {/* NÚT RỜI HỘI Ở GÓC PHẢI */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        socketRef.current?.close()
+                        socketRef.current = null
+                        setSocketStatus('idle')
+                        setRoomCode('')
+                        setOnlineMode(false)
+                        setOnlinePlayers([])
+                        setRoomError('')
+                      }}
+                      title="Rời hội này"
+                      className="absolute top-0 right-0 z-40 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold text-[#005d67] hover:text-rose-700 bg-white/75 hover:bg-white border border-[#005d67]/20 shadow-xs transition flex items-center gap-1 cursor-pointer"
+                    >
+                      ✕ <span className="hidden sm:inline">Rời hội</span>
+                    </button>
+
+                    {/* MÃ HỘI */}
+                    <div className="w-full text-center flex flex-col items-center">
+                      <p className="text-[9px] sm:text-xs font-black uppercase tracking-[.22em] text-[#005d67] drop-shadow-xs leading-none">
+                        Mã hội của bạn
+                      </p>
+                      <div
+                        className="my-0.5 text-lg sm:text-2xl md:text-3xl font-black tracking-[.2em] text-[#e04f26] drop-shadow-[0_1px_3px_rgba(224,79,38,0.2)] select-text leading-tight"
+                        style={{ fontFamily: 'var(--font-display)' }}
+                      >
+                        {roomCode}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void copyRoomCode()}
+                        className="inline-flex items-center gap-1 rounded-full border border-[#005d67]/30 bg-white/85 hover:bg-white px-2.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-[#005d67] shadow-xs hover:shadow transition transform hover:scale-105 active:scale-95 cursor-pointer leading-none"
+                      >
+                        {roomCodeCopied ? 'Đã sao chép ✓' : '📋 Sao chép mã'}
+                      </button>
+                    </div>
+
+                    {/* DANH SÁCH BẠN BÈ (ĐỦ 5 CHÒI) */}
+                    <div className="w-full flex-1 flex flex-col justify-start my-1 overflow-hidden min-h-0">
+                      <div className="w-full flex items-center justify-between px-1 mb-1 text-[10px] sm:text-xs font-bold text-[#005d67]">
+                        <span>Người trong hội</span>
+                        <span className="font-semibold bg-[#005d67]/10 text-[#005d67] px-2 py-0.2 rounded-full text-[9px] sm:text-[10px]">
+                          {onlinePlayers.length}/5 người
+                        </span>
+                      </div>
+                      <div className="w-full flex-1 space-y-1 overflow-y-auto max-h-[130px] sm:max-h-[155px] pr-0.5">
+                        {Array.from({ length: 5 }, (_, i) => onlinePlayers[i] || null).map((player, index) =>
+                          player ? (
+                            <div
+                              key={player.id}
+                              className="flex items-center justify-between rounded-md sm:rounded-lg border border-[#005d67]/15 bg-white/95 hover:bg-white px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold shadow-xs transition"
+                            >
+                              <span className="flex items-center gap-1 text-[#004d56] font-bold truncate">
+                                <span className="text-[9px] text-[#005d67]/60 font-semibold">Chòi {index + 1}:</span>
+                                {player.name} {player.id === hostId && <span title="Chủ hội">👑</span>}
+                              </span>
+                              <span
+                                className={
+                                  player.ready
+                                    ? 'inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full text-[8px] sm:text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex-shrink-0'
+                                    : 'inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full text-[8px] sm:text-[9px] font-semibold bg-amber-100/70 text-amber-800/80 border border-amber-200 flex-shrink-0'
+                                }
+                              >
+                                {player.ready ? '✓ Sẵn sàng' : 'Chờ sẵn sàng'}
+                              </span>
+                            </div>
+                          ) : (
+                            <div
+                              key={`empty-slot-${index}`}
+                              className="flex items-center justify-between rounded-md sm:rounded-lg border border-dashed border-[#005d67]/25 bg-white/45 px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs transition"
+                            >
+                              <span className="flex items-center gap-1 text-[#005d67]/50 italic">
+                                <span className="text-[9px] font-semibold text-[#005d67]/40 not-italic">Chòi {index + 1}:</span>
+                                Đang chờ bạn vào…
+                              </span>
+                              <span className="text-[8px] sm:text-[9px] text-[#005d67]/40 px-1.5 py-0.2 rounded-full bg-white/40 border border-dashed border-[#005d67]/20 flex-shrink-0">
+                                Còn trống
+                              </span>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+
+                    {/* CÁC NÚT ĐIỀU KHIỂN */}
+                    <div className="w-full space-y-0.5 sm:space-y-1 pt-0.5">
+                      {playerId !== hostId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            socketRef.current?.send(
+                              JSON.stringify({
+                                type: 'ready',
+                                ready: !onlinePlayers.find((p) => p.id === playerId)?.ready,
+                              })
+                            )
+                          }}
+                          className="w-full h-6 sm:h-7 rounded-md sm:rounded-lg font-black text-[10px] sm:text-[11px] transition text-white bg-gradient-to-r from-[#e67e22] to-[#d35400] hover:from-[#f39c12] hover:to-[#e67e22] shadow-xs transform active:scale-98 cursor-pointer flex items-center justify-center"
+                        >
+                          {onlinePlayers.find((p) => p.id === playerId)?.ready
+                            ? 'Hủy sẵn sàng'
+                            : 'Tôi đã sẵn sàng ✓'}
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => void unlockAudio()}
+                        className="w-full h-6 sm:h-7 rounded-md sm:rounded-lg font-bold text-[10px] sm:text-xs text-[#005d67] bg-white/85 hover:bg-white border border-[#005d67]/25 hover:border-[#005d67]/60 shadow-xs transition cursor-pointer flex items-center justify-center gap-1"
+                      >
+                        🔊 Bật âm thanh
+                      </button>
+
+                      {playerId === hostId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            socketRef.current?.send(JSON.stringify({ type: 'startGame' }))
+                          }}
+                          disabled={
+                            onlinePlayers.length < 2 ||
+                            onlinePlayers.some((p) => !p.ready)
+                          }
+                          className="w-full h-6.5 sm:h-7.5 rounded-md sm:rounded-lg font-black text-[10px] sm:text-xs text-white transition disabled:cursor-not-allowed disabled:opacity-50 bg-gradient-to-r from-[#c44837] to-[#a83222] hover:from-[#d65240] hover:to-[#b83827] shadow-xs transform active:scale-98 disabled:hover:scale-100 cursor-pointer flex items-center justify-center"
+                        >
+                          {onlinePlayers.length < 2
+                            ? 'Chờ ít nhất một người bạn…'
+                            : onlinePlayers.some((p) => !p.ready)
+                              ? 'Chờ mọi người sẵn sàng…'
+                              : 'Khai hội ngay 🎊'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* THÔNG BÁO LỖI NẾU CÓ */}
+              {roomError && (
+                <div
+                  className="absolute z-30 -translate-x-1/2 px-4 py-1.5 rounded-full bg-rose-900/95 border border-rose-400 text-rose-100 text-xs sm:text-sm font-bold shadow-xl animate-shake pointer-events-none"
+                  style={{
+                    left: '50.0%',
+                    top: '78.5%',
+                  }}
                 >
-                  Vào hội
-                </button>
-              </div>
-            </div> : <div className="mt-7">
-              <div className="rounded-2xl border border-[#f29963]/40 bg-black/10 p-5 text-center"><p className="text-xs uppercase tracking-[.2em] text-white/55">Mã hội của bạn</p><div className="mt-2 text-3xl font-black tracking-[.2em] text-[#f29963]">{roomCode}</div><button onClick={() => void copyRoomCode()} className="mt-3 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white">{roomCodeCopied ? 'Đã sao chép ✓' : 'Sao chép mã'}</button></div>
-              <div className="mt-4 space-y-2">{onlinePlayers.map((player) => <div key={player.id} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3"><span className="font-semibold">{player.name} {player.id === hostId && '👑'}</span><span className={player.ready ? 'text-[#f29963]' : 'text-white/45'}>{player.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span></div>)}</div>
-             {playerId !== hostId && (
-  <button
-    onClick={() => {
-      socketRef.current?.send(
-        JSON.stringify({
-          type: 'ready',
-          ready: !onlinePlayers.find(
-            (player) => player.id === playerId
-          )?.ready
-        })
-      )
-    }}
-    className="mt-5 w-full rounded-xl bg-[#e69756] px-4 py-3 font-bold text-[#173a3a]"
-  >
-    {onlinePlayers.find((player) => player.id === playerId)?.ready
-      ? 'Hủy sẵn sàng'
-      : 'Tôi đã sẵn sàng'}
-  </button>
-)}
-
-<button
-  onClick={() => void unlockAudio()}
-  className="mt-5 w-full rounded-xl bg-[#f29963] px-4 py-3 font-bold text-[#173a3a]"
->
-  🔊 Bật âm thanh
-</button>
-
-{playerId === hostId && (
-  <button
-    onClick={() => {
-      socketRef.current?.send(
-        JSON.stringify({ type: 'startGame' })
-      )
-    }}
-    disabled={
-      onlinePlayers.length < 2 ||
-      onlinePlayers.some((player) => !player.ready)
-    }
-    className="mt-5 w-full rounded-xl bg-[#c44837] px-4 py-3 font-bold disabled:cursor-not-allowed disabled:opacity-35"
-  >
-    {onlinePlayers.length < 2
-      ? 'Chờ ít nhất một người bạn…'
-      : onlinePlayers.some((player) => !player.ready)
-      ? 'Chờ mọi người sẵn sàng…'
-      : 'Khai hội'}
-  </button>
-)}
-
-            </div>}
-            {roomError && <p className="mt-4 rounded-xl bg-[#7c2421]/50 px-4 py-3 text-sm text-[#ffd3c2]">{roomError}</p>}
-            </section>
-          </>
+                  ⚠️ {roomError}
+                </div>
+              )}
+            </div>
+          </section>
         )}
 
-      {screen === 'playing' && (
-  <section className="w-full px-3 pb-16 sm:px-4 sm:pb-12">
-            <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <div><p className="text-xs uppercase tracking-[.2em] text-[#f29963]">Hội Bài Chòi • 5 chòi</p><h2 className="text-2xl font-black">Ván đang diễn ra</h2></div>
-              <div className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm">Cờ của bạn: <strong className="text-[#f29963]">{playerTrees.length > 0 ? Math.max(0, ...playerTrees.map(t => t.claimedCardIds.length)) : claimed.length}/3</strong></div>
-            </header>
-            <div className="grid gap-5 lg:grid-cols-[1fr_1.25fr]">
-              <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
-              <p className="mb-4 text-center text-sm text-white/70">{message}</p>
-              <div className="bai-choi-draw-stage">
+        {screen === 'playing' && (() => {
+          // Xác định số cây bài người chơi đang giữ (từ 1 đến 5)
+          const currentTreeCount = Math.max(1, Math.min(5, playerTrees.length || 1))
 
-  {/* NỀN / VÒNG MA THUẬT */}
-  <img
-    src="/assets/nen2game.jpg"
-    alt=""
-    className={`
-      draw-magic-background
-      ${isCalling ? 'draw-magic-background-active' : ''}
-    `}
-    draggable={false}
-  />
+          // Ánh xạ ảnh nền: 1 cây (22.png), 2 cây (26.png), 3 cây (25.png), 4 cây (24.png), 5 cây (23.png)
+          const playingBackgroundSrc =
+            currentTreeCount === 1
+              ? '/assets/game/22.png'
+              : currentTreeCount === 2
+                ? '/assets/game/26.png'
+                : currentTreeCount === 3
+                  ? '/assets/game/25.png'
+                  : currentTreeCount === 4
+                    ? '/assets/game/24.png'
+                    : '/assets/game/23.png'
 
-  {/* ÁNH SÁNG PHÍA SAU LÁ BÀI */}
-  <div
-    className={`
-      draw-stage-light
-      ${isCalling ? 'draw-stage-light-active' : ''}
-    `}
-  />
+          const effectiveTrees: PlayerTree[] =
+            playerTrees.length > 0
+              ? playerTrees
+              : [{ id: 'tree-1', name: 'Cây Bài của bạn', cards: hand, claimedCardIds: claimed }]
 
-  {/* NÚT MỞ LẠI XẾP HÌNH NẾU ĐÃ THOÁT RA BÀN CHƠI (Khi đang hô) */}
-  {isCalling && currentCallingCard && !showPuzzleModal && (
-    <button
-      onClick={() => setShowPuzzleModal(true)}
-      className="absolute top-4 right-4 z-30 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#f29963] hover:bg-[#ffb07f] active:scale-95 text-[#072d2e] font-black text-xs shadow-lg transition"
-    >
-      <span className="text-sm">🧩</span>
-      <span>Vào Xếp Hình</span>
-    </button>
-  )}
+          const getPaddleStyle = (treeCount: number, treeIndex: number) => {
+            if (treeCount === 1) {
+              return {
+                left: '49.5%',
+                top: '25.5%',
+                width: '29.0%',
+                height: '35.0%',
+              }
+            }
+            if (treeCount === 2) {
+              return {
+                left: treeIndex === 0 ? '43.1%' : '63.6%',
+                top: '29.0%',
+                width: '15.8%',
+                height: '26.0%',
+              }
+            }
+            if (treeCount === 3) {
+              const lefts = ['39.1%', '53.1%', '66.1%']
+              return {
+                left: lefts[treeIndex] || '53.1%',
+                top: '33.0%',
+                width: '10.4%',
+                height: '21.5%',
+              }
+            }
+            if (treeCount === 4) {
+              if (treeIndex < 3) {
+                const lefts = ['39.1%', '52.7%', '66.1%']
+                return {
+                  left: lefts[treeIndex],
+                  top: '18.0%',
+                  width: '10.4%',
+                  height: '21.0%',
+                }
+              }
+              return {
+                left: '52.7%',
+                top: '59.5%',
+                width: '10.4%',
+                height: '21.0%',
+              }
+            }
+            // treeCount === 5
+            if (treeIndex < 3) {
+              const lefts = ['39.1%', '52.7%', '66.1%']
+              return {
+                left: lefts[treeIndex],
+                top: '18.0%',
+                width: '10.4%',
+                height: '21.0%',
+              }
+            }
+            const bottomRowLefts = ['46.0%', '60.4%']
+            return {
+              left: bottomRowLefts[treeIndex - 3] || '46.0%',
+              top: '59.5%',
+              width: '10.4%',
+              height: '21.0%',
+            }
+          }
 
-  {/* LÁ BÀI TRÊN SÂN KHẤU CHÍNH (GIỮ NGUYÊN KHÔNG THAY ĐỔI) */}
-  {(isCalling || currentCard) ? (
-    <div
-      className={`
-        draw-card-wrapper
-        ${isCalling ? 'draw-card-calling' : ''}
-      `}
-    >
-      <div
-        className={`
-          draw-card-inner
-          ${currentCard ? 'draw-card-flipped' : ''}
-        `}
-      >
+          const plankTops = ['20.3%', '29.8%', '39.2%', '48.6%', '58.0%']
 
-        {/* MẶT SAU */}
-        <div className="draw-card-face draw-card-back">
-          <img
-            src="/assets/phiasau.png"
-            alt="Mặt sau quân Bài Chòi"
-            draggable={false}
-          />
+          return (
+            <section className="fixed inset-0 z-10 flex items-center justify-center bg-[#151a30] overflow-hidden select-none animate-fadeIn">
+              {/* SÂN KHẤU TRÒ CHƠI TOÀN MÀN HÌNH THEO TỈ LỆ 2000 x 1009 */}
+              <div
+                className="relative flex-none flex items-center justify-center overflow-hidden"
+                style={{
+                  width: 'max(100vw, calc(100vh * (2000 / 1009)))',
+                  height: 'max(100vh, calc(100vw * (1009 / 2000)))',
+                }}
+              >
+                {/* ẢNH GIAO DIỆN NỀN ĐỘNG (22.PNG ĐẾN 26.PNG) */}
+                <img
+                  src={playingBackgroundSrc}
+                  alt="Bàn chơi Bài Chòi"
+                  className="w-full h-full object-cover pointer-events-none select-none"
+                  draggable={false}
+                />
 
-          {isCalling && (
-            <>
-              <span className="card-spark spark-1">✦</span>
-              <span className="card-spark spark-2">✦</span>
-              <span className="card-spark spark-3">✦</span>
-              <span className="card-spark spark-4">✦</span>
-            </>
-          )}
-        </div>
-
-        {/* MẶT TRƯỚC */}
-        <div className="draw-card-face draw-card-front">
-          {currentCard && (
-            <img
-              src={currentCard.image}
-              alt={currentCard.name}
-              draggable={false}
-            />
-          )}
-        </div>
-
-      </div>
-    </div>
-  ) : (
-    <div className="draw-waiting">
-      <div className="draw-waiting-symbol">✦</div>
-
-      <p>
-        Chờ Chị Hiệu
-        <br />
-        rút thẻ
-      </p>
-    </div>
-  )}
-
-  <div className="draw-status">
-    {isCalling && currentCallingCard ? (
-      <div className="flex items-center justify-center gap-1.5 px-3.5 py-1 rounded-full bg-black/60 border border-[#f6d274]/40 backdrop-blur-md shadow-lg transition-all duration-300">
-        <span className="text-xs text-[#f6d274] animate-pulse">🎶</span>
-        <span className="text-xs sm:text-[13px] font-semibold italic text-[#ffe58b] tracking-wide font-serif leading-snug">
-          "{getChantLyrics(currentCallingCard.id, currentCallingCard.name)[chantLyricIndex]}"
-        </span>
-      </div>
-    ) : currentCard ? (
-      <span className="draw-card-name">
-        QUÂN {currentCard.name.toUpperCase()}
-      </span>
-    ) : (
-      <span>Chờ bắt đầu hội</span>
-    )}
-  </div>
-
-</div>
-                <div className="mt-5 grid grid-cols-2 gap-3">
-
-  {/* NÚT HÔ */}
-  <button
-    onClick={drawNext}
-    disabled={
-      Boolean(winner) ||
-      isCalling ||
-      (onlineMode ? playerId !== hostId : drawIndex >= deck.length - 1)
-    }
-    className="game-action-btn game-action-btn-frame"
-  >
-    {isCalling
-      ? 'Đang hô…'
-      : onlineMode && playerId !== hostId
-      ? 'Chờ chủ hội'
-      : drawIndex < 0
-      ? 'Bắt đầu hô'
-      : 'Hô tiếp'}
-  </button>
-
-
-  {/* NÚT GÕ MÕ */}
-  <button
-  onClick={claimCard}
-  disabled={isCalling || !currentCard || Boolean(winner)}
-  className={`
-    game-action-btn
-    game-action-btn-frame
-    ${canClaim && !isCalling ? 'game-action-btn-hit' : ''}
-  `}
->
-  GÕ MÕ
-</button>
-
-</div>
-              </div>
-              <div className="space-y-5">
-                <div className="rounded-[2rem] border border-white/15 bg-[#0b5558]/90 p-5">
-                  <p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#f29963]">
-                    {playerTrees.length > 1
-                      ? `Các cây bài của bạn (${playerTrees.length} Cây • ${hand.length} Thẻ)`
-                      : 'Ba thẻ trong chòi của bạn'}
-                  </p>
-
-                  {playerTrees.length > 1 ? (
-                    <div className="space-y-4">
-                      {playerTrees.map((tree) => (
-                        <div key={tree.id} className="rounded-2xl bg-black/25 border border-white/10 p-3 sm:p-4">
-                          <div className="flex items-center justify-between mb-2.5">
-                            <span className="text-xs sm:text-sm font-bold text-[#ffda86] flex items-center gap-1.5">
-                              <span>🎋</span>
-                              <span>{tree.name}</span>
-                            </span>
-                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
-                              tree.claimedCardIds.length >= 3
-                                ? 'bg-amber-500 text-slate-900 border-amber-300 font-black'
-                                : 'bg-[#f29963]/20 text-[#f29963] border-[#f29963]/30'
-                            }`}>
-                              ⚑ {tree.claimedCardIds.length}/3 Cờ
-                            </span>
-                          </div>
-
-                          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                            {tree.cards.map((card) => {
-                              const isClaimed = tree.claimedCardIds.includes(card.id)
-                              const isHit = !isCalling && currentCard?.id === card.id && !isClaimed
-                              return (
-                                <div
-                                  key={card.id}
-                                  className={`hand-card ${isHit ? 'hand-card-hit' : ''} ${isClaimed ? 'hand-card-claimed' : ''}`}
-                                >
-                                  <div className="hand-card-image">
-                                    <img src={card.image} alt={card.name} draggable={false} />
-                                  </div>
-                                  <p className="hand-card-name">
-                                    {isClaimed ? '⚑ ' : ''}{card.name}
-                                  </p>
-                                  {isHit && (
-                                    <>
-                                      <span className="hit-spark hit-spark-1">✦</span>
-                                      <span className="hit-spark hit-spark-2">✦</span>
-                                    </>
-                                  )}
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      ))}
+                {/* THÔNG BÁO TIN NHẮN / TRẠNG THÁI NỔI PHÍA TRÊN */}
+                {message && (
+                  <div className="absolute top-[3.5%] left-[30.0%] right-[30.0%] z-30 flex items-center justify-center pointer-events-none">
+                    <div className="px-4 py-1.5 rounded-full bg-[#07353b]/90 border border-[#5ae3dd]/50 backdrop-blur-md text-[#cbf6f0] font-black text-xs sm:text-sm shadow-xl animate-fadeIn text-center truncate">
+                      {message}
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-3 gap-3">
-                      {hand.map((card) => {
-                        const isClaimed = claimed.includes(card.id)
-                        const isHit = !isCalling && currentCard?.id === card.id && !isClaimed
-                        return (
-                          <div
-                            key={card.id}
-                            className={`hand-card ${isHit ? 'hand-card-hit' : ''} ${isClaimed ? 'hand-card-claimed' : ''}`}
-                          >
-                            <div className="hand-card-image">
-                              <img src={card.image} alt={card.name} draggable={false} />
-                            </div>
-                            <p className="hand-card-name">
-                              {isClaimed ? '⚑ ' : ''}{card.name}
-                            </p>
-                            {isHit && (
+                  </div>
+                )}
+
+                {/* === KHU VỰC 1: SÂN KHẤU RÚT THẺ CỦA CHỊ HIỆU / ANH HIỆU (BÊN TRÁI) === */}
+                <div
+                  className="absolute z-20 flex flex-col items-center justify-center pointer-events-auto"
+                  style={{
+                    left: currentTreeCount === 1 ? '16.0%' : '14.5%',
+                    top: '20.0%',
+                    width: '18.0%',
+                    height: '52.0%',
+                  }}
+                >
+                  {/* VÙNG LÁ BÀI RÚT (TỈ LỆ CHUẨN THẺ BÀI CHÒI 1:2.6, CANH CHUẨN NGAY TRÊN ĐÀI SÁNG) */}
+                  {(isCalling || currentCard) ? (
+                    <div className="relative flex flex-col items-center justify-center w-full h-full">
+                      <div
+                        className={`draw-card-wrapper ${isCalling ? 'draw-card-calling' : ''}`}
+                        style={{
+                          width: '46%',
+                          maxWidth: '150px',
+                          aspectRatio: '510 / 1350',
+                          marginBottom: '8px',
+                        }}
+                      >
+                        <div className={`draw-card-inner ${currentCard ? 'draw-card-flipped' : ''}`}>
+                          {/* MẶT SAU */}
+                          <div className="draw-card-face draw-card-back shadow-2xl rounded-xl overflow-hidden border border-amber-300/40">
+                            <img
+                              src="/assets/phiasau.png"
+                              alt="Mặt sau quân Bài Chòi"
+                              className="w-full h-full object-cover"
+                              draggable={false}
+                            />
+                            {isCalling && (
                               <>
-                                <span className="hit-spark hit-spark-1">✦</span>
-                                <span className="hit-spark hit-spark-2">✦</span>
+                                <span className="card-spark spark-1">✦</span>
+                                <span className="card-spark spark-2">✦</span>
+                                <span className="card-spark spark-3">✦</span>
+                                <span className="card-spark spark-4">✦</span>
                               </>
                             )}
                           </div>
-                        )
-                      })}
+
+                          {/* MẶT TRƯỚC */}
+                          <div className="draw-card-face draw-card-front shadow-2xl rounded-xl overflow-hidden border border-amber-300/40">
+                            {currentCard && (
+                              <img
+                                src={currentCard.image}
+                                alt={currentCard.name}
+                                className="w-full h-full object-contain"
+                                draggable={false}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* THANH TRẠNG THÁI / LỜI HÔ ĐẶT NGAY DƯỚI CHÂN LÁ BÀI */}
+                      {isCalling && currentCallingCard ? (
+                        <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-black/85 border border-[#f6d274]/60 backdrop-blur-md shadow-2xl transition-all animate-pulse max-w-[95%]">
+                          <span className="text-xs text-[#f6d274]">🎶</span>
+                          <span className="text-[11px] sm:text-xs font-semibold italic text-[#ffe58b] tracking-wide font-serif truncate">
+                            "{getChantLyrics(currentCallingCard.id, currentCallingCard.name)[chantLyricIndex]}"
+                          </span>
+                        </div>
+                      ) : currentCard ? (
+                        <span className="px-3 py-1.5 rounded-full bg-[#0a383f]/95 border border-[#5ae3dd]/70 font-black text-[#5ae3dd] text-xs sm:text-sm tracking-wider shadow-xl max-w-[95%] truncate text-center">
+                          QUÂN {currentCard.name.toUpperCase()}
+                        </span>
+                      ) : null}
                     </div>
-                  )}
+                  ) : null}
                 </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-                  {players.map((player, index) => <div key={`${player}-${index}`} className={`rounded-2xl border p-3 text-center ${(onlineMode ? onlinePlayers[index]?.id === playerId : index === 0) ? 'border-[#f29963] bg-[#c44837]/25' : 'border-white/15 bg-[#0b5558]/80'}`}><div className="mx-auto mb-2 grid h-9 w-9 place-items-center rounded-full bg-white/10">{onlineMode ? '☺' : index === 0 ? '☺' : '⚙'}</div><p className="truncate text-xs font-bold">{player}</p><p className="mt-1 text-[11px] text-[#f29963]">⚑ {onlineMode ? onlinePlayers[index]?.flags || 0 : index === 0 ? (playerTrees.length > 0 ? Math.max(0, ...playerTrees.map(t => t.claimedCardIds.length)) : claimed.length) : botFlags[index - 1]}/3</p></div>)}
-                </div>
-              </div>
-            </div>
-          
-        {/* MODAL POPUP XẾP HÌNH JIGSAW NỔI TRÊN MÀN HÌNH (LÀM TỐI PHÍA SAU) */}
-        {showPuzzleModal && isCalling && currentCallingCard && (
-          <div className="fixed inset-0 z-[500] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-2 sm:p-4 select-none overflow-y-auto animate-fadeIn">
-            <div className="w-full max-w-[460px] flex flex-col items-center my-auto">
-              {/* THANH ĐIỀU HƯỚNG TRÊN CÙNG */}
-              <div className="w-full flex items-center justify-between mb-2 px-1">
+
+                {/* === KHU VỰC 2: HAI NÚT BẤM DƯỚI SÂN KHẤU (ĂN KHỚP 2 VIÊN THUỐC TRÊN ẢNH NỀN) === */}
+                {/* NÚT 1: HÔ BÀI */}
                 <button
                   type="button"
-                  onClick={() => setShowPuzzleModal(false)}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#c44837] hover:bg-[#a33829] active:scale-95 text-white font-bold text-xs shadow-xl transition"
+                  onClick={drawNext}
+                  disabled={
+                    Boolean(winner) ||
+                    isCalling ||
+                    (onlineMode ? playerId !== hostId : drawIndex >= deck.length - 1)
+                  }
+                  title="Rút quân bài tiếp theo"
+                  aria-label="Rút quân bài"
+                  className="absolute z-20 flex items-center justify-center font-black transition-all cursor-pointer rounded-full outline-none select-none hover:scale-[1.03] active:scale-[0.97] group disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 pointer-events-auto"
+                  style={{
+                    left: '12.0%',
+                    top: '75.5%',
+                    width: '10.3%',
+                    height: '4.8%',
+                    fontSize: 'clamp(10px, 0.8cqw, 13.5px)',
+                  }}
                 >
-                  <span>←</span>
-                  <span>Quay lại bàn chơi</span>
+                  <span className="text-[#093c40] font-black drop-shadow-sm tracking-wide">
+                    {isCalling
+                      ? 'Đang hô…'
+                      : onlineMode && playerId !== hostId
+                        ? 'Chờ chủ hội'
+                        : drawIndex < 0
+                          ? 'Bắt đầu hô'
+                          : 'Hô tiếp'}
+                  </span>
                 </button>
 
+                {/* NÚT 2: GÕ MÕ */}
                 <button
                   type="button"
-                  onClick={() => setShowPuzzleModal(false)}
-                  className="text-xs font-semibold text-white/75 hover:text-white px-2.5 py-1 rounded-md bg-white/10 hover:bg-white/20 transition"
+                  onClick={claimCard}
+                  disabled={isCalling || !currentCard || Boolean(winner)}
+                  title="Gõ mõ nhận thẻ trúng cờ"
+                  aria-label="Gõ mõ"
+                  className={`absolute z-20 flex items-center justify-center font-black transition-all cursor-pointer rounded-full outline-none select-none hover:scale-[1.03] active:scale-[0.97] group disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 pointer-events-auto ${
+                    canClaim && !isCalling
+                      ? 'animate-bounce shadow-[0_0_20px_rgba(255,215,0,0.8)] ring-2 ring-amber-300'
+                      : ''
+                  }`}
+                  style={{
+                    left: '25.8%',
+                    top: '75.5%',
+                    width: '10.2%',
+                    height: '4.8%',
+                    fontSize: 'clamp(11px, 0.9cqw, 15px)',
+                  }}
                 >
-                  Bỏ qua ✕
+                  <span className={`font-black drop-shadow-sm tracking-wide ${
+                    canClaim && !isCalling ? 'text-[#c44837] animate-pulse font-extrabold' : 'text-[#093c40]'
+                  }`}>
+                    GÕ MÕ
+                  </span>
                 </button>
-              </div>
 
-              {/* BÀN CHƠI JIGSAW */}
-              <div className="w-full">
-                <BaiChoiPuzzle
-                  card={currentCallingCard}
-                  isCalling={isCalling}
-                  level={puzzleLevel}
-                  lyricIndex={chantLyricIndex}
-                  onComplete={handlePuzzleComplete}
-                  onClose={() => setShowPuzzleModal(false)}
-                />
+                {/* === KHU VỰC 3: CÁC BẢNG CHÒI CỦA NGƯỜI CHƠI (CHỈ HIỆN LÁ BÀI, KHÔNG HIỆN CHỮ) === */}
+                {effectiveTrees.slice(0, currentTreeCount).map((tree, idx) => {
+                  const paddleStyle = getPaddleStyle(currentTreeCount, idx)
+
+                  return (
+                    <div
+                      key={tree.id || idx}
+                      className="absolute z-20 pointer-events-auto select-none"
+                      style={paddleStyle}
+                    >
+                      {/* VÙNG 3 LÁ BÀI BÊN TRONG BẢNG CHÒI - CHỈ HIỆN LÁ BÀI, KHÔNG CÓ CHỮ */}
+                      <div className="w-full h-full grid grid-cols-3 gap-1 p-0.5 items-center justify-items-center">
+                        {tree.cards.map((card) => {
+                          const isClaimed = tree.claimedCardIds.includes(card.id)
+                          const isHit = !isCalling && currentCard?.id === card.id && !isClaimed
+
+                          return (
+                            <button
+                              key={card.id}
+                              type="button"
+                              onClick={isHit ? claimCard : undefined}
+                              title={card.name}
+                              className={`relative flex items-center justify-center h-full w-full p-0.5 rounded-lg transition-all duration-200 outline-none select-none cursor-pointer ${
+                                isHit
+                                  ? 'bg-amber-400/40 border-2 border-amber-300 ring-2 ring-amber-300 animate-pulse scale-105 shadow-xl'
+                                  : isClaimed
+                                    ? 'opacity-85 ring-2 ring-amber-400/90 shadow-md'
+                                    : 'hover:scale-102 hover:brightness-105'
+                              }`}
+                            >
+                              <div className="w-full h-full flex items-center justify-center overflow-hidden rounded">
+                                <img
+                                  src={card.image}
+                                  alt={card.name}
+                                  className="h-full w-full object-contain pointer-events-none drop-shadow"
+                                  draggable={false}
+                                />
+                              </div>
+                              {isClaimed && (
+                                <span className="absolute top-0.5 right-0.5 text-xs drop-shadow pointer-events-none select-none">
+                                  🚩
+                                </span>
+                              )}
+                              {isHit && (
+                                <span className="absolute -top-1 -right-1 text-xs animate-ping font-black text-amber-300 pointer-events-none">
+                                  ✦
+                                </span>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {/* === KHU VỰC 4: DANH SÁCH NGƯỜI THAM GIA (5 TẤM BẢNG GỖ BÊN PHẢI) === */}
+                {players.slice(0, 5).map((player, index) => {
+                  const isMe = onlineMode ? onlinePlayers[index]?.id === playerId : index === 0
+                  const flags = onlineMode
+                    ? onlinePlayers[index]?.flags || 0
+                    : index === 0
+                      ? (playerTrees.length > 0 ? Math.max(0, ...playerTrees.map((t) => t.claimedCardIds.length)) : claimed.length)
+                      : botFlags[index - 1] || 0
+
+                  return (
+                    <div
+                      key={`${player}-${index}`}
+                      className={`absolute z-20 flex items-center justify-between px-3.5 rounded-xl pointer-events-auto transition-all select-none ${
+                        isMe ? 'ring-2 ring-amber-400 bg-amber-400/15' : ''
+                      }`}
+                      style={{
+                        left: '84.0%',
+                        top: plankTops[index],
+                        width: '13.4%',
+                        height: '8.9%',
+                      }}
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-sm sm:text-base">
+                          {onlineMode ? '☺' : index === 0 ? '☺' : '⚙'}
+                        </span>
+                        <span className="truncate font-black text-white text-[10px] sm:text-xs">
+                          {player} {isMe ? '(Bạn)' : ''}
+                        </span>
+                      </div>
+                      <span className="text-[10px] sm:text-xs font-black text-[#ffda86] shrink-0 bg-black/40 px-2 py-0.5 rounded-full border border-amber-400/30">
+                        ⚑ {flags}/3
+                      </span>
+                    </div>
+                  )
+                })}
               </div>
-            </div>
-          </div>
-        )}
-      </section>
-        )}
+            </section>
+          )
+        })()}
 
         {screen === 'result' && (
           <section className="w-full max-w-xl rounded-[2rem] border border-[#f29963]/50 bg-[#0b5558]/95 p-8 text-center shadow-2xl sm:p-12">

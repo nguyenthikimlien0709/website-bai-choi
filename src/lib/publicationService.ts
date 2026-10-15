@@ -20,6 +20,18 @@ const STORAGE_PUBLICATIONS_KEY = 'bai_choi_publications_shared'
 
 export const DEFAULT_PUBLICATIONS: PublicationRecord[] = [
   {
+    id: 'pub-combo-mascot',
+    name: 'Combo 2 Mô Hình Mascot Bài Chòi (Anh Hiệu & Chị Hiệu)',
+    category: 'Bộ Bài & Mascot',
+    price: 1000000,
+    stock: 50,
+    imageUrl: '/assets/shop/mascot_box.png',
+    description: 'Bộ đôi mô hình sưu tầm cao cấp Anh Hiệu & Chị Hiệu - Biểu tượng di sản văn hóa phi vật thể Bài Chòi miền Trung, thiết kế hộp trưng bày nghệ thuật phiên bản giới hạn.',
+    rating: 5.0,
+    reviewsCount: 185,
+    badge: 'Phiên bản đặc biệt',
+  },
+  {
     id: 'pub-01',
     name: 'Bộ Bài Chòi Dân Gian 30 Thẻ Gỗ Tự Nhiên',
     category: 'Bộ Thẻ Bài',
