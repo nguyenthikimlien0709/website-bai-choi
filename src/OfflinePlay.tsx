@@ -49,7 +49,6 @@ export default function OfflinePlay({
   const [menuDrawerOpen, setMenuDrawerOpen] = useState(false)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const clapperAudioRef = useRef<HTMLAudioElement | null>(null)
   const lyricTimerRef = useRef<number | null>(null)
 
   // Danh sách các thẻ chưa rút
@@ -150,7 +149,7 @@ export default function OfflinePlay({
 
     if (showcasePhase !== 'idle') return
 
-    handlePlayMo() // gõ tiếng lộc cộc nhẹ khi lắc ống
+    playBambooShakeSound() // âm thanh lách cách nhẹ của ống tre lắc thẻ
 
     const randomIndex = Math.floor(Math.random() * remainingCards.length)
     const drawn = remainingCards[randomIndex]
@@ -201,27 +200,25 @@ export default function OfflinePlay({
     setCelebrateWon(false)
   }
 
-  // Phát tiếng Gõ Mõ (Âm thanh thực tế Do-Mo.mp3)
-  const handlePlayMo = () => {
+  // Âm thanh lách cách nhẹ của ống tre lắc thẻ (tổng hợp qua Web Audio, không phát file Do-Mo.mp3 vì Do-Mo.mp3 là bài hát của quân Đỏ Mỏ)
+  const playBambooShakeSound = () => {
     try {
-      const audio = clapperAudioRef.current || new Audio('/sound-offline/Do-Mo.mp3')
-      audio.currentTime = 0
-      audio.volume = 1
-      clapperAudioRef.current = audio
-      void audio.play().catch(() => {
-        // Fallback AudioContext
-        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext
+      if (!AudioCtx) return
+      const ctx = new AudioCtx()
+      const now = ctx.currentTime
+      ;[0, 0.05].forEach((delay, idx) => {
         const osc = ctx.createOscillator()
         const gain = ctx.createGain()
         osc.type = 'triangle'
-        osc.frequency.setValueAtTime(420, ctx.currentTime)
-        osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.12)
-        gain.gain.setValueAtTime(0.8, ctx.currentTime)
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.14)
+        osc.frequency.setValueAtTime(idx === 0 ? 520 : 640, now + delay)
+        osc.frequency.exponentialRampToValueAtTime(160, now + delay + 0.04)
+        gain.gain.setValueAtTime(0.12, now + delay)
+        gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.045)
         osc.connect(gain)
         gain.connect(ctx.destination)
-        osc.start()
-        osc.stop(ctx.currentTime + 0.15)
+        osc.start(now + delay)
+        osc.stop(now + delay + 0.05)
       })
     } catch {}
   }
