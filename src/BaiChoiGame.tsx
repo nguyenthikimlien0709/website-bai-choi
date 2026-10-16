@@ -564,10 +564,40 @@ export default function BaiChoiGame({
     if (typeof window === 'undefined') return false
 
     return (
-      window.innerWidth < 768 &&
+      window.innerWidth < 1024 &&
       window.innerHeight > window.innerWidth
     )
   })
+
+  const [rotateAngle, setRotateAngle] = useState(90)
+
+  // Style cho sân khấu chính 2000 x 1009 (Tự động xoay ngang toàn màn hình khi mở bằng điện thoại dọc)
+  const stageStyle = useMemo(() => {
+    if (isMobilePortrait) {
+      return {
+        width: 'max(100dvh, calc(100dvw * (2000 / 1009)))',
+        height: 'max(100dvw, calc(100dvh * (1009 / 2000)))',
+      }
+    }
+    return {
+      width: 'max(100vw, calc(100vh * (2000 / 1009)))',
+      height: 'max(100vh, calc(100vw * (1009 / 2000)))',
+    }
+  }, [isMobilePortrait])
+
+  // Style cho sân khấu video Hô Tới 1304 x 658 (Tự động xoay ngang toàn màn hình khi mở bằng điện thoại dọc)
+  const resultStageStyle = useMemo(() => {
+    if (isMobilePortrait) {
+      return {
+        width: 'max(100dvh, calc(100dvw * (1304 / 658)))',
+        height: 'max(100dvw, calc(100dvh * (658 / 1304)))',
+      }
+    }
+    return {
+      width: 'max(100vw, calc(100vh * (1304 / 658)))',
+      height: 'max(100vh, calc(100vw * (658 / 1304)))',
+    }
+  }, [isMobilePortrait])
 
   const introVideoSrc = isMobilePortrait
     ? '/sound-online/video-daugame-dienthoai.mp4'
@@ -575,7 +605,7 @@ export default function BaiChoiGame({
 
   useEffect(() => {
     const checkOrientation = () => {
-      setIsMobilePortrait(window.innerWidth < 768 && window.innerHeight > window.innerWidth)
+      setIsMobilePortrait(window.innerWidth < 1024 && window.innerHeight > window.innerWidth)
     }
     checkOrientation()
     window.addEventListener('resize', checkOrientation)
@@ -1429,7 +1459,30 @@ export default function BaiChoiGame({
       aria-modal="true"
       aria-label="Trò chơi Bài Chòi"
     >
-      <div className="pointer-events-none fixed inset-0 opacity-20" style={{ backgroundImage: 'url(/assets/Background-toan.jpg)', backgroundSize: 'cover' }} />
+      {/* KHUNG XOAY TỰ ĐỘNG 90° KHI MỞ TRÊN ĐIỆN THOẠI DỌC (TẠO TRẢI NGHIỆM WIDESCREEN Y HỆT LAPTOP) */}
+      <div
+        className="w-full h-full relative"
+        style={
+          isMobilePortrait
+            ? {
+                position: 'fixed',
+                left: '50%',
+                top: '50%',
+                width: '100dvh',
+                height: '100dvw',
+                transform: `translate(-50%, -50%) rotate(${rotateAngle}deg)`,
+                transformOrigin: 'center center',
+                overflow: 'hidden',
+              }
+            : {
+                position: 'relative',
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden',
+              }
+        }
+      >
+        <div className="pointer-events-none fixed inset-0 opacity-20" style={{ backgroundImage: 'url(/assets/Background-toan.jpg)', backgroundSize: 'cover' }} />
 
       {/* NÚT QUAY LẠI (THU NHỎ LẠI MỘT XÍU, GỌN GÀNG TINH TẾ) */}
       <button
@@ -1517,10 +1570,7 @@ export default function BaiChoiGame({
             {/* Sân khấu game chính: Luôn tràn 100% toàn màn hình, không bao giờ bị hở 2 bên */}
             <div
               className="relative flex-none flex items-center justify-center overflow-hidden"
-              style={{
-                width: 'max(100vw, calc(100vh * (2000 / 1009)))',
-                height: 'max(100vh, calc(100vw * (1009 / 2000)))',
-              }}
+              style={stageStyle}
             >
               {/* Ảnh nền giao diện mới: /assets/game/game.png */}
               <img
@@ -1601,10 +1651,7 @@ export default function BaiChoiGame({
             {/* Lớp nền tràn viền 100% toàn màn hình với Chedo.png */}
             <div
               className="relative flex-none flex items-center justify-center overflow-hidden"
-              style={{
-                width: 'max(100vw, calc(100vh * (2000 / 1009)))',
-                height: 'max(100vh, calc(100vw * (1009 / 2000)))',
-              }}
+              style={stageStyle}
             >
               <img
                 src="/assets/game/Chedo.png"
@@ -1701,10 +1748,7 @@ export default function BaiChoiGame({
             {/* Lớp nền tràn viền 100% toàn màn hình với choivoimay.png */}
             <div
               className="relative flex-none flex items-center justify-center overflow-hidden"
-              style={{
-                width: 'max(100vw, calc(100vh * (2000 / 1009)))',
-                height: 'max(100vh, calc(100vw * (1009 / 2000)))',
-              }}
+              style={stageStyle}
             >
               <img
                 src="/assets/game/choivoimay.png"
@@ -1793,10 +1837,7 @@ export default function BaiChoiGame({
             {/* SÂN KHẤU CHỌN BÀI: TRÀN VIỀN 100% TOÀN MÀN HÌNH ĐỒNG BỘ VỚI CHOIVOIMAY VÀ CHOIVOIBAN (KHÔNG CÒN 2 KHOẢNG ĐEN Ở 2 BÊN) */}
             <div
               className="relative flex-none flex items-center justify-center overflow-hidden"
-              style={{
-                width: 'max(100vw, calc(100vh * (2000 / 1009)))',
-                height: 'max(100vh, calc(100vw * (1009 / 2000)))',
-              }}
+              style={stageStyle}
             >
               {/* ẢNH GIAO DIỆN NỀN GỐC 18.PNG TRÀN VIỀN 100% */}
               <img
@@ -2253,10 +2294,7 @@ export default function BaiChoiGame({
             {/* Lớp nền tràn viền 100% toàn màn hình với choivoiban.png */}
             <div
               className="relative flex-none flex items-center justify-center overflow-hidden"
-              style={{
-                width: 'max(100vw, calc(100vh * (2000 / 1009)))',
-                height: 'max(100vh, calc(100vw * (1009 / 2000)))',
-              }}
+              style={stageStyle}
             >
               <img
                 src="/assets/game/choivoiban.png"
@@ -2598,10 +2636,7 @@ export default function BaiChoiGame({
               {/* SÂN KHẤU TRÒ CHƠI TOÀN MÀN HÌNH THEO TỈ LỆ 2000 x 1009 */}
               <div
                 className="relative flex-none flex items-center justify-center overflow-hidden"
-                style={{
-                  width: 'max(100vw, calc(100vh * (2000 / 1009)))',
-                  height: 'max(100vh, calc(100vw * (1009 / 2000)))',
-                }}
+                style={stageStyle}
               >
                 {/* ẢNH GIAO DIỆN NỀN ĐỘNG (22.PNG ĐẾN 26.PNG) */}
                 <img
@@ -3280,10 +3315,7 @@ export default function BaiChoiGame({
               {/* Sân khấu video Hô Tới: Tràn viền chuẩn tỷ lệ 1304x658 của video hotoi.mp4 */}
               <div
                 className="relative flex-none flex items-center justify-center overflow-hidden"
-                style={{
-                  width: 'max(100vw, calc(100vh * (1304 / 658)))',
-                  height: 'max(100vh, calc(100vw * (658 / 1304)))',
-                }}
+                style={resultStageStyle}
               >
                 {/* Video nền lễ hội Hô Tới sôi động */}
                 <video
@@ -3531,6 +3563,20 @@ export default function BaiChoiGame({
             </div>
           </div>
         </div>
+      )}
+      </div>
+
+      {/* NÚT ĐỔI CHIỀU XOAY KHI Ở MÀN HÌNH DỌC (ĐẢO CHIỀU 90° / -90°) */}
+      {isMobilePortrait && (
+        <button
+          type="button"
+          onClick={() => setRotateAngle((prev) => (prev === 90 ? -90 : 90))}
+          className="fixed z-[999] bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/80 hover:bg-black text-amber-300 font-bold text-xs border border-amber-400/50 shadow-2xl backdrop-blur-md active:scale-95 transition-all cursor-pointer pointer-events-auto select-none"
+          title="Bấm để đổi chiều xoay (90° hoặc -90°)"
+        >
+          <span className="text-sm">🔄</span>
+          <span>Đổi chiều xoay</span>
+        </button>
       )}
     </div>
   )
