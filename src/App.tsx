@@ -2895,7 +2895,9 @@ export default function App() {
     return window.innerWidth < 1024 && window.innerHeight > window.innerWidth
   })
   const mobileScrollRef = useRef<HTMLDivElement>(null)
-  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null)
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
+  const lastTouchRef = useRef<{ x: number; y: number; time: number } | null>(null)
+  const axisLockRef = useRef<'x' | 'y' | null>(null)
   const velocityRef = useRef<number>(0)
   const animFrameRef = useRef<number | null>(null)
 
@@ -2919,41 +2921,90 @@ export default function App() {
       animFrameRef.current = null
     }
     const touch = e.touches[0]
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY, time: performance.now() }
+    const now = performance.now()
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY }
+    lastTouchRef.current = { x: touch.clientX, y: touch.clientY, time: now }
+    axisLockRef.current = null
     velocityRef.current = 0
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isMobilePortrait || !touchStartRef.current || !mobileScrollRef.current) return
+    if (!isMobilePortrait || !touchStartRef.current || !lastTouchRef.current || !mobileScrollRef.current) return
     const touch = e.touches[0]
     const now = performance.now()
-    const dt = Math.max(1, now - touchStartRef.current.time)
-    const deltaX = touchStartRef.current.x - touch.clientX
-    const deltaY = touchStartRef.current.y - touch.clientY
-    const dominantDelta = Math.abs(deltaX) > Math.abs(deltaY) ? deltaX : deltaY
-    
-    velocityRef.current = dominantDelta / dt
-    mobileScrollRef.current.scrollTop += dominantDelta
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY, time: now }
+    const dt = Math.max(1, now - lastTouchRef.current.time)
+
+    // Khóa trục lướt (Axis Lock) ngay khi ngón tay di chuyển > 6px để loại bỏ hoàn toàn hiện tượng giật nhảy giữa X và Y
+    if (!axisLockRef.current) {
+      const totalDx = touchStartRef.current.x - touch.clientX
+      const totalDy = touchStartRef.current.y - touch.clientY
+      if (Math.abs(totalDx) > 6 || Math.abs(totalDy) > 6) {
+        axisLockRef.current = Math.abs(totalDx) > Math.abs(totalDy) ? 'x' : 'y'
+      } else {
+        return
+      }
+    }
+
+    // Tính bước dịch chuyển nhất quán theo trục đã khóa
+    let delta = 0
+    if (axisLockRef.current === 'x') {
+      delta = lastTouchRef.current.x - touch.clientX
+    } else {
+      delta = lastTouchRef.current.y - touch.clientY
+    }
+
+    // Làm mượt vận tốc trượt bằng Moving Average để tránh giật ngược chiều
+    const instantVelocity = delta / dt
+    velocityRef.current = velocityRef.current * 0.3 + instantVelocity * 0.7
+
+    // Cuộn trang mượt mà trong giới hạn
+    const container = mobileScrollRef.current
+    const maxScroll = container.scrollHeight - container.clientHeight
+    container.scrollTop = Math.max(0, Math.min(maxScroll, container.scrollTop + delta))
+
+    lastTouchRef.current = { x: touch.clientX, y: touch.clientY, time: now }
   }
 
   const handleTouchEnd = () => {
-    if (!isMobilePortrait || !mobileScrollRef.current) return
-    let v = velocityRef.current * 16 // px per 60fps frame
-    if (v > 50) v = 50
-    if (v < -50) v = -50
+    if (!isMobilePortrait || !mobileScrollRef.current || !lastTouchRef.current) return
 
+    const now = performance.now()
+    const timeSinceLastMove = now - lastTouchRef.current.time
+
+    // Nếu người dùng dừng ngón tay lại trước khi nhấc lên (> 60ms) -> Dừng ngay, không quán tính
+    if (timeSinceLastMove > 60) {
+      velocityRef.current = 0
+      return
+    }
+
+    // Chuyển đổi vận tốc quán tính và giới hạn tốc độ tối đa
+    let v = velocityRef.current * 15
+    if (v > 36) v = 36
+    if (v < -36) v = -36
+
+    // Trượt quán tính mượt mà (Inertia glide) với hệ số ma sát 0.94
     const glide = () => {
-      if (!mobileScrollRef.current) return
-      if (Math.abs(v) > 0.4) {
-        mobileScrollRef.current.scrollTop += v
-        v *= 0.94 // Gentle deceleration curve
+      const container = mobileScrollRef.current
+      if (!container) return
+
+      const maxScroll = container.scrollHeight - container.clientHeight
+      const currentScroll = container.scrollTop
+
+      if ((currentScroll <= 0 && v < 0) || (currentScroll >= maxScroll && v > 0)) {
+        animFrameRef.current = null
+        return
+      }
+
+      if (Math.abs(v) > 0.25) {
+        container.scrollTop = Math.max(0, Math.min(maxScroll, currentScroll + v))
+        v *= 0.94
         animFrameRef.current = requestAnimationFrame(glide)
       } else {
         animFrameRef.current = null
       }
     }
-    if (Math.abs(v) > 0.8) {
+
+    if (Math.abs(v) > 0.6) {
       animFrameRef.current = requestAnimationFrame(glide)
     }
   }
@@ -3300,6 +3351,8 @@ export default function App() {
                 transformOrigin: 'center center',
                 overflowY: 'auto',
                 overflowX: 'hidden',
+                touchAction: 'none',
+                scrollBehavior: 'auto',
                 WebkitOverflowScrolling: 'touch',
                 fontFamily: 'var(--font-body)',
                 background: '#408A8C',
