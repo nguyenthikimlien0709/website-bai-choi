@@ -397,11 +397,10 @@ function HeroScreen({
   return (
     <section
       id="home"
-      className="relative w-full min-h-[100dvh] overflow-hidden flex flex-col justify-center items-center select-none"
+      className="relative w-full overflow-hidden flex flex-col justify-center items-center select-none"
       style={{
         backgroundColor: '#72D9DD',
         backgroundImage: 'linear-gradient(180deg, #62D5DC 0%, #A2EBDC 25%, #E3F2EE 65%, #F4F8F6 100%)',
-        touchAction: 'pan-y',
       }}
     >
       {/* Thanh thông báo gợi ý xoay ngang màn hình trên thiết bị di động */}
@@ -412,17 +411,8 @@ function HeroScreen({
         </div>
       )}
 
-      {/* Khung hiển thị chuẩn tỉ lệ 16:9 matching Figma/mockup - Tự động bóp ảnh vừa khít màn hình điện thoại ngang */}
-      <div
-        className={`relative mx-auto ${userDropdown ? 'overflow-visible' : 'overflow-hidden'}`}
-        style={{
-          width: 'min(100vw, calc(100dvh * (16 / 9)))',
-          maxWidth: '1920px',
-          maxHeight: '100dvh',
-          aspectRatio: '16 / 9',
-          willChange: 'transform',
-        }}
-      >
+      {/* Khung hiển thị chuẩn tỉ lệ 16:9 matching Figma/mockup */}
+      <div className={`relative w-full max-w-[1920px] aspect-[16/9] mx-auto ${userDropdown ? 'overflow-visible' : 'overflow-hidden'}`}>
         {/* Ảnh toàn cảnh Trang Chủ */}
         <img
           src="/assets/trangchu/trangchu-full.png"

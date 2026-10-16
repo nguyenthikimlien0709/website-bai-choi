@@ -571,27 +571,33 @@ export default function BaiChoiGame({
 
   const [dismissOrientationPrompt, setDismissOrientationPrompt] = useState(false)
 
-  // Style cho sân khấu chính 2000 x 1009 (Chuẩn tỉ lệ laptop, tự động co giãn vừa vặn màn hình ngang)
+  // Style cho sân khấu chính 2000 x 1009 (Luôn tràn viền 100% toàn màn hình laptop & điện thoại, không bao giờ bị hở viền 2 bên)
   const stageStyle = useMemo(() => {
-    return {
-      width: 'min(100vw, calc(100vh * (2000 / 1009)))',
-      height: 'min(100vh, calc(100vw * (1009 / 2000)))',
-      maxWidth: '100vw',
-      maxHeight: '100vh',
-      aspectRatio: '2000 / 1009',
+    if (isMobilePortrait) {
+      return {
+        width: 'max(100dvh, calc(100dvw * (2000 / 1009)))',
+        height: 'max(100dvw, calc(100dvh * (1009 / 2000)))',
+      }
     }
-  }, [])
+    return {
+      width: 'max(100vw, calc(100vh * (2000 / 1009)))',
+      height: 'max(100vh, calc(100vw * (1009 / 2000)))',
+    }
+  }, [isMobilePortrait])
 
-  // Style cho sân khấu video Hô Tới 1304 x 658
+  // Style cho sân khấu video Hô Tới 1304 x 658 (Luôn tràn viền 100% toàn màn hình)
   const resultStageStyle = useMemo(() => {
-    return {
-      width: 'min(100vw, calc(100vh * (1304 / 658)))',
-      height: 'min(100vh, calc(100vw * (658 / 1304)))',
-      maxWidth: '100vw',
-      maxHeight: '100vh',
-      aspectRatio: '1304 / 658',
+    if (isMobilePortrait) {
+      return {
+        width: 'max(100dvh, calc(100dvw * (1304 / 658)))',
+        height: 'max(100dvw, calc(100dvh * (658 / 1304)))',
+      }
     }
-  }, [])
+    return {
+      width: 'max(100vw, calc(100vh * (1304 / 658)))',
+      height: 'max(100vh, calc(100vw * (658 / 1304)))',
+    }
+  }, [isMobilePortrait])
 
   useEffect(() => {
     const checkOrientation = () => {
