@@ -569,18 +569,10 @@ export default function BaiChoiGame({
     )
   })
 
-  const [rotateAngle, setRotateAngle] = useState(90)
+  const [dismissOrientationPrompt, setDismissOrientationPrompt] = useState(false)
 
-  // Style cho sân khấu chính 2000 x 1009 (Tràn viền 100% toàn màn hình điện thoại, không còn viền đen lệch)
+  // Style cho sân khấu chính 2000 x 1009 (Chuẩn tỉ lệ laptop, tự động co giãn vừa vặn màn hình ngang)
   const stageStyle = useMemo(() => {
-    if (isMobilePortrait) {
-      return {
-        width: '100%',
-        height: '100%',
-        maxWidth: '100%',
-        maxHeight: '100%',
-      }
-    }
     return {
       width: 'min(100vw, calc(100vh * (2000 / 1009)))',
       height: 'min(100vh, calc(100vw * (1009 / 2000)))',
@@ -588,18 +580,10 @@ export default function BaiChoiGame({
       maxHeight: '100vh',
       aspectRatio: '2000 / 1009',
     }
-  }, [isMobilePortrait])
+  }, [])
 
   // Style cho sân khấu video Hô Tới 1304 x 658
   const resultStageStyle = useMemo(() => {
-    if (isMobilePortrait) {
-      return {
-        width: '100%',
-        height: '100%',
-        maxWidth: '100%',
-        maxHeight: '100%',
-      }
-    }
     return {
       width: 'min(100vw, calc(100vh * (1304 / 658)))',
       height: 'min(100vh, calc(100vw * (658 / 1304)))',
@@ -607,11 +591,7 @@ export default function BaiChoiGame({
       maxHeight: '100vh',
       aspectRatio: '1304 / 658',
     }
-  }, [isMobilePortrait])
-
-  const introVideoSrc = isMobilePortrait
-    ? '/sound-online/video-daugame-dienthoai.mp4'
-    : '/sound-online/video-daugame.mp4'
+  }, [])
 
   useEffect(() => {
     const checkOrientation = () => {
@@ -1469,29 +1449,8 @@ export default function BaiChoiGame({
       aria-modal="true"
       aria-label="Trò chơi Bài Chòi"
     >
-      {/* KHUNG XOAY TỰ ĐỘNG 90° KHI MỞ TRÊN ĐIỆN THOẠI DỌC (TẠO TRẢI NGHIỆM WIDESCREEN Y HỆT LAPTOP) */}
-      <div
-        className="w-full h-full relative"
-        style={
-          isMobilePortrait
-            ? {
-                position: 'fixed',
-                left: '50%',
-                top: '50%',
-                width: '100dvh',
-                height: '100dvw',
-                transform: `translate(-50%, -50%) rotate(${rotateAngle}deg)`,
-                transformOrigin: 'center center',
-                overflow: 'hidden',
-              }
-            : {
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-                overflow: 'hidden',
-              }
-        }
-      >
+      {/* KHUNG HIỂN THỊ CHÍNH (ĐỒNG NHẤT 100% VỚI LAPTOP) */}
+      <div className="w-full h-full relative overflow-hidden flex items-center justify-center">
         <div className="pointer-events-none fixed inset-0 opacity-20" style={{ backgroundImage: 'url(/assets/Background-toan.jpg)', backgroundSize: 'cover' }} />
 
       {/* NÚT QUAY LẠI (THU NHỎ LẠI MỘT XÍU, GỌN GÀNG TINH TẾ) */}
@@ -1586,7 +1545,7 @@ export default function BaiChoiGame({
                 }}
               >
                 <input
-                  autoFocus={!isMobilePortrait}
+                  autoFocus
                   value={nameInput}
                   onChange={(e) => {
                     setNameInput(e.target.value)
@@ -1603,7 +1562,7 @@ export default function BaiChoiGame({
               </div>
 
               {/* THÔNG BÁO LỖI NẾU CHƯA NHẬP TÊN */}
-              {error && !isMobilePortrait && (
+              {error && (
                 <div
                   className="absolute z-20 left-1/2 -translate-x-1/2 text-center pointer-events-none"
                   style={{
@@ -1638,52 +1597,6 @@ export default function BaiChoiGame({
                 />
               </button>
             </div>
-
-            {/* DÀNH CHO ĐIỆN THOẠI DỌC: HỘP THOẠI NHẬP TÊN THẲNG ĐỨNG KHỚP 100% VỚI BÀN PHÍM */}
-            {isMobilePortrait && (
-              <div className="fixed inset-0 z-[1000] flex flex-col justify-end p-4 pb-6 bg-black/45 backdrop-blur-xs pointer-events-auto">
-                <div className="w-full max-w-sm mx-auto rounded-3xl bg-[#063339]/95 backdrop-blur-xl border-2 border-[#20d2c4] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] pointer-events-auto animate-in slide-in-from-bottom duration-300">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-xl">🏮</span>
-                    <h3 className="font-black text-amber-300 text-sm tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>
-                      VÀO HỘI BÀI CHÒI
-                    </h3>
-                  </div>
-                  <p className="text-[11px] text-teal-100/80 mb-3">
-                    Nhập tên của bạn để bắt đầu (bàn phím thẳng đứng tự nhiên):
-                  </p>
-                  <div className="relative">
-                    <input
-                      autoFocus
-                      value={nameInput}
-                      onChange={(e) => {
-                        setNameInput(e.target.value)
-                        if (error) setError('')
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') submitName()
-                      }}
-                      maxLength={20}
-                      placeholder="Nhập tên của bạn..."
-                      className="w-full h-11 rounded-2xl bg-[#031d22] border-2 border-[#20d2c4]/70 px-4 text-center font-black text-amber-200 placeholder:text-white/40 text-base outline-none focus:border-amber-400 focus:shadow-[0_0_20px_rgba(246,210,116,0.4)] transition"
-                    />
-                  </div>
-                  {error && (
-                    <p className="mt-2 text-xs font-bold text-rose-400 text-center animate-shake">
-                      ⚠️ {error}
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    onClick={submitName}
-                    className="mt-3 w-full h-11 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:brightness-110 active:scale-95 text-slate-950 font-black text-sm shadow-xl flex items-center justify-center gap-2 transition cursor-pointer"
-                  >
-                    <span>Vào hội ngay</span>
-                    <span>→</span>
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
@@ -3607,17 +3520,35 @@ export default function BaiChoiGame({
       )}
       </div>
 
-      {/* NÚT ĐỔI CHIỀU XOAY KHI Ở MÀN HÌNH DỌC (ĐẢO CHIỀU 90° / -90°) */}
-      {isMobilePortrait && (
-        <button
-          type="button"
-          onClick={() => setRotateAngle((prev) => (prev === 90 ? -90 : 90))}
-          className="fixed z-[999] bottom-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-black/85 hover:bg-black text-amber-300 font-bold text-[10px] border border-amber-400/60 shadow-2xl backdrop-blur-md active:scale-95 transition-all cursor-pointer pointer-events-auto select-none"
-          title="Bấm để đổi chiều xoay (90° hoặc -90°)"
-        >
-          <span className="text-xs">🔄</span>
-          <span>Xoay màn hình</span>
-        </button>
+      {/* HƯỚNG DẪN XOAY NGANG MÀN HÌNH KHI MỞ TRÊN ĐIỆN THOẠI DỌC */}
+      {isMobilePortrait && !dismissOrientationPrompt && (
+        <div className="fixed inset-0 z-[1000] flex flex-col items-center justify-center p-6 bg-[#031d22]/95 backdrop-blur-md text-white text-center animate-in fade-in duration-300">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 mb-4 rounded-3xl bg-amber-400/20 border-2 border-amber-400/60 flex items-center justify-center text-3xl sm:text-4xl shadow-xl animate-bounce">
+            🔄
+          </div>
+          <h2
+            className="text-lg sm:text-2xl font-black text-amber-300 mb-2 tracking-wide"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            VUI LÒNG XOAY NGANG ĐIỆN THOẠI
+          </h2>
+          <p className="text-xs sm:text-sm text-teal-100/90 max-w-sm mb-4 leading-relaxed">
+            Để trải nghiệm trọn vẹn hội Bài Chòi chuẩn 100% như trên máy tính (bàn phím và giao diện tự động xoay ngang khi nhập tên), bạn hãy xoay ngang màn hình nhé!
+          </p>
+          <div className="p-3 bg-black/40 rounded-2xl border border-teal-500/30 text-left max-w-xs mb-5 text-[11px] sm:text-xs text-teal-200/90 space-y-1">
+            <p className="font-bold text-amber-300">💡 Hướng dẫn nhanh:</p>
+            <p>1. Vuốt mở <strong>Trung tâm điều khiển</strong> (Control Center).</p>
+            <p>2. <strong>TẮT Khóa xoay màn hình (🔒)</strong>.</p>
+            <p>3. Xoay ngang điện thoại để vào hội!</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setDismissOrientationPrompt(true)}
+            className="px-5 py-2.5 rounded-full bg-teal-600/80 hover:bg-teal-600 text-white text-xs font-bold transition active:scale-95 border border-teal-400/50 cursor-pointer shadow-lg"
+          >
+            Tiếp tục xem ở màn hình dọc →
+          </button>
+        </div>
       )}
     </div>
   )

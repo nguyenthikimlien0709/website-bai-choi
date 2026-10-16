@@ -340,7 +340,7 @@ function ReferenceScreen({
   return (
     <section
       id={id}
-      className={`relative flex min-h-[100svh] scroll-mt-20 items-center overflow-x-clip px-4 pb-12 pt-24 sm:px-8 sm:pb-14 sm:pt-28 lg:px-12 ${className}`}
+      className={`relative flex min-h-[100svh] scroll-mt-20 items-center overflow-x-clip px-4 pb-12 pt-24 sm:px-8 sm:pb-14 sm:pt-28 lg:px-12 landscape:min-h-0 landscape:py-10 landscape:pt-16 ${className}`}
     >
       {overlay}
       <div className="relative z-10 mx-auto w-full max-w-7xl">
@@ -397,39 +397,27 @@ function HeroScreen({
   return (
     <section
       id="home"
-      className={`relative w-full overflow-hidden flex flex-col justify-center items-center select-none ${isMobilePortrait ? 'h-[100dvh]' : ''}`}
+      className="relative w-full overflow-hidden flex flex-col justify-center items-center select-none"
       style={{
         backgroundColor: '#72D9DD',
         backgroundImage: 'linear-gradient(180deg, #62D5DC 0%, #A2EBDC 25%, #E3F2EE 65%, #F4F8F6 100%)',
       }}
     >
-      {/* Khung hiển thị: Tự động xoay ngang 90° trên điện thoại dọc để toàn cảnh Trang Chủ nằm ngang tràn viền */}
-      <div
-        className={`relative ${userDropdown ? 'overflow-visible' : 'overflow-hidden'}`}
-        style={
-          isMobilePortrait
-            ? {
-                position: 'absolute',
-                left: '50%',
-                top: '50%',
-                width: '100dvh',
-                height: '100dvw',
-                transform: 'translate(-50%, -50%) rotate(90deg)',
-                transformOrigin: 'center center',
-              }
-            : {
-                width: '100%',
-                maxWidth: '1920px',
-                aspectRatio: '16 / 9',
-                margin: '0 auto',
-              }
-        }
-      >
+      {/* Thanh thông báo gợi ý xoay ngang màn hình trên thiết bị di động */}
+      {isMobilePortrait && (
+        <div className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 px-3 py-1.5 text-[10px] sm:text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-md z-40">
+          <span>📱🔄</span>
+          <span>Xoay ngang điện thoại (và tắt Khóa xoay màn hình 🔒) để xem toàn bộ website chuẩn 100% như trên máy tính</span>
+        </div>
+      )}
+
+      {/* Khung hiển thị chuẩn tỉ lệ 16:9 matching Figma/mockup */}
+      <div className={`relative w-full max-w-[1920px] aspect-[16/9] mx-auto ${userDropdown ? 'overflow-visible' : 'overflow-hidden'}`}>
         {/* Ảnh toàn cảnh Trang Chủ */}
         <img
           src="/assets/trangchu/trangchu-full.png"
           alt="Trang chủ Bài Chòi"
-          className="w-full h-full object-cover pointer-events-none"
+          className="w-full h-full object-contain pointer-events-none"
         />
 
         {/* ========================================================
@@ -718,17 +706,6 @@ function HeroScreen({
           }}
         />
       </div>
-
-      {/* Nút gợi ý lướt xuống xem thêm di sản khi ở màn hình dọc */}
-      {isMobilePortrait && (
-        <a
-          href="#rules"
-          className="absolute z-40 bottom-3 left-1/2 -translate-x-1/2 px-3.5 py-1.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white font-bold text-[11px] border border-white/30 shadow-xl flex items-center gap-1.5 transition active:scale-95"
-        >
-          <span>Cuộn xuống xem di sản</span>
-          <span>↓</span>
-        </a>
-      )}
 
       {/* Modal Quản lý Tài Khoản (Cài đặt, Vé của tôi, Theo dõi đơn hàng, Lịch sử) */}
       {accountCenterOpen && currentUser && (
@@ -1195,7 +1172,7 @@ function History({ c }: { c: typeof content.VIE }) {
 // ─── Rules ────────────────────────────────────────────────────────────────────
 function Rules({ c }: { c: typeof content.VIE }) {
   return (
-    <section id="rules" className="flex min-h-[100svh] scroll-mt-20 items-center px-4 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
+    <section id="rules" className="flex min-h-[100svh] scroll-mt-20 items-center px-4 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28 landscape:min-h-0 landscape:py-10">
       <div className="mx-auto w-full max-w-7xl">
         <div data-reveal="up" className="mb-9 text-center sm:mb-12 lg:mb-14">
           <div data-reveal="scale" className="inline-block rounded-3xl bg-white px-8 py-5 shadow-2xl border border-white">
@@ -1491,7 +1468,7 @@ function Characters({ c }: { c: typeof content.VIE }) {
             key={pho.id}
             id={phoIndex === 0 ? 'characters-showcase' : undefined}
             data-reveal="up"
-            className="relative flex min-h-[100svh] scroll-mt-20 items-center justify-center px-4 py-10 sm:px-8 sm:py-14 lg:px-12"
+            className="relative flex min-h-[100svh] scroll-mt-20 items-center justify-center px-4 py-10 sm:px-8 sm:py-14 lg:px-12 landscape:min-h-0 landscape:py-8"
           >
             <div className="mx-auto w-full max-w-7xl">
               {phoIndex === 0 && (

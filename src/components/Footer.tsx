@@ -63,7 +63,7 @@ export default function Footer({
         }}
       />
 
-      <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 landscape:py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
           {/* CỘT 1: LOGO, MÔ TẢ DỰ ÁN & HUY HIỆU COLOR UP 2026 */}
           <div className="lg:col-span-4 space-y-4 text-left">
