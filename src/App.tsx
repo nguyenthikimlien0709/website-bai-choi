@@ -2945,12 +2945,12 @@ export default function App() {
       }
     }
 
-    // Tính bước dịch chuyển nhất quán theo trục đã khóa
+    // Tính bước dịch chuyển nhất quán theo trục đã khóa (Lướt lên -> Đi lên, Lướt xuống -> Đi xuống)
     let delta = 0
     if (axisLockRef.current === 'x') {
-      delta = lastTouchRef.current.x - touch.clientX
+      delta = touch.clientX - lastTouchRef.current.x
     } else {
-      delta = lastTouchRef.current.y - touch.clientY
+      delta = touch.clientY - lastTouchRef.current.y
     }
 
     // Làm mượt vận tốc trượt bằng Moving Average để tránh giật ngược chiều
