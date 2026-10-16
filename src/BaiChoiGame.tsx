@@ -570,6 +570,89 @@ export default function BaiChoiGame({
   })
 
   const [dismissOrientationPrompt, setDismissOrientationPrompt] = useState(false)
+  const [useVirtualKeyboard, setUseVirtualKeyboard] = useState(true)
+  const [isShift, setIsShift] = useState(true)
+  const [isNumberMode, setIsNumberMode] = useState(false)
+
+  // Cố gắng khóa hướng màn hình sang ngang trên các thiết bị hỗ trợ
+  useEffect(() => {
+    if (screen === 'name') {
+      try {
+        if (screen.orientation && (screen.orientation as any).lock) {
+          ;(screen.orientation as any).lock('landscape').catch(() => {})
+        }
+      } catch (_) {}
+    }
+  }, [screen])
+
+  // Xử lý gõ phím ảo có hỗ trợ ghép vần Telex tiếng Việt tự động
+  const handleVirtualKey = (key: string) => {
+    if (error) setError('')
+    if (nameInput.length >= 20) return
+
+    setNameInput((prev) => {
+      const needsCap = prev.length === 0 || prev.endsWith(' ') || isShift
+      const charToUse = needsCap ? key.toUpperCase() : key.toLowerCase()
+
+      const telexMap: Record<string, Record<string, string>> = {
+        'a': { 'a': 'â', 'w': 'ă', 's': 'á', 'f': 'à', 'r': 'ả', 'x': 'ã', 'j': 'ạ' },
+        'A': { 'a': 'Â', 'A': 'Â', 'w': 'Ă', 'W': 'Ă', 's': 'Á', 'f': 'À', 'r': 'Ả', 'x': 'Ã', 'j': 'Ạ' },
+        'â': { 's': 'ấ', 'f': 'ầ', 'r': 'ẩ', 'x': 'ẫ', 'j': 'ậ' },
+        'Â': { 's': 'Ấ', 'f': 'Ầ', 'r': 'Ẩ', 'x': 'Ẫ', 'j': 'Ậ' },
+        'ă': { 's': 'ắ', 'f': 'ằ', 'r': 'ẳ', 'x': 'ẵ', 'j': 'ặ' },
+        'Ă': { 's': 'Ắ', 'f': 'Ằ', 'r': 'Ẳ', 'x': 'Ẵ', 'j': 'Ặ' },
+        'e': { 'e': 'ê', 's': 'é', 'f': 'è', 'r': 'ẻ', 'x': 'ẽ', 'j': 'ẹ' },
+        'E': { 'e': 'Ê', 'E': 'Ê', 's': 'É', 'f': 'È', 'r': 'Ẻ', 'x': 'Ẽ', 'j': 'Ẹ' },
+        'ê': { 's': 'ế', 'f': 'ề', 'r': 'ể', 'x': 'ễ', 'j': 'ệ' },
+        'Ê': { 's': 'Ế', 'f': 'Ề', 'r': 'Ể', 'x': 'Ễ', 'j': 'Ệ' },
+        'o': { 'o': 'ô', 'w': 'ơ', 's': 'ó', 'f': 'ò', 'r': 'ỏ', 'x': 'õ', 'j': 'ọ' },
+        'O': { 'o': 'Ô', 'O': 'Ô', 'w': 'Ơ', 'W': 'Ơ', 's': 'Ó', 'f': 'Ò', 'r': 'Ỏ', 'x': 'Õ', 'j': 'Ọ' },
+        'ô': { 's': 'ố', 'f': 'ồ', 'r': 'ổ', 'x': 'ỗ', 'j': 'ộ' },
+        'Ô': { 's': 'Ố', 'f': 'Ồ', 'r': 'Ổ', 'x': 'Ỗ', 'j': 'Ộ' },
+        'ơ': { 's': 'ớ', 'f': 'ờ', 'r': 'ở', 'x': 'ỡ', 'j': 'ợ' },
+        'Ơ': { 's': 'Ớ', 'f': 'Ờ', 'r': 'Ở', 'x': 'Ỡ', 'j': 'Ợ' },
+        'u': { 'w': 'ư', 's': 'ú', 'f': 'ù', 'r': 'ủ', 'x': 'ũ', 'j': 'ụ' },
+        'U': { 'w': 'Ư', 'W': 'Ư', 's': 'Ú', 'f': 'Ù', 'r': 'Ủ', 'x': 'Ũ', 'j': 'Ụ' },
+        'ư': { 's': 'ứ', 'f': 'ừ', 'r': 'ử', 'x': 'ữ', 'j': 'ự' },
+        'Ư': { 's': 'Ứ', 'f': 'Ừ', 'r': 'Ử', 'x': 'Ữ', 'j': 'Ự' },
+        'i': { 's': 'í', 'f': 'ì', 'r': 'ỉ', 'x': 'ĩ', 'j': 'ị' },
+        'I': { 's': 'Í', 'f': 'Ì', 'r': 'Ỉ', 'x': 'Ĩ', 'j': 'Ị' },
+        'y': { 's': 'ý', 'f': 'ỳ', 'r': 'ỷ', 'x': 'ỹ', 'j': 'ỵ' },
+        'Y': { 's': 'Ý', 'f': 'Ỳ', 'r': 'Ỷ', 'x': 'Ỹ', 'j': 'Ỵ' },
+        'd': { 'd': 'đ' },
+        'D': { 'd': 'Đ', 'D': 'Đ' },
+      }
+
+      if (prev.length > 0) {
+        const last = prev[prev.length - 1]
+        const lowerKey = key.toLowerCase()
+        if (telexMap[last] && telexMap[last][lowerKey]) {
+          return prev.slice(0, -1) + telexMap[last][lowerKey]
+        }
+      }
+      return prev + charToUse
+    })
+
+    if (isShift) setIsShift(false)
+  }
+
+  const handleVirtualBackspace = () => {
+    if (error) setError('')
+    setNameInput((prev) => prev.slice(0, -1))
+  }
+
+  const handleVirtualSpace = () => {
+    if (error) setError('')
+    if (nameInput.length >= 20 || nameInput.endsWith(' ') || nameInput.length === 0) return
+    setNameInput((prev) => prev + ' ')
+    setIsShift(true)
+  }
+
+  const handleVirtualClear = () => {
+    if (error) setError('')
+    setNameInput('')
+    setIsShift(true)
+  }
 
   // Style cho sân khấu chính 2000 x 1009 (Luôn tràn viền 100% toàn màn hình laptop & điện thoại, không bao giờ bị hở viền 2 bên)
   const stageStyle = useMemo(() => {
@@ -1572,7 +1655,8 @@ export default function BaiChoiGame({
                 }}
               >
                 <input
-                  autoFocus
+                  autoFocus={!isMobilePortrait || !useVirtualKeyboard}
+                  inputMode={isMobilePortrait && useVirtualKeyboard ? 'none' : 'text'}
                   value={nameInput}
                   onChange={(e) => {
                     setNameInput(e.target.value)
@@ -1593,7 +1677,7 @@ export default function BaiChoiGame({
                 <div
                   className="absolute z-20 left-1/2 -translate-x-1/2 text-center pointer-events-none"
                   style={{
-                    top: '71.2%',
+                    top: isMobilePortrait && useVirtualKeyboard ? '58.2%' : '71.2%',
                     width: '24.0%',
                   }}
                 >
@@ -1623,6 +1707,186 @@ export default function BaiChoiGame({
                   draggable={false}
                 />
               </button>
+
+              {/* NÚT BẬT LẠI BÀN PHÍM XOAY NGANG NẾU ĐANG CHUYỂN SANG BÀN PHÍM MÁY */}
+              {isMobilePortrait && !useVirtualKeyboard && (
+                <div
+                  className="absolute z-20 left-1/2 -translate-x-1/2 text-center"
+                  style={{ top: '71.5%' }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setUseVirtualKeyboard(true)}
+                    className="px-3 py-1 rounded-full bg-[#063339]/95 hover:bg-[#0c4e57] text-amber-300 border border-teal-400/60 text-[11px] font-bold shadow-lg transition active:scale-95 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>⌨️</span>
+                    <span>Bật Bàn phím xoay ngang</span>
+                  </button>
+                </div>
+              )}
+
+              {/* BÀN PHÍM ẢO XOAY NGANG THIẾT KẾ ĐẶC BIỆT CHO ĐIỆN THOẠI (XOAY NGANG ĐỒNG NHẤT VỚI GAME) */}
+              {isMobilePortrait && useVirtualKeyboard && (
+                <div
+                  className="absolute z-30 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-auto select-none animate-in fade-in slide-in-from-bottom duration-200"
+                  style={{
+                    bottom: '2.5%',
+                    width: '68%',
+                    maxWidth: '920px',
+                    background: 'rgba(3, 31, 35, 0.94)',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    border: '1.5px solid rgba(32, 210, 196, 0.45)',
+                    borderRadius: '20px',
+                    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                    padding: '8px 12px 10px',
+                  }}
+                >
+                  {/* THANH TIÊU ĐỀ BÀN PHÍM & NÚT CHUYỂN BÀN PHÍM MÁY */}
+                  <div className="w-full flex items-center justify-between pb-1.5 mb-1 border-b border-teal-500/20 text-[10px] sm:text-xs text-teal-200/90 font-bold">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-amber-300">⌨️</span>
+                      <span>Bàn phím xoay ngang</span>
+                      <span className="text-[9px] text-teal-300/60">(Hỗ trợ gõ Telex & phím tắt dấu)</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setUseVirtualKeyboard(false)}
+                      className="px-2 py-0.5 rounded-full bg-teal-800/60 hover:bg-teal-700 text-teal-100 text-[9px] font-bold border border-teal-400/30 transition active:scale-95 cursor-pointer"
+                    >
+                      Dùng bàn phím máy 📱
+                    </button>
+                  </div>
+
+                  {/* DÃY KÝ TỰ TIẾNG VIỆT NHANH */}
+                  <div className="w-full flex items-center justify-center gap-1 sm:gap-1.5 mb-1.5 overflow-x-auto py-0.5">
+                    {['ă', 'â', 'đ', 'ê', 'ô', 'ơ', 'ư', 'á', 'à', 'ả', 'ã', 'ạ'].map((char) => (
+                      <button
+                        key={char}
+                        type="button"
+                        onClick={() => handleVirtualKey(char)}
+                        className="flex-1 min-w-[22px] max-w-[40px] h-6 sm:h-7 rounded-lg bg-[#0b434a]/80 hover:bg-[#146069] text-amber-200 font-black text-xs sm:text-sm border border-teal-400/30 shadow-sm transition active:scale-95 flex items-center justify-center cursor-pointer"
+                      >
+                        {isShift ? char.toUpperCase() : char}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* CÁC HÀNG PHÍM CHỮ / SỐ */}
+                  <div className="w-full space-y-1">
+                    {/* HÀNG 1: Q W E R T Y U I O P (hoặc 1 2 3...) */}
+                    <div className="flex items-center justify-center gap-1 sm:gap-1.5">
+                      {(isNumberMode
+                        ? ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
+                        : ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P']
+                      ).map((key) => (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => handleVirtualKey(key)}
+                          className="flex-1 h-8 sm:h-9 rounded-xl bg-[#0e4e57]/90 hover:bg-[#156d79] active:bg-amber-400 active:text-slate-950 text-white font-black text-xs sm:text-sm md:text-base border border-teal-400/40 shadow-sm transition active:scale-95 flex items-center justify-center cursor-pointer"
+                        >
+                          {isNumberMode ? key : isShift ? key : key.toLowerCase()}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* HÀNG 2: A S D F G H J K L */}
+                    <div className="flex items-center justify-center gap-1 sm:gap-1.5 px-3">
+                      {(isNumberMode
+                        ? ['-', '/', ':', ';', '(', ')', '$', '&', '@']
+                        : ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L']
+                      ).map((key) => (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => handleVirtualKey(key)}
+                          className="flex-1 h-8 sm:h-9 rounded-xl bg-[#0e4e57]/90 hover:bg-[#156d79] active:bg-amber-400 active:text-slate-950 text-white font-black text-xs sm:text-sm md:text-base border border-teal-400/40 shadow-sm transition active:scale-95 flex items-center justify-center cursor-pointer"
+                        >
+                          {isNumberMode ? key : isShift ? key : key.toLowerCase()}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* HÀNG 3: SHIFT, Z X C V B N M, BACKSPACE */}
+                    <div className="flex items-center justify-center gap-1 sm:gap-1.5">
+                      {!isNumberMode && (
+                        <button
+                          type="button"
+                          onClick={() => setIsShift((prev) => !prev)}
+                          className={`w-10 sm:w-12 h-8 sm:h-9 rounded-xl font-black text-xs sm:text-sm border shadow-sm transition active:scale-95 flex items-center justify-center cursor-pointer ${
+                            isShift
+                              ? 'bg-amber-400 text-slate-950 border-amber-300'
+                              : 'bg-[#08383f]/90 text-teal-200 border-teal-500/40 hover:bg-[#0f4f58]'
+                          }`}
+                        >
+                          ⇧
+                        </button>
+                      )}
+
+                      {(isNumberMode
+                        ? ['.', ',', '?', '!', "'", '#', '%', '*', '+']
+                        : ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
+                      ).map((key) => (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => handleVirtualKey(key)}
+                          className="flex-1 h-8 sm:h-9 rounded-xl bg-[#0e4e57]/90 hover:bg-[#156d79] active:bg-amber-400 active:text-slate-950 text-white font-black text-xs sm:text-sm md:text-base border border-teal-400/40 shadow-sm transition active:scale-95 flex items-center justify-center cursor-pointer"
+                        >
+                          {isNumberMode ? key : isShift ? key : key.toLowerCase()}
+                        </button>
+                      ))}
+
+                      <button
+                        type="button"
+                        onClick={handleVirtualBackspace}
+                        className="w-10 sm:w-12 h-8 sm:h-9 rounded-xl bg-rose-900/80 hover:bg-rose-800 text-white font-black text-xs sm:text-sm border border-rose-500/50 shadow-sm transition active:scale-95 flex items-center justify-center cursor-pointer"
+                        title="Xoá một chữ"
+                      >
+                        ⌫
+                      </button>
+                    </div>
+
+                    {/* HÀNG 4: CHUYỂN SỐ, DẤU CÁCH, XOÁ HẾT, VÀO HỘI */}
+                    <div className="flex items-center justify-center gap-1.5 sm:gap-2 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setIsNumberMode((prev) => !prev)}
+                        className="w-12 sm:w-16 h-8 sm:h-9 rounded-xl bg-[#08383f]/90 hover:bg-[#0f4f58] text-amber-300 font-bold text-[11px] sm:text-xs border border-teal-500/40 shadow-sm transition active:scale-95 flex items-center justify-center cursor-pointer"
+                      >
+                        {isNumberMode ? 'ABC' : '123'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleVirtualSpace}
+                        className="flex-1 h-8 sm:h-9 rounded-xl bg-[#0b4149]/90 hover:bg-[#125862] text-teal-100 font-bold text-xs sm:text-sm border border-teal-400/40 shadow-sm transition active:scale-95 flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        <span>␣</span>
+                        <span className="text-[10px] sm:text-xs">Dấu cách</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleVirtualClear}
+                        className="px-2.5 h-8 sm:h-9 rounded-xl bg-[#08383f]/70 hover:bg-rose-950/80 text-rose-300 font-bold text-[10px] sm:text-xs border border-rose-500/30 shadow-sm transition active:scale-95 flex items-center justify-center cursor-pointer"
+                      >
+                        Xóa
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={submitName}
+                        className="px-4 sm:px-6 h-8 sm:h-9 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:brightness-110 active:scale-95 text-slate-950 font-black text-xs sm:text-sm border border-amber-300 shadow-[0_4px_16px_rgba(245,158,11,0.4)] transition flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        <span>Vào hội</span>
+                        <span>➔</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
