@@ -362,11 +362,11 @@ function FlyingClouds() {
 }
 
 function ModeCardsStage({ cards, isMobile }: { cards: Card[]; isMobile?: boolean }) {
-  const cardWidth = isMobile ? 54 : 80
+  const cardWidth = isMobile ? 32 : 72
   const cardHeight = Math.round(cardWidth * 2.06)
 
   return (
-    <div className="relative w-full h-[180px] sm:h-[220px] md:h-[250px] flex items-center justify-center gap-2.5 sm:gap-4 select-none pointer-events-none">
+    <div className="relative w-full h-[68px] sm:h-[150px] md:h-[200px] flex items-center justify-center gap-1 sm:gap-3 select-none pointer-events-none">
       {cards.map((card, index) => (
         <div
           key={card.id}
@@ -571,31 +571,43 @@ export default function BaiChoiGame({
 
   const [rotateAngle, setRotateAngle] = useState(90)
 
-  // Style cho sân khấu chính 2000 x 1009 (Tự động xoay ngang toàn màn hình khi mở bằng điện thoại dọc)
+  // Style cho sân khấu chính 2000 x 1009 (Tự động co vừa khít màn hình, không bao giờ bị cắt xén/thiếu nội dung)
   const stageStyle = useMemo(() => {
     if (isMobilePortrait) {
       return {
-        width: 'max(100dvh, calc(100dvw * (2000 / 1009)))',
-        height: 'max(100dvw, calc(100dvh * (1009 / 2000)))',
+        width: 'min(100dvh, calc(100dvw * (2000 / 1009)))',
+        height: 'min(100dvw, calc(100dvh * (1009 / 2000)))',
+        maxWidth: '100dvh',
+        maxHeight: '100dvw',
+        aspectRatio: '2000 / 1009',
       }
     }
     return {
-      width: 'max(100vw, calc(100vh * (2000 / 1009)))',
-      height: 'max(100vh, calc(100vw * (1009 / 2000)))',
+      width: 'min(100vw, calc(100vh * (2000 / 1009)))',
+      height: 'min(100vh, calc(100vw * (1009 / 2000)))',
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      aspectRatio: '2000 / 1009',
     }
   }, [isMobilePortrait])
 
-  // Style cho sân khấu video Hô Tới 1304 x 658 (Tự động xoay ngang toàn màn hình khi mở bằng điện thoại dọc)
+  // Style cho sân khấu video Hô Tới 1304 x 658 (Tự động co vừa khít màn hình, không bao giờ bị cắt xén/thiếu nội dung)
   const resultStageStyle = useMemo(() => {
     if (isMobilePortrait) {
       return {
-        width: 'max(100dvh, calc(100dvw * (1304 / 658)))',
-        height: 'max(100dvw, calc(100dvh * (658 / 1304)))',
+        width: 'min(100dvh, calc(100dvw * (1304 / 658)))',
+        height: 'min(100dvw, calc(100dvh * (658 / 1304)))',
+        maxWidth: '100dvh',
+        maxHeight: '100dvw',
+        aspectRatio: '1304 / 658',
       }
     }
     return {
-      width: 'max(100vw, calc(100vh * (1304 / 658)))',
-      height: 'max(100vh, calc(100vw * (658 / 1304)))',
+      width: 'min(100vw, calc(100vh * (1304 / 658)))',
+      height: 'min(100vh, calc(100vw * (658 / 1304)))',
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      aspectRatio: '1304 / 658',
     }
   }, [isMobilePortrait])
 
@@ -1487,18 +1499,18 @@ export default function BaiChoiGame({
       {/* NÚT QUAY LẠI (THU NHỎ LẠI MỘT XÍU, GỌN GÀNG TINH TẾ) */}
       <button
         onClick={handleRequestBack}
-        className="fixed z-[80] flex items-center justify-center gap-1 rounded-full border border-white/60 bg-[#075f63]/85 text-white shadow-lg backdrop-blur-sm transition hover:scale-105 hover:bg-[#c44837] cursor-pointer left-2.5 top-2.5 sm:left-4 sm:top-3 h-7 sm:h-8 px-2.5 sm:px-3 text-xs font-bold"
+        className="absolute z-[80] flex items-center justify-center gap-1 rounded-full border border-white/60 bg-[#075f63]/85 text-white shadow-lg backdrop-blur-sm transition hover:scale-105 hover:bg-[#c44837] cursor-pointer left-2 top-2 sm:left-4 sm:top-3 h-6 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs font-bold"
         aria-label="Quay lại"
         title="Quay lại trang trước"
       >
-        <span className="text-sm sm:text-base leading-none">←</span>
+        <span className="text-xs sm:text-base leading-none">←</span>
         <span>Quay lại</span>
       </button>
 
       {/* HUY HIỆU VÍ XU TRÊN ĐẦU (ẨN KHI ĐANG CHƠI ĐỂ KHÔNG ĐÈ LÊN BIỂN NGƯỜI THAM GIA) */}
       {screen === 'card-picking' && (
         <div
-          className="fixed z-[80] flex items-center rounded-full border border-[#f6d274]/50 bg-[#073f43]/90 backdrop-blur-md shadow-xl transition-all right-11 top-2 sm:right-13 sm:top-2.5 h-7 sm:h-8 px-2 sm:px-2.5 gap-1.5 text-[11px] sm:text-xs"
+          className="absolute z-[80] flex items-center rounded-full border border-[#f6d274]/50 bg-[#073f43]/90 backdrop-blur-md shadow-xl transition-all right-9 top-2 sm:right-13 sm:top-2.5 h-6 sm:h-8 px-2 sm:px-2.5 gap-1.5 text-[10px] sm:text-xs"
         >
           {currentUser ? (
             <>
@@ -1534,31 +1546,16 @@ export default function BaiChoiGame({
       {screen !== 'playing' && (
         <button
           onClick={handleRequestLeave}
-          className="fixed z-[80] grid place-items-center rounded-full border-2 border-white/70 bg-[#075f63]/85 text-white shadow-xl backdrop-blur-sm transition hover:scale-105 hover:bg-[#c44837] cursor-pointer right-2.5 top-2 sm:right-3.5 sm:top-2.5 h-7 w-7 sm:h-8 sm:w-8 text-base sm:text-lg font-light leading-none"
+          className="absolute z-[80] grid place-items-center rounded-full border-2 border-white/70 bg-[#075f63]/85 text-white shadow-xl backdrop-blur-sm transition hover:scale-105 hover:bg-[#c44837] cursor-pointer right-2 top-2 sm:right-3.5 sm:top-2.5 h-6 w-6 sm:h-8 sm:w-8 text-sm sm:text-lg font-light leading-none"
           aria-label="Đóng trò chơi"
           title="Đóng trò chơi"
         >
           ×
         </button>
       )}
-      <main
-        className={`
-          relative
-          mx-auto
-          flex
-          w-full
-          justify-center
-          p-0
-          ${screen === 'card-picking'
-            ? 'h-full items-center overflow-hidden w-full'
-            : screen === 'playing'
-              ? 'min-h-full h-auto items-start overflow-visible py-4 sm:py-6 max-w-6xl'
-              : 'h-full items-center overflow-hidden max-w-6xl'
-          }
-        `}
-      >
+      <main className="relative flex w-full h-full items-center justify-center p-0 overflow-hidden">
         {screen === 'name' && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#031d22] overflow-hidden select-none">
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#031d22] overflow-hidden select-none">
             {/* Lớp nền mờ lan tỏa màu teal sâu của tranh Bài Chòi */}
             <div
               className="pointer-events-none absolute inset-0 opacity-40"
@@ -1647,7 +1644,7 @@ export default function BaiChoiGame({
         )}
 
         {screen === 'mode' && (
-          <section className="fixed inset-0 z-10 flex items-center justify-center bg-[#8f9eb6] overflow-hidden select-none">
+          <section className="absolute inset-0 z-10 flex items-center justify-center bg-[#8f9eb6] overflow-hidden select-none">
             {/* Lớp nền tràn viền 100% toàn màn hình với Chedo.png */}
             <div
               className="relative flex-none flex items-center justify-center overflow-hidden"
@@ -1666,35 +1663,35 @@ export default function BaiChoiGame({
                 style={{
                   left: '21.0%',
                   width: '58.0%',
-                  top: '10.5%',
-                  height: '75.0%',
+                  top: '7.5%',
+                  height: '84.0%',
                 }}
               >
                 {/* 1. TIÊU ĐỀ */}
                 <div className="w-full text-center flex flex-col items-center shrink-0">
-                  <p className="text-xs sm:text-sm font-bold uppercase tracking-[.25em] text-[#ffea9f] drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] mb-2 sm:mb-2.5">
+                  <p className="text-[8px] sm:text-xs font-bold uppercase tracking-[.25em] text-[#ffea9f] drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] mb-0.5 sm:mb-1">
                     Xin chào, {playerName || 'Người chơi'}
                   </p>
 
                   <h2
-                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white drop-shadow-[0_3px_12px_rgba(7,40,55,0.85)] tracking-wide leading-none"
+                    className="text-sm sm:text-xl md:text-3xl lg:text-4xl font-black text-white drop-shadow-[0_3px_12px_rgba(7,40,55,0.85)] tracking-wide leading-tight"
                     style={{ fontFamily: 'var(--font-display)' }}
                   >
                     CHỌN CHẾ ĐỘ CHƠI
                   </h2>
 
-                  <p className="mt-2 text-xs sm:text-sm font-semibold text-white/90 drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">
+                  <p className="mt-0.5 text-[8px] sm:text-xs font-semibold text-white/90 drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">
                     Chọn một cách vào hội để bắt đầu
                   </p>
                 </div>
 
                 {/* 2. SÂN KHẤU 5 LÁ BÀI XOAY VÒNG RỒI DÀN HÀNG NGANG & LƯỢN SÓNG */}
-                <div className="w-full flex-1 flex items-center justify-center my-auto min-h-[160px] sm:min-h-[190px]">
+                <div className="w-full flex-1 min-h-0 flex items-center justify-center my-0 sm:my-auto">
                   <ModeCardsStage cards={modeCards} isMobile={isMobilePortrait} />
                 </div>
 
-                {/* 3. HAI NÚT LỰA CHỌN CHẾ ĐỘ (ĐÃ XÍCH LÊN CAO RÁO) */}
-                <div className="w-full max-w-[680px] grid grid-cols-2 gap-3 sm:gap-6 shrink-0 mb-3 sm:mb-6">
+                {/* 3. HAI NÚT LỰA CHỌN CHẾ ĐỘ (ĐÃ XÍCH LÊN CAO RÁO, VỪA KHÍT MỌI ĐIỆN THOẠI) */}
+                <div className="w-full max-w-[500px] grid grid-cols-2 gap-2 sm:gap-4 shrink-0 mb-0.5 sm:mb-2">
                   {/* CHẾ ĐỘ 01: CHƠI NGAY */}
                   <button
                     type="button"
@@ -1702,18 +1699,18 @@ export default function BaiChoiGame({
                       setCountdown(8)
                       setScreen('matchmaking')
                     }}
-                    className="group rounded-2xl sm:rounded-3xl border-2 border-[#f6d274] bg-[#fffdf0]/95 hover:bg-white p-2.5 sm:p-4 text-center shadow-[0_10px_28px_rgba(0,0,0,0.18)] hover:shadow-[0_14px_34px_rgba(246,210,116,0.35)] transition-all transform hover:-translate-y-1 active:scale-95 cursor-pointer"
+                    className="group rounded-xl sm:rounded-3xl border-2 border-[#f6d274] bg-[#fffdf0]/95 hover:bg-white p-1.5 sm:p-3 text-center shadow-[0_6px_20px_rgba(0,0,0,0.18)] hover:shadow-[0_10px_28px_rgba(246,210,116,0.35)] transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
                   >
-                    <span className="block text-[9px] sm:text-[11px] font-black uppercase tracking-[.18em] text-[#bd6648]">
+                    <span className="block text-[7.5px] sm:text-[10px] font-black uppercase tracking-[.15em] text-[#bd6648]">
                       CHẾ ĐỘ 01
                     </span>
                     <strong
-                      className="mt-0.5 block text-base sm:text-xl md:text-2xl font-black text-[#075f63] group-hover:text-[#c44837] transition-colors"
+                      className="mt-0.5 block text-xs sm:text-lg md:text-xl font-black text-[#075f63] group-hover:text-[#c44837] transition-colors leading-tight"
                       style={{ fontFamily: 'var(--font-display)' }}
                     >
                       Chơi ngay
                     </strong>
-                    <span className="mt-1 block text-[9px] sm:text-xs leading-tight text-[#075f63]/75 font-medium">
+                    <span className="mt-0.5 block text-[7.5px] sm:text-[10px] leading-tight text-[#075f63]/75 font-medium">
                       Ghép hội nhanh với các chòi máy
                     </span>
                   </button>
@@ -1722,18 +1719,18 @@ export default function BaiChoiGame({
                   <button
                     type="button"
                     onClick={() => setScreen('friend')}
-                    className="group rounded-2xl sm:rounded-3xl border-2 border-[#7edbd5] bg-[#f0fffb]/95 hover:bg-white p-2.5 sm:p-4 text-center shadow-[0_10px_28px_rgba(0,0,0,0.18)] hover:shadow-[0_14px_34px_rgba(126,219,213,0.35)] transition-all transform hover:-translate-y-1 active:scale-95 cursor-pointer"
+                    className="group rounded-xl sm:rounded-3xl border-2 border-[#7edbd5] bg-[#f0fffb]/95 hover:bg-white p-1.5 sm:p-3 text-center shadow-[0_6px_20px_rgba(0,0,0,0.18)] hover:shadow-[0_10px_28px_rgba(126,219,213,0.35)] transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
                   >
-                    <span className="block text-[9px] sm:text-[11px] font-black uppercase tracking-[.18em] text-[#006368]">
+                    <span className="block text-[7.5px] sm:text-[10px] font-black uppercase tracking-[.15em] text-[#006368]">
                       CHẾ ĐỘ 02
                     </span>
                     <strong
-                      className="mt-0.5 block text-base sm:text-xl md:text-2xl font-black text-[#075f63] group-hover:text-[#008f96] transition-colors"
+                      className="mt-0.5 block text-xs sm:text-lg md:text-xl font-black text-[#075f63] group-hover:text-[#008f96] transition-colors leading-tight"
                       style={{ fontFamily: 'var(--font-display)' }}
                     >
                       Mở hội cùng bạn
                     </strong>
-                    <span className="mt-1 block text-[9px] sm:text-xs leading-tight text-[#075f63]/75 font-medium">
+                    <span className="mt-0.5 block text-[7.5px] sm:text-[10px] leading-tight text-[#075f63]/75 font-medium">
                       Tạo mã hoặc tham gia phòng bạn bè
                     </span>
                   </button>
@@ -1744,7 +1741,7 @@ export default function BaiChoiGame({
         )}
 
         {screen === 'matchmaking' && (
-          <section className="fixed inset-0 z-10 flex items-center justify-center bg-[#151a30] overflow-hidden select-none">
+          <section className="absolute inset-0 z-10 flex items-center justify-center bg-[#151a30] overflow-hidden select-none">
             {/* Lớp nền tràn viền 100% toàn màn hình với choivoimay.png */}
             <div
               className="relative flex-none flex items-center justify-center overflow-hidden"
@@ -1833,7 +1830,7 @@ export default function BaiChoiGame({
         )}
 
         {screen === 'card-picking' && (
-          <section className="fixed inset-0 z-50 flex items-center justify-center bg-[#151a30] overflow-hidden select-none animate-fadeIn">
+          <section className="absolute inset-0 z-50 flex items-center justify-center bg-[#151a30] overflow-hidden select-none animate-fadeIn">
             {/* SÂN KHẤU CHỌN BÀI: TRÀN VIỀN 100% TOÀN MÀN HÌNH ĐỒNG BỘ VỚI CHOIVOIMAY VÀ CHOIVOIBAN (KHÔNG CÒN 2 KHOẢNG ĐEN Ở 2 BÊN) */}
             <div
               className="relative flex-none flex items-center justify-center overflow-hidden"
@@ -2290,7 +2287,7 @@ export default function BaiChoiGame({
         )}
 
         {screen === 'friend' && (
-          <section className="fixed inset-0 z-10 flex items-center justify-center bg-[#092233] overflow-hidden select-none">
+          <section className="absolute inset-0 z-10 flex items-center justify-center bg-[#092233] overflow-hidden select-none">
             {/* Lớp nền tràn viền 100% toàn màn hình với choivoiban.png */}
             <div
               className="relative flex-none flex items-center justify-center overflow-hidden"
@@ -2632,7 +2629,7 @@ export default function BaiChoiGame({
           const plankTops = ['20.3%', '29.8%', '39.2%', '48.6%', '58.0%']
 
           return (
-            <section className="fixed inset-0 z-10 flex items-center justify-center bg-[#151a30] overflow-hidden select-none animate-fadeIn">
+            <section className="absolute inset-0 z-10 flex items-center justify-center bg-[#151a30] overflow-hidden select-none animate-fadeIn">
               {/* SÂN KHẤU TRÒ CHƠI TOÀN MÀN HÌNH THEO TỈ LỆ 2000 x 1009 */}
               <div
                 className="relative flex-none flex items-center justify-center overflow-hidden"
@@ -3303,7 +3300,7 @@ export default function BaiChoiGame({
                 : [])
 
           return (
-            <section className="fixed inset-0 z-50 flex items-center justify-center bg-[#031c21] overflow-hidden select-none animate-fadeIn">
+            <section className="absolute inset-0 z-50 flex items-center justify-center bg-[#031d22] overflow-hidden select-none animate-fadeIn">
               {/* Lớp nền lan tỏa màu lễ hội truyền thống */}
               <div
                 className="pointer-events-none absolute inset-0 opacity-50"
@@ -3571,11 +3568,11 @@ export default function BaiChoiGame({
         <button
           type="button"
           onClick={() => setRotateAngle((prev) => (prev === 90 ? -90 : 90))}
-          className="fixed z-[999] bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/80 hover:bg-black text-amber-300 font-bold text-xs border border-amber-400/50 shadow-2xl backdrop-blur-md active:scale-95 transition-all cursor-pointer pointer-events-auto select-none"
+          className="fixed z-[999] bottom-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-black/85 hover:bg-black text-amber-300 font-bold text-[10px] border border-amber-400/60 shadow-2xl backdrop-blur-md active:scale-95 transition-all cursor-pointer pointer-events-auto select-none"
           title="Bấm để đổi chiều xoay (90° hoặc -90°)"
         >
-          <span className="text-sm">🔄</span>
-          <span>Đổi chiều xoay</span>
+          <span className="text-xs">🔄</span>
+          <span>Xoay màn hình</span>
         </button>
       )}
     </div>
