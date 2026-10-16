@@ -397,10 +397,11 @@ function HeroScreen({
   return (
     <section
       id="home"
-      className="relative w-full overflow-hidden flex flex-col justify-center items-center select-none"
+      className="relative w-full min-h-[100dvh] overflow-hidden flex flex-col justify-center items-center select-none"
       style={{
         backgroundColor: '#72D9DD',
         backgroundImage: 'linear-gradient(180deg, #62D5DC 0%, #A2EBDC 25%, #E3F2EE 65%, #F4F8F6 100%)',
+        touchAction: 'pan-y',
       }}
     >
       {/* Thanh thông báo gợi ý xoay ngang màn hình trên thiết bị di động */}
@@ -415,10 +416,11 @@ function HeroScreen({
       <div
         className={`relative mx-auto ${userDropdown ? 'overflow-visible' : 'overflow-hidden'}`}
         style={{
-          width: 'min(100%, calc(100dvh * (16 / 9)))',
-          height: 'min(100dvh, calc(100% * (9 / 16)))',
+          width: 'min(100vw, calc(100dvh * (16 / 9)))',
           maxWidth: '1920px',
+          maxHeight: '100dvh',
           aspectRatio: '16 / 9',
+          willChange: 'transform',
         }}
       >
         {/* Ảnh toàn cảnh Trang Chủ */}
@@ -2903,7 +2905,9 @@ export default function App() {
     return window.innerWidth < 1024 && window.innerHeight > window.innerWidth
   })
   const mobileScrollRef = useRef<HTMLDivElement>(null)
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null)
+  const velocityRef = useRef<number>(0)
+  const animFrameRef = useRef<number | null>(null)
 
   useEffect(() => {
     const handleOrientation = () => {
@@ -2914,26 +2918,54 @@ export default function App() {
     return () => {
       window.removeEventListener('resize', handleOrientation)
       window.removeEventListener('orientationchange', handleOrientation)
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
     }
   }, [])
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!isMobilePortrait) return
-    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current)
+      animFrameRef.current = null
+    }
+    const touch = e.touches[0]
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY, time: performance.now() }
+    velocityRef.current = 0
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isMobilePortrait || !touchStartRef.current || !mobileScrollRef.current) return
-    const currentX = e.touches[0].clientX
-    const currentY = e.touches[0].clientY
-    const diffX = touchStartRef.current.x - currentX
-    const diffY = touchStartRef.current.y - currentY
-    if (Math.abs(diffX) > Math.abs(diffY)) {
-      mobileScrollRef.current.scrollTop += diffX
-    } else {
-      mobileScrollRef.current.scrollTop += diffY
+    const touch = e.touches[0]
+    const now = performance.now()
+    const dt = Math.max(1, now - touchStartRef.current.time)
+    const deltaX = touchStartRef.current.x - touch.clientX
+    const deltaY = touchStartRef.current.y - touch.clientY
+    const dominantDelta = Math.abs(deltaX) > Math.abs(deltaY) ? deltaX : deltaY
+    
+    velocityRef.current = dominantDelta / dt
+    mobileScrollRef.current.scrollTop += dominantDelta
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY, time: now }
+  }
+
+  const handleTouchEnd = () => {
+    if (!isMobilePortrait || !mobileScrollRef.current) return
+    let v = velocityRef.current * 16 // px per 60fps frame
+    if (v > 50) v = 50
+    if (v < -50) v = -50
+
+    const glide = () => {
+      if (!mobileScrollRef.current) return
+      if (Math.abs(v) > 0.4) {
+        mobileScrollRef.current.scrollTop += v
+        v *= 0.94 // Gentle deceleration curve
+        animFrameRef.current = requestAnimationFrame(glide)
+      } else {
+        animFrameRef.current = null
+      }
     }
-    touchStartRef.current = { x: currentX, y: currentY }
+    if (Math.abs(v) > 0.8) {
+      animFrameRef.current = requestAnimationFrame(glide)
+    }
   }
 
   const [gameInitialTab, setGameInitialTab] = useState<GamePortalTab>('arena')
@@ -3091,22 +3123,15 @@ export default function App() {
       return
     }
 
-    // Quan sát đa chiều khi lướt lên và lướt xuống
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('is-visible')
-          } else {
-            // Khi phần tử trượt ra khỏi vùng nhìn, gỡ bỏ is-visible
-            // để khi lướt lại (lướt lên hoặc xuống) sẽ kích hoạt lại chuyển động mềm mại
-            if (!entry.target.closest('#home')) {
-              entry.target.classList.remove('is-visible')
-            }
           }
         })
       },
-      { threshold: 0.08, rootMargin: '0px 0px -30px 0px' },
+      { threshold: 0.05, rootMargin: '0px 0px 40px 0px' },
     )
 
     revealElements.forEach((element) => observer.observe(element))
@@ -3271,6 +3296,7 @@ export default function App() {
         ref={mobileScrollRef}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         className={showContent ? 'web-entered' : ''}
         style={
           isMobilePortrait

@@ -98,8 +98,14 @@
 }
 
 html {
-  scroll-behavior: smooth;
   overflow-x: clip;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:focus-within {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
