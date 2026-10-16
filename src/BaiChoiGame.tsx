@@ -571,15 +571,14 @@ export default function BaiChoiGame({
 
   const [rotateAngle, setRotateAngle] = useState(90)
 
-  // Style cho sân khấu chính 2000 x 1009 (Tự động co vừa khít màn hình, không bao giờ bị cắt xén/thiếu nội dung)
+  // Style cho sân khấu chính 2000 x 1009 (Tràn viền 100% toàn màn hình điện thoại, không còn viền đen lệch)
   const stageStyle = useMemo(() => {
     if (isMobilePortrait) {
       return {
-        width: 'min(100dvh, calc(100dvw * (2000 / 1009)))',
-        height: 'min(100dvw, calc(100dvh * (1009 / 2000)))',
-        maxWidth: '100dvh',
-        maxHeight: '100dvw',
-        aspectRatio: '2000 / 1009',
+        width: '100%',
+        height: '100%',
+        maxWidth: '100%',
+        maxHeight: '100%',
       }
     }
     return {
@@ -591,15 +590,14 @@ export default function BaiChoiGame({
     }
   }, [isMobilePortrait])
 
-  // Style cho sân khấu video Hô Tới 1304 x 658 (Tự động co vừa khít màn hình, không bao giờ bị cắt xén/thiếu nội dung)
+  // Style cho sân khấu video Hô Tới 1304 x 658
   const resultStageStyle = useMemo(() => {
     if (isMobilePortrait) {
       return {
-        width: 'min(100dvh, calc(100dvw * (1304 / 658)))',
-        height: 'min(100dvw, calc(100dvh * (658 / 1304)))',
-        maxWidth: '100dvh',
-        maxHeight: '100dvw',
-        aspectRatio: '1304 / 658',
+        width: '100%',
+        height: '100%',
+        maxWidth: '100%',
+        maxHeight: '100%',
       }
     }
     return {
@@ -1577,7 +1575,7 @@ export default function BaiChoiGame({
                 draggable={false}
               />
 
-              {/* Ô NHẬP TÊN ĐẶT CHÍNH XÁC VÀO GIỮA 50.0% THẲNG HÀNG VỚI TIÊU ĐỀ "NHẬP TÊN" */}
+              {/* Ô NHẬP TÊN TRÊN BẢN ĐỒ GỐC (DÙNG TRÊN DESKTOP HOẶC KHI XOAY NGANG) */}
               <div
                 className="absolute z-10 -translate-x-1/2 flex items-center justify-center"
                 style={{
@@ -1588,7 +1586,7 @@ export default function BaiChoiGame({
                 }}
               >
                 <input
-                  autoFocus
+                  autoFocus={!isMobilePortrait}
                   value={nameInput}
                   onChange={(e) => {
                     setNameInput(e.target.value)
@@ -1605,7 +1603,7 @@ export default function BaiChoiGame({
               </div>
 
               {/* THÔNG BÁO LỖI NẾU CHƯA NHẬP TÊN */}
-              {error && (
+              {error && !isMobilePortrait && (
                 <div
                   className="absolute z-20 left-1/2 -translate-x-1/2 text-center pointer-events-none"
                   style={{
@@ -1640,6 +1638,52 @@ export default function BaiChoiGame({
                 />
               </button>
             </div>
+
+            {/* DÀNH CHO ĐIỆN THOẠI DỌC: HỘP THOẠI NHẬP TÊN THẲNG ĐỨNG KHỚP 100% VỚI BÀN PHÍM */}
+            {isMobilePortrait && (
+              <div className="fixed inset-0 z-[1000] flex flex-col justify-end p-4 pb-6 bg-black/45 backdrop-blur-xs pointer-events-auto">
+                <div className="w-full max-w-sm mx-auto rounded-3xl bg-[#063339]/95 backdrop-blur-xl border-2 border-[#20d2c4] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] pointer-events-auto animate-in slide-in-from-bottom duration-300">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-xl">🏮</span>
+                    <h3 className="font-black text-amber-300 text-sm tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>
+                      VÀO HỘI BÀI CHÒI
+                    </h3>
+                  </div>
+                  <p className="text-[11px] text-teal-100/80 mb-3">
+                    Nhập tên của bạn để bắt đầu (bàn phím thẳng đứng tự nhiên):
+                  </p>
+                  <div className="relative">
+                    <input
+                      autoFocus
+                      value={nameInput}
+                      onChange={(e) => {
+                        setNameInput(e.target.value)
+                        if (error) setError('')
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') submitName()
+                      }}
+                      maxLength={20}
+                      placeholder="Nhập tên của bạn..."
+                      className="w-full h-11 rounded-2xl bg-[#031d22] border-2 border-[#20d2c4]/70 px-4 text-center font-black text-amber-200 placeholder:text-white/40 text-base outline-none focus:border-amber-400 focus:shadow-[0_0_20px_rgba(246,210,116,0.4)] transition"
+                    />
+                  </div>
+                  {error && (
+                    <p className="mt-2 text-xs font-bold text-rose-400 text-center animate-shake">
+                      ⚠️ {error}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={submitName}
+                    className="mt-3 w-full h-11 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:brightness-110 active:scale-95 text-slate-950 font-black text-sm shadow-xl flex items-center justify-center gap-2 transition cursor-pointer"
+                  >
+                    <span>Vào hội ngay</span>
+                    <span>→</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1661,10 +1705,10 @@ export default function BaiChoiGame({
               <div
                 className="absolute z-10 flex flex-col items-center justify-between"
                 style={{
-                  left: '21.0%',
-                  width: '58.0%',
-                  top: '7.5%',
-                  height: '84.0%',
+                  left: isMobilePortrait ? '14.0%' : '21.0%',
+                  width: isMobilePortrait ? '72.0%' : '58.0%',
+                  top: '5.5%',
+                  height: '89.0%',
                 }}
               >
                 {/* 1. TIÊU ĐỀ */}

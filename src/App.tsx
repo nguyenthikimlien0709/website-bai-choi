@@ -377,34 +377,59 @@ function HeroScreen({
   const [accountCenterOpen, setAccountCenterOpen] = useState(false)
   const [accountCenterInitialTab, setAccountCenterInitialTab] = useState<AccountTabKey>('profile')
   const userMenuRef = useRef<HTMLDivElement>(null)
+  const [isMobilePortrait, setIsMobilePortrait] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.innerWidth < 1024 && window.innerHeight > window.innerWidth
+  })
 
   useEffect(() => {
-    if (!userDropdown) return
-    const handleClickOutside = (e: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setUserDropdown(false)
-      }
+    const handleResize = () => {
+      setIsMobilePortrait(window.innerWidth < 1024 && window.innerHeight > window.innerWidth)
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [userDropdown])
+    window.addEventListener('resize', handleResize)
+    window.addEventListener('orientationchange', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('orientationchange', handleResize)
+    }
+  }, [])
 
   return (
     <section
       id="home"
-      className="relative w-full overflow-hidden flex flex-col justify-center items-center select-none"
+      className={`relative w-full overflow-hidden flex flex-col justify-center items-center select-none ${isMobilePortrait ? 'h-[100dvh]' : ''}`}
       style={{
         backgroundColor: '#72D9DD',
         backgroundImage: 'linear-gradient(180deg, #62D5DC 0%, #A2EBDC 25%, #E3F2EE 65%, #F4F8F6 100%)',
       }}
     >
-      {/* Khung hiển thị chuẩn tỉ lệ 16:9 matching Figma/mockup */}
-      <div className={`relative w-full max-w-[1920px] aspect-[16/9] mx-auto ${userDropdown ? 'overflow-visible' : 'overflow-hidden'}`}>
+      {/* Khung hiển thị: Tự động xoay ngang 90° trên điện thoại dọc để toàn cảnh Trang Chủ nằm ngang tràn viền */}
+      <div
+        className={`relative ${userDropdown ? 'overflow-visible' : 'overflow-hidden'}`}
+        style={
+          isMobilePortrait
+            ? {
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                width: '100dvh',
+                height: '100dvw',
+                transform: 'translate(-50%, -50%) rotate(90deg)',
+                transformOrigin: 'center center',
+              }
+            : {
+                width: '100%',
+                maxWidth: '1920px',
+                aspectRatio: '16 / 9',
+                margin: '0 auto',
+              }
+        }
+      >
         {/* Ảnh toàn cảnh Trang Chủ */}
         <img
           src="/assets/trangchu/trangchu-full.png"
           alt="Trang chủ Bài Chòi"
-          className="w-full h-full object-contain pointer-events-none"
+          className="w-full h-full object-cover pointer-events-none"
         />
 
         {/* ========================================================
@@ -693,6 +718,17 @@ function HeroScreen({
           }}
         />
       </div>
+
+      {/* Nút gợi ý lướt xuống xem thêm di sản khi ở màn hình dọc */}
+      {isMobilePortrait && (
+        <a
+          href="#rules"
+          className="absolute z-40 bottom-3 left-1/2 -translate-x-1/2 px-3.5 py-1.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white font-bold text-[11px] border border-white/30 shadow-xl flex items-center gap-1.5 transition active:scale-95"
+        >
+          <span>Cuộn xuống xem di sản</span>
+          <span>↓</span>
+        </a>
+      )}
 
       {/* Modal Quản lý Tài Khoản (Cài đặt, Vé của tôi, Theo dõi đơn hàng, Lịch sử) */}
       {accountCenterOpen && currentUser && (
