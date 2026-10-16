@@ -23,63 +23,63 @@ interface CoinPackage {
   description: string
 }
 
-// 6 gói nạp chuẩn đối xứng (3x2 grid), mệnh giá thực tế theo chuẩn ngân hàng & game
+// 6 gói nạp chuẩn đối xứng (3x2 grid), tỷ lệ chuẩn 1.000đ = 1 Xu, ưu đãi hợp lý bảo vệ giá trị sản phẩm
 const COIN_PACKAGES: CoinPackage[] = [
   {
     id: 'pkg_10k',
     vnd: 10000,
-    baseCoins: 20,
+    baseCoins: 10,
     bonusCoins: 0,
-    totalCoins: 20,
+    totalCoins: 10,
     tag: 'Gói Cơ Bản',
-    description: 'Thử nghiệm tính năng hội chơi',
+    description: 'Tỷ lệ chuẩn 1.000đ = 1 Xu',
   },
   {
     id: 'pkg_20k',
     vnd: 20000,
-    baseCoins: 40,
-    bonusCoins: 15,
-    totalCoins: 55,
+    baseCoins: 20,
+    bonusCoins: 1,
+    totalCoins: 21,
     tag: 'Phổ Biến',
     popular: true,
-    description: 'Tặng thêm +15 Xu (+27%)',
+    description: 'Tặng thêm +1 Xu (+5%)',
   },
   {
     id: 'pkg_50k',
     vnd: 50000,
-    baseCoins: 100,
-    bonusCoins: 45,
-    totalCoins: 145,
+    baseCoins: 50,
+    bonusCoins: 5,
+    totalCoins: 55,
     tag: 'Tiết Kiệm',
-    description: 'Tặng thêm +45 Xu (+31%)',
+    description: 'Tặng thêm +5 Xu (+10%)',
   },
   {
     id: 'pkg_100k',
     vnd: 100000,
-    baseCoins: 200,
-    bonusCoins: 120,
-    totalCoins: 320,
+    baseCoins: 100,
+    bonusCoins: 12,
+    totalCoins: 112,
     tag: 'Ưu Đãi Hot',
     popular: true,
-    description: 'Tặng thêm +120 Xu (+37%)',
+    description: 'Tặng thêm +12 Xu (+12%)',
   },
   {
     id: 'pkg_200k',
     vnd: 200000,
-    baseCoins: 400,
-    bonusCoins: 300,
-    totalCoins: 700,
+    baseCoins: 200,
+    bonusCoins: 30,
+    totalCoins: 230,
     tag: 'Gói Lớn',
-    description: 'Tặng thêm +300 Xu (+42%)',
+    description: 'Tặng thêm +30 Xu (+15%)',
   },
   {
     id: 'pkg_500k',
     vnd: 500000,
-    baseCoins: 1000,
-    bonusCoins: 850,
-    totalCoins: 1850,
+    baseCoins: 500,
+    bonusCoins: 90,
+    totalCoins: 590,
     tag: 'Đại Phú VIP',
-    description: 'Tặng thêm +850 Xu (+45%)',
+    description: 'Tặng thêm +90 Xu (+18%)',
   },
 ]
 
@@ -212,7 +212,7 @@ export default function CoinTopupModal({
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-300 hidden min-[480px]:block">
-                  Hệ thống nạp Xu tự động Napas 24/7 · Tỷ lệ quy đổi niêm yết 1.000đ ≈ 2 Xu
+                  Hệ thống nạp Xu tự động Napas 24/7 · Tỷ lệ quy đổi chuẩn 1.000đ = 1 Xu (Ưu đãi nạp lớn tới +18%)
                 </p>
               </div>
             </div>
@@ -944,7 +944,7 @@ export default function CoinTopupModal({
                   </div>
                   <h4 className="font-bold text-slate-900 text-xs">Tỷ Lệ Quy Đổi Niêm Yết</h4>
                   <p className="text-[11px] text-slate-600 leading-relaxed">
-                    1.000 VNĐ = 2 Xu Chòi. Mọi mệnh giá từ 20.000đ trở lên đều có chính sách thưởng thêm từ +15% đến +45%.
+                    1.000 VNĐ = 1 Xu Chòi. Mọi mệnh giá từ 20.000đ trở lên đều có chính sách thưởng thêm từ +5% đến +18% giúp cân bằng giá trị và bảo vệ quyền lợi hội chơi.
                   </p>
                 </div>
 

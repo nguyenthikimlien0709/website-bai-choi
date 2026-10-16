@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { CARDS, type Card } from './BaiChoiGame'
-import { getChantLyrics } from './chantLyrics'
 import type { UserProfile } from './types/auth'
 
 interface OfflinePlayProps {
@@ -31,7 +30,6 @@ export default function OfflinePlay({
   const [drawnCards, setDrawnCards] = useState<Card[]>([])
   const [currentCard, setCurrentCard] = useState<Card | null>(null)
   const [isCalling, setIsCalling] = useState(false)
-  const [lyricIndex, setLyricIndex] = useState(0)
 
   // Drawer xem lịch sử thẻ đã rút
   const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false)
@@ -49,7 +47,6 @@ export default function OfflinePlay({
   const [menuDrawerOpen, setMenuDrawerOpen] = useState(false)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const lyricTimerRef = useRef<number | null>(null)
 
   // Danh sách các thẻ chưa rút
   const remainingCards = useMemo(() => {
@@ -57,18 +54,8 @@ export default function OfflinePlay({
     return CARDS.filter((c) => !drawnIds.has(c.id))
   }, [drawnCards])
 
-  // Lời câu hò hiện tại
-  const currentLyrics = useMemo(() => {
-    if (!currentCard) return []
-    return getChantLyrics(currentCard.id)
-  }, [currentCard])
-
   // Dừng âm thanh
   const stopAudio = () => {
-    if (lyricTimerRef.current) {
-      window.clearInterval(lyricTimerRef.current)
-      lyricTimerRef.current = null
-    }
     if (audioRef.current) {
       audioRef.current.pause()
       audioRef.current.currentTime = 0
@@ -81,7 +68,6 @@ export default function OfflinePlay({
     stopAudio()
     setCurrentCard(card)
     setIsCalling(true)
-    setLyricIndex(0)
 
     const soundSrc = card.soundOffline || card.sound
     const audio = audioRef.current || new Audio()
@@ -90,16 +76,8 @@ export default function OfflinePlay({
     audio.currentTime = 0
     audioRef.current = audio
 
-    lyricTimerRef.current = window.setInterval(() => {
-      setLyricIndex((prev) => (prev < 3 ? prev + 1 : prev))
-    }, 6500)
-
     audio.onended = () => {
       setIsCalling(false)
-      if (lyricTimerRef.current) {
-        window.clearInterval(lyricTimerRef.current)
-        lyricTimerRef.current = null
-      }
     }
 
     audio.onerror = () => {
@@ -599,15 +577,15 @@ export default function OfflinePlay({
                 />
               </div>
 
-              {/* Thông tin tên bài, câu hò và nút nghe lại (Khung viền trắng, nền trong suốt Glassmorphism) */}
-              <div className="flex-1 min-w-0 flex flex-col justify-between items-center text-center h-full py-0.5 px-1">
+              {/* Thông tin tên bài và nút nghe lại (Khung viền trắng, nền trong suốt Glassmorphism) */}
+              <div className="flex-1 min-w-0 flex flex-col justify-center items-center text-center h-full py-1 px-1 gap-2.5">
                 {/* 1. Tên lá bài: Kiểu chữ & kích thước chuẩn theo "Nhạc của Chòi", chữ to nằm giữa, hiệu ứng chữ nhảy nhảy khi hát */}
                 <div className="w-full flex justify-center items-center py-0.5">
                   <div
                     className="tracking-normal flex items-center justify-center select-none"
                     style={{
                       fontFamily: 'var(--font-display, "Bricolage Grotesque", "Be Vietnam Pro", system-ui, sans-serif)',
-                      fontSize: 'clamp(17px, 1.35cqw, 25px)',
+                      fontSize: 'clamp(18px, 1.45cqw, 27px)',
                       fontWeight: 800,
                       textShadow: '0 2px 8px rgba(0, 0, 0, 0.85), 0 0 16px rgba(245, 158, 11, 0.6)',
                       lineHeight: 1.2,
@@ -630,24 +608,7 @@ export default function OfflinePlay({
                   </div>
                 </div>
 
-                {/* 2. Phần lyric của bài */}
-                <div
-                  className="w-full my-auto px-2 py-1 rounded-xl text-center select-none"
-                  style={{
-                    background: 'rgba(0, 0, 0, 0.22)',
-                    backdropFilter: 'blur(4px)',
-                    border: '1px solid rgba(255, 255, 255, 0.20)',
-                  }}
-                >
-                  <p
-                    className="leading-snug text-amber-100 italic line-clamp-2 font-serif"
-                    style={{ fontSize: 'clamp(9px, 0.58cqw, 11.5px)' }}
-                  >
-                    &quot;{currentLyrics[lyricIndex] || currentLyrics[0] || currentCard.name}&quot;
-                  </p>
-                </div>
-
-                {/* 3. Phần nghe lại / dừng hô */}
+                {/* 2. Phần nghe lại / dừng hô */}
                 <div className="w-full flex justify-center items-center">
                   {isCalling ? (
                     <button
@@ -1000,7 +961,7 @@ export default function OfflinePlay({
                 <div className="w-24 sm:w-28 aspect-[3/4] rounded-xl overflow-hidden border-2 border-amber-400 bg-white p-0.5 shrink-0 shadow-lg">
                   <img src={currentCard.image} alt={currentCard.name} className="w-full h-full object-cover rounded-lg" />
                 </div>
-                <div className="flex-1 text-center flex flex-col justify-between items-center gap-2 py-1 min-h-[120px]">
+                <div className="flex-1 text-center flex flex-col justify-center items-center gap-3 py-1 min-h-[120px]">
                   {/* 1. Tên lá bài: Kiểu chữ & kích thước chuẩn theo "Nhạc của Chòi", chữ to nằm giữa, nhảy nhảy khi hát */}
                   <div className="w-full flex justify-center items-center py-1">
                     <div
@@ -1029,21 +990,7 @@ export default function OfflinePlay({
                     </div>
                   </div>
 
-                  {/* 2. Phần lyric của bài */}
-                  <div
-                    className="w-full my-auto px-2.5 py-1.5 rounded-xl text-center select-none"
-                    style={{
-                      background: 'rgba(0, 0, 0, 0.22)',
-                      backdropFilter: 'blur(4px)',
-                      border: '1px solid rgba(255, 255, 255, 0.20)',
-                    }}
-                  >
-                    <p className="text-xs leading-snug text-amber-100 italic line-clamp-2 font-serif">
-                      &quot;{currentLyrics[lyricIndex] || currentLyrics[0] || currentCard.name}&quot;
-                    </p>
-                  </div>
-
-                  {/* 3. Phần nghe lại / dừng hô */}
+                  {/* 2. Phần nghe lại / dừng hô */}
                   <div className="w-full flex justify-center items-center">
                     {isCalling ? (
                       <button
@@ -1484,14 +1431,11 @@ export default function OfflinePlay({
                   />
                 </div>
 
-                {/* Banner tên quân bài và câu hò thai */}
-                <div className="space-y-1.5">
-                  <div className="inline-block px-5 py-1 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-black text-base sm:text-lg tracking-wide shadow-lg border border-amber-200/40">
+                {/* Banner tên quân bài */}
+                <div className="pt-1">
+                  <div className="inline-block px-5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-black text-base sm:text-lg tracking-wide shadow-lg border border-amber-200/40">
                     {showcaseCard.name}
                   </div>
-                  <p className="text-[11px] text-amber-100/90 italic line-clamp-1 px-2 font-serif">
-                    &quot;{currentLyrics[0] || showcaseCard.name}&quot;
-                  </p>
                 </div>
               </div>
 
