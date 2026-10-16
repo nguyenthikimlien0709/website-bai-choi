@@ -1449,8 +1449,29 @@ export default function BaiChoiGame({
       aria-modal="true"
       aria-label="Trò chơi Bài Chòi"
     >
-      {/* KHUNG HIỂN THỊ CHÍNH (ĐỒNG NHẤT 100% VỚI LAPTOP) */}
-      <div className="w-full h-full relative overflow-hidden flex items-center justify-center">
+      {/* KHUNG HIỂN THỊ CHÍNH (ĐỒNG NHẤT 100% VỚI LAPTOP - TỰ ĐỘNG XOAY NGANG TRÊN ĐIỆN THOẠI) */}
+      <div
+        className="w-full h-full relative overflow-hidden flex items-center justify-center"
+        style={
+          isMobilePortrait
+            ? {
+                position: 'fixed',
+                left: '50%',
+                top: '50%',
+                width: '100dvh',
+                height: '100dvw',
+                transform: 'translate(-50%, -50%) rotate(90deg)',
+                transformOrigin: 'center center',
+                overflow: 'hidden',
+              }
+            : {
+                position: 'relative',
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden',
+              }
+        }
+      >
         <div className="pointer-events-none fixed inset-0 opacity-20" style={{ backgroundImage: 'url(/assets/Background-toan.jpg)', backgroundSize: 'cover' }} />
 
       {/* NÚT QUAY LẠI (THU NHỎ LẠI MỘT XÍU, GỌN GÀNG TINH TẾ) */}
@@ -3519,37 +3540,6 @@ export default function BaiChoiGame({
         </div>
       )}
       </div>
-
-      {/* HƯỚNG DẪN XOAY NGANG MÀN HÌNH KHI MỞ TRÊN ĐIỆN THOẠI DỌC */}
-      {isMobilePortrait && !dismissOrientationPrompt && (
-        <div className="fixed inset-0 z-[1000] flex flex-col items-center justify-center p-6 bg-[#031d22]/95 backdrop-blur-md text-white text-center animate-in fade-in duration-300">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 mb-4 rounded-3xl bg-amber-400/20 border-2 border-amber-400/60 flex items-center justify-center text-3xl sm:text-4xl shadow-xl animate-bounce">
-            🔄
-          </div>
-          <h2
-            className="text-lg sm:text-2xl font-black text-amber-300 mb-2 tracking-wide"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            VUI LÒNG XOAY NGANG ĐIỆN THOẠI
-          </h2>
-          <p className="text-xs sm:text-sm text-teal-100/90 max-w-sm mb-4 leading-relaxed">
-            Để trải nghiệm trọn vẹn hội Bài Chòi chuẩn 100% như trên máy tính (bàn phím và giao diện tự động xoay ngang khi nhập tên), bạn hãy xoay ngang màn hình nhé!
-          </p>
-          <div className="p-3 bg-black/40 rounded-2xl border border-teal-500/30 text-left max-w-xs mb-5 text-[11px] sm:text-xs text-teal-200/90 space-y-1">
-            <p className="font-bold text-amber-300">💡 Hướng dẫn nhanh:</p>
-            <p>1. Vuốt mở <strong>Trung tâm điều khiển</strong> (Control Center).</p>
-            <p>2. <strong>TẮT Khóa xoay màn hình (🔒)</strong>.</p>
-            <p>3. Xoay ngang điện thoại để vào hội!</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setDismissOrientationPrompt(true)}
-            className="px-5 py-2.5 rounded-full bg-teal-600/80 hover:bg-teal-600 text-white text-xs font-bold transition active:scale-95 border border-teal-400/50 cursor-pointer shadow-lg"
-          >
-            Tiếp tục xem ở màn hình dọc →
-          </button>
-        </div>
-      )}
     </div>
   )
 }

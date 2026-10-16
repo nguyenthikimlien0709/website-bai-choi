@@ -245,10 +245,18 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
   const [introBackground] = useState(getIntroBackground)
   const [phase, setPhase]  = useState<Phase>('black')
   const [frame, setFrame]  = useState(0)
-  const [viewport, setViewport] = useState(() => ({
-    w: typeof window === 'undefined' ? 1280 : window.innerWidth,
-    h: typeof window === 'undefined' ? 720 : window.innerHeight,
-  }))
+  const [isMobilePortrait, setIsMobilePortrait] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.innerWidth < 1024 && window.innerHeight > window.innerWidth
+  })
+  const [viewport, setViewport] = useState(() => {
+    if (typeof window === 'undefined') return { w: 1280, h: 720 }
+    const isPortrait = window.innerWidth < 1024 && window.innerHeight > window.innerWidth
+    return {
+      w: isPortrait ? window.innerHeight : window.innerWidth,
+      h: isPortrait ? window.innerWidth : window.innerHeight,
+    }
+  })
   const globalTRef  = useRef(0)
   const lineFormTRef = useRef(0)
   const prevMsRef   = useRef(0)
@@ -495,10 +503,21 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
   }
 
   useEffect(() => {
-    const updateViewport = () => setViewport({ w: window.innerWidth, h: window.innerHeight })
+    const updateViewport = () => {
+      const isPortrait = window.innerWidth < 1024 && window.innerHeight > window.innerWidth
+      setIsMobilePortrait(isPortrait)
+      setViewport({
+        w: isPortrait ? window.innerHeight : window.innerWidth,
+        h: isPortrait ? window.innerWidth : window.innerHeight,
+      })
+    }
     updateViewport()
     window.addEventListener('resize', updateViewport)
-    return () => window.removeEventListener('resize', updateViewport)
+    window.addEventListener('orientationchange', updateViewport)
+    return () => {
+      window.removeEventListener('resize', updateViewport)
+      window.removeEventListener('orientationchange', updateViewport)
+    }
   }, [])
 
   useEffect(() => {
@@ -675,8 +694,29 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
       : '/assets/nen-wide.png'
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
-      style={{background:'#408A8C'}} role="presentation"
+    <div
+      className="fixed z-[9999] flex items-center justify-center overflow-hidden"
+      style={
+        isMobilePortrait
+          ? {
+              position: 'fixed',
+              left: '50%',
+              top: '50%',
+              width: '100dvh',
+              height: '100dvw',
+              transform: 'translate(-50%, -50%) rotate(90deg)',
+              transformOrigin: 'center center',
+              background: '#408A8C',
+              overflow: 'hidden',
+            }
+          : {
+              position: 'fixed',
+              inset: 0,
+              background: '#408A8C',
+              overflow: 'hidden',
+            }
+      }
+      role="presentation"
       onPointerDown={() => { void startAudio() }}>
       <audio
         ref={audioRef}

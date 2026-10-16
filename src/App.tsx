@@ -411,8 +411,16 @@ function HeroScreen({
         </div>
       )}
 
-      {/* Khung hiển thị chuẩn tỉ lệ 16:9 matching Figma/mockup */}
-      <div className={`relative w-full max-w-[1920px] aspect-[16/9] mx-auto ${userDropdown ? 'overflow-visible' : 'overflow-hidden'}`}>
+      {/* Khung hiển thị chuẩn tỉ lệ 16:9 matching Figma/mockup - Tự động bóp ảnh vừa khít màn hình điện thoại ngang */}
+      <div
+        className={`relative mx-auto ${userDropdown ? 'overflow-visible' : 'overflow-hidden'}`}
+        style={{
+          width: 'min(100%, calc(100dvh * (16 / 9)))',
+          height: 'min(100dvh, calc(100% * (9 / 16)))',
+          maxWidth: '1920px',
+          aspectRatio: '16 / 9',
+        }}
+      >
         {/* Ảnh toàn cảnh Trang Chủ */}
         <img
           src="/assets/trangchu/trangchu-full.png"
@@ -2890,6 +2898,44 @@ export default function App() {
   const [activePortal, setActivePortal] = useState<'site' | 'admin' | 'staff' | 'shop' | 'game'>(detectInitialPortal)
   const isDirectScan = activePortal !== 'site'
 
+  const [isMobilePortrait, setIsMobilePortrait] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.innerWidth < 1024 && window.innerHeight > window.innerWidth
+  })
+  const mobileScrollRef = useRef<HTMLDivElement>(null)
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
+
+  useEffect(() => {
+    const handleOrientation = () => {
+      setIsMobilePortrait(window.innerWidth < 1024 && window.innerHeight > window.innerWidth)
+    }
+    window.addEventListener('resize', handleOrientation)
+    window.addEventListener('orientationchange', handleOrientation)
+    return () => {
+      window.removeEventListener('resize', handleOrientation)
+      window.removeEventListener('orientationchange', handleOrientation)
+    }
+  }, [])
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!isMobilePortrait) return
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isMobilePortrait || !touchStartRef.current || !mobileScrollRef.current) return
+    const currentX = e.touches[0].clientX
+    const currentY = e.touches[0].clientY
+    const diffX = touchStartRef.current.x - currentX
+    const diffY = touchStartRef.current.y - currentY
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+      mobileScrollRef.current.scrollTop += diffX
+    } else {
+      mobileScrollRef.current.scrollTop += diffY
+    }
+    touchStartRef.current = { x: currentX, y: currentY }
+  }
+
   const [gameInitialTab, setGameInitialTab] = useState<GamePortalTab>('arena')
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authModalMode, setAuthModalMode] = useState<'login' | 'register' | 'reset'>('login')
@@ -3222,14 +3268,40 @@ export default function App() {
         </IntroErrorBoundary>
       )}
       <div
+        ref={mobileScrollRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
         className={showContent ? 'web-entered' : ''}
-        style={{
-          fontFamily: 'var(--font-body)',
-          background: '#408A8C',
-          color: '#006368',
-          opacity: showContent ? 1 : 0,
-          transition: 'opacity 0.8s ease',
-        }}
+        style={
+          isMobilePortrait
+            ? {
+                position: 'fixed',
+                left: '50%',
+                top: '50%',
+                width: '100dvh',
+                height: '100dvw',
+                transform: 'translate(-50%, -50%) rotate(90deg)',
+                transformOrigin: 'center center',
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                WebkitOverflowScrolling: 'touch',
+                fontFamily: 'var(--font-body)',
+                background: '#408A8C',
+                color: '#006368',
+                opacity: showContent ? 1 : 0,
+                transition: 'opacity 0.8s ease',
+              }
+            : {
+                position: 'relative',
+                width: '100%',
+                minHeight: '100vh',
+                fontFamily: 'var(--font-body)',
+                background: '#408A8C',
+                color: '#006368',
+                opacity: showContent ? 1 : 0,
+                transition: 'opacity 0.8s ease',
+              }
+        }
       >
         <div className={`relative isolate ${showContent ? 'site-content-enter' : ''}`}>
           {/* Lướt 1: Trang chủ mới dựa trên CHOINGAY.png */}
