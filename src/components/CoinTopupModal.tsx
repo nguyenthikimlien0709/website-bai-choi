@@ -162,9 +162,9 @@ export default function CoinTopupModal({
     }, 1000)
   }
 
-  const currentCoins = currentUser?.coins ?? 50
+  const currentCoins = currentUser?.coins ?? 0
   const orderId = `NAP-${currentUser?.id ? currentUser.id.slice(0, 4).toUpperCase() : '8492'}-${selectedPkg.vnd / 1000}K`
-  const transferCode = `NAPXU ${currentUser?.username ? currentUser.username.toUpperCase() : 'KIMLIEN'}`
+  const transferCode = `NAPXU ${currentUser?.username ? currentUser.username.toUpperCase() : 'CHUA_DANG_NHAP'}`
 
   if (!isOpen) return null
 
@@ -254,16 +254,34 @@ export default function CoinTopupModal({
           {/* Dải Thẻ Hội Viên Tích Hợp (Member Status Strip) */}
           <div className="bg-black/35 border-t border-slate-700/60 px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-2 text-slate-300">
-              <span className="text-slate-400 text-[11px]">Tài khoản thụ hưởng:</span>
-              <strong className="text-white font-semibold flex items-center gap-1.5">
-                <span className="h-4 w-4 rounded-full bg-[#006368] text-white flex items-center justify-center text-[10px] uppercase font-bold">
-                  {currentUser?.username?.[0] || 'K'}
-                </span>
-                {currentUser?.username || currentUser?.fullName || 'Khách vãng lai'}
-              </strong>
-              <span className="text-[10px] text-slate-400 font-mono bg-white/10 px-1.5 py-0.5 rounded border border-white/5">
-                ID: #{currentUser?.id ? currentUser.id.slice(0, 6).toUpperCase() : '84920'}
-              </span>
+              <span className="text-slate-400 text-[11px]">Tài khoản:</span>
+              {currentUser ? (
+                <>
+                  <strong className="text-white font-semibold flex items-center gap-1.5">
+                    <span className="h-4 w-4 rounded-full bg-[#006368] text-white flex items-center justify-center text-[10px] uppercase font-bold">
+                      {currentUser?.username?.[0] || 'U'}
+                    </span>
+                    {currentUser?.username || currentUser?.fullName}
+                  </strong>
+                  <span className="text-[10px] text-slate-400 font-mono bg-white/10 px-1.5 py-0.5 rounded border border-white/5">
+                    ID: #{currentUser?.id ? currentUser.id.slice(0, 6).toUpperCase() : 'USER'}
+                  </span>
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-amber-300 font-bold">Chưa đăng nhập</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose()
+                      onOpenAuth?.('login')
+                    }}
+                    className="px-2 py-0.5 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] shadow transition cursor-pointer"
+                  >
+                    Đăng nhập / Đăng ký
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
@@ -336,6 +354,28 @@ export default function CoinTopupModal({
         {/* 3. NỘI DUNG CHÍNH (BỐ CỤC 2 CỘT CHUẨN FINTECH TRÊN DESKTOP) */}
         {/* ============================================================== */}
         <div className="p-4 sm:p-6 flex-1 overflow-y-auto bg-slate-50/70 [scrollbar-width:thin] [scrollbar-color:#cbd5e1_transparent]">
+          {/* Cảnh báo chưa đăng nhập tài khoản */}
+          {!currentUser && (
+            <div className="mb-4 rounded-xl bg-amber-50 border border-amber-300 p-3.5 text-xs text-amber-950 font-medium flex flex-wrap items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-base">⚠️</span>
+                <span>
+                  Bạn hiện đang chơi với tư cách khách và <strong>chưa có tài khoản</strong>. Hãy đăng nhập hoặc đăng ký bằng <strong>Email / Số điện thoại</strong> để bảo toàn Xu và dữ liệu.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose()
+                  onOpenAuth?.('login')
+                }}
+                className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shadow transition cursor-pointer shrink-0"
+              >
+                Đăng nhập ngay
+              </button>
+            </div>
+          )}
+
           {/* Thông báo thanh toán thành công */}
           {successMessage && (
             <div className="mb-4 rounded-xl bg-emerald-50 border border-emerald-300 p-3.5 text-xs text-emerald-950 font-semibold flex items-center justify-between shadow-xs animate-in fade-in">

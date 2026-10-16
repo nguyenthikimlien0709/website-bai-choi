@@ -285,6 +285,11 @@ export const authService = {
     if (!raw) return null
     try {
       const user = JSON.parse(raw) as UserProfile
+      // Nếu là tài khoản khách tạo tạm trước đây (id bắt đầu bằng usr_guest_ hoặc không có email/phone hợp lệ), dọn sạch và trả về null
+      if (user && (user.id?.startsWith('usr_guest_') || user.id === 'guest' || (!user.email && !user.phone))) {
+        localStorage.removeItem(STORAGE_CURRENT_USER_KEY)
+        return null
+      }
       if (user && typeof user.coins !== 'number') {
         user.coins = user.role === 'admin' ? 999 : user.role === 'staff' ? 200 : 50
         try {
@@ -298,39 +303,26 @@ export const authService = {
   },
 
   getOrInitCurrentUser(name?: string): UserProfile {
-    let current = this.getCurrentUser()
-    if (!current) {
-      const guestName = name?.trim() || 'Người Chơi'
-      current = {
-        id: 'usr_guest_' + Date.now(),
-        username: guestName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'nguoichoi',
-        fullName: guestName,
-        email: `${(guestName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'khach')}@gmail.com`,
-        phone: '',
-        role: 'customer',
-        coins: 50,
-        createdAt: new Date().toISOString(),
-      }
-      try {
-        localStorage.setItem(STORAGE_CURRENT_USER_KEY, JSON.stringify(current))
-      } catch {}
-      this.notify(current)
+    const current = this.getCurrentUser()
+    if (current) return current
+    // Trả về đối tượng tạm thời cho session, KHÔNG lưu vào localStorage và KHÔNG thông báo lưu tài khoản
+    const guestName = name?.trim() || 'Người Chơi'
+    return {
+      id: 'guest',
+      username: guestName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'nguoichoi',
+      fullName: guestName,
+      email: '',
+      phone: '',
+      role: 'customer',
+      coins: 0,
+      createdAt: new Date().toISOString(),
     }
-    return current
   },
 
   updateProfile(partial: Partial<UserProfile>, fallback?: UserProfile | null): UserProfile {
     let current = this.getCurrentUser() || fallback
-    if (!current) {
-      current = {
-        id: 'usr_customer_' + Date.now(),
-        username: partial.username || 'kimlien',
-        fullName: partial.fullName || 'Nguyễn Thị Kim Liên',
-        email: partial.email || 'lienntk.ce190812@gmail.com',
-        phone: partial.phone || '',
-        role: 'customer',
-        createdAt: new Date().toISOString(),
-      }
+    if (!current || current.id === 'guest') {
+      throw new Error('Chưa đăng nhập tài khoản')
     }
     const updatedUser: UserProfile = { ...current, ...partial }
 
@@ -1056,8 +1048,11 @@ export const authService = {
   },
 
   addCoins(amount: number, description = 'Nạp xu vào ví', paymentMethod?: string): UserProfile {
-    const current = this.getCurrentUser() || this.getOrInitCurrentUser()
-    const currentCoins = current?.coins ?? 50
+    const current = this.getCurrentUser()
+    if (!current) {
+      throw new Error('Bạn cần đăng nhập tài khoản để nạp Xu.')
+    }
+    const currentCoins = current.coins ?? 0
     const newCoins = currentCoins + amount
     const updated = this.updateProfile({ coins: newCoins }, current)
 
@@ -1077,10 +1072,13 @@ export const authService = {
   },
 
   spendCoins(amount: number, description = 'Sử dụng xu'): { success: boolean; user?: UserProfile; message?: string } {
-    const current = this.getCurrentUser() || this.getOrInitCurrentUser()
-    const currentCoins = current.coins ?? 50
+    const current = this.getCurrentUser()
+    if (!current) {
+      return { success: false, message: 'Bạn chưa đăng nhập. Vui lòng đăng nhập hoặc đăng ký tài khoản (bằng Email/Số điện thoại) để dùng Xu.' }
+    }
+    const currentCoins = current.coins ?? 0
     if (currentCoins < amount) {
-      return { success: false, message: `Số dư Xu không đủ (Hiện có: ${currentCoins} Xu, cần: ${amount} Xu).` }
+      return { success: false, message: `Số dư Xu không đủ (Hiện có: ${currentCoins} Xu, cần: ${amount} Xu). Vui lòng nạp thêm Xu.` }
     }
     const newCoins = currentCoins - amount
     const updated = this.updateProfile({ coins: newCoins }, current)

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import './index.css';
 import { getChantLyrics } from './chantLyrics';
 import { authService } from './lib/authService';
 import ChoiCoin from './components/ChoiCoin';
 import CoinTopupModal from './components/CoinTopupModal';
+import AuthModal from './components/AuthModal';
 import type { UserProfile } from './types/auth';
 
 type Screen = 'name' | 'mode' | 'matchmaking' | 'card-picking' | 'friend' | 'playing' | 'result'
@@ -452,14 +453,24 @@ export default function BaiChoiGame({
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => authService.getCurrentUser())
   const [userCoins, setUserCoins] = useState<number>(() => {
     const user = authService.getCurrentUser()
-    return user?.coins ?? 50
+    return user?.coins ?? 0
   })
   const [isTopupModalOpen, setIsTopupModalOpen] = useState(false)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login')
+
+  // Đăng ký đồng bộ thông tin tài khoản thật từ authService
+  useEffect(() => {
+    return authService.subscribe((user) => {
+      setCurrentUser(user)
+      setUserCoins(user?.coins ?? 0)
+    })
+  }, [])
 
   // Cây bài của người chơi trong ván đấu
   const [playerTrees, setPlayerTrees] = useState<PlayerTree[]>([])
 
-  // State chọn thẻ bài (1 Cây = 3 Thẻ, 1 Thẻ = 1 Xu)
+  // State chọn thẻ bài (1 Cây = 3 Thẻ, 1 Thẻ = 5 Xu, 1 Cây = 15 Xu)
   const [draftTrees, setDraftTrees] = useState<{ id: string; name: string; cards: Card[] }[]>([
     { id: 'tree-1', name: 'Cây Bài #1', cards: [] }
   ])
@@ -498,9 +509,9 @@ export default function BaiChoiGame({
   const players = useMemo(() => onlineMode ? onlinePlayers.map((player) => player.name) : [playerName, ...BOT_NAMES], [onlineMode, onlinePlayers, playerName])
 
   const goToCardPicking = () => {
-    const user = authService.getCurrentUser() || authService.getOrInitCurrentUser(playerName)
+    const user = authService.getCurrentUser()
     setCurrentUser(user)
-    setUserCoins(user.coins ?? 50)
+    setUserCoins(user?.coins ?? 0)
     setDraftTrees([{ id: 'tree-1', name: 'Cây Bài #1', cards: [] }])
     setActiveDraftTreeIndex(0)
     setPickingError('')
@@ -558,6 +569,11 @@ export default function BaiChoiGame({
     )
   })
 
+  const [isMobileDevice, setIsMobileDevice] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.innerWidth < 768
+  })
+
   const introVideoSrc = isMobilePortrait
     ? '/sound-online/video-daugame-dienthoai.mp4'
     : '/sound-online/video-daugame.mp4'
@@ -565,6 +581,7 @@ export default function BaiChoiGame({
   useEffect(() => {
     const checkOrientation = () => {
       setIsMobilePortrait(window.innerWidth < 768 && window.innerHeight > window.innerWidth)
+      setIsMobileDevice(window.innerWidth < 768)
     }
     checkOrientation()
     window.addEventListener('resize', checkOrientation)
@@ -986,7 +1003,7 @@ export default function BaiChoiGame({
   const finishGame = (winnerName: string) => {
     setWinner(winnerName)
     setMessage(winnerName === playerName ? 'TỚI! Ba cờ đã về chòi của bạn!' : `${winnerName} đã hô TỚI!`)
-    if (winnerName === playerName) {
+    if (winnerName === playerName && currentUser) {
       try {
         const updated = authService.addCoins(15, 'Thưởng thắng TỚI trong hội Bài Chòi')
         setUserCoins(updated.coins ?? (userCoins + 15))
@@ -1044,7 +1061,7 @@ export default function BaiChoiGame({
   }
 
   // =========================================================
-  // XỬ LÝ CHỌN 30 LÁ BÀI & MUA NHIỀU CÂY BÀI (1 THẺ = 1 XU)
+  // XỬ LÝ CHỌN 30 LÁ BÀI & MUA NHIỀU CÂY BÀI (1 THẺ = 5 XU, 1 CÂY = 15 XU)
   // Cho phép chọn lại lá bài đã chọn ở cây khác, nhưng kiểm tra
   // tổ hợp 3 lá của mỗi cây phải độc nhất (không trùng nhau).
   // =========================================================
@@ -1052,11 +1069,14 @@ export default function BaiChoiGame({
     return [...cards].map((c) => c.id).sort().join('|')
   }
 
+  const CARD_PRICE = 5
+  const TREE_PRICE = 15
+
   const totalCardsPicked = useMemo(() => {
     return draftTrees.reduce((sum, tree) => sum + tree.cards.length, 0)
   }, [draftTrees])
 
-  const totalCostCoins = totalCardsPicked
+  const totalCostCoins = totalCardsPicked * CARD_PRICE
 
   const filteredCards = useMemo(() => {
     if (phoFilter === 'van') return CARDS.slice(0, 10)
@@ -1067,6 +1087,17 @@ export default function BaiChoiGame({
 
   const handleToggleCardPick = (card: Card) => {
     setPickingError('')
+
+    // Kiểm tra tài khoản thật trước khi chọn bài
+    if (!currentUser) {
+      setPickingError(
+        'Bạn chưa đăng nhập! Vui lòng Đăng nhập hoặc Đăng ký bằng Email / Số điện thoại để nạp Xu và chọn thẻ bài.'
+      )
+      setAuthModalMode('login')
+      setIsAuthModalOpen(true)
+      return
+    }
+
     const activeTree = draftTrees[activeDraftTreeIndex]
     if (!activeTree) return
 
@@ -1098,16 +1129,16 @@ export default function BaiChoiGame({
         )
       } else {
         setPickingError(
-          `${activeTree.name} đã đủ 3 thẻ! Bạn có thể bấm "+ Mua Thêm Cây Mới (3 Xu)" nếu muốn lập thêm cây khác.`
+          `${activeTree.name} đã đủ 3 thẻ! Bạn có thể bấm "+ Thêm cây (15 Xu)" nếu muốn lập thêm cây khác.`
         )
       }
       return
     }
 
-    // Kiểm tra số dư Xu (1 thẻ = 1 Xu)
-    if (totalCardsPicked + 1 > userCoins) {
+    // Kiểm tra số dư Xu (1 thẻ = 5 Xu)
+    if ((totalCardsPicked + 1) * CARD_PRICE > userCoins) {
       setPickingError(
-        `Số dư Xu không đủ! Mỗi thẻ giá 1 Xu. Bạn đang có ${userCoins} Xu và đã chọn ${totalCardsPicked} thẻ. Vui lòng nạp thêm Xu.`
+        `Số dư Xu không đủ! Mỗi thẻ giá 5 Xu (1 Cây 3 thẻ = 15 Xu). Bạn đang có ${userCoins} Xu và đã chọn ${totalCardsPicked} thẻ (${totalCostCoins} Xu). Vui lòng nạp thêm Xu.`
       )
       return
     }
@@ -1147,15 +1178,22 @@ export default function BaiChoiGame({
   const handleAddNewTree = () => {
     setPickingError('')
 
+    if (!currentUser) {
+      setPickingError('Bạn chưa đăng nhập! Vui lòng Đăng nhập / Đăng ký tài khoản để mua thêm cây bài.')
+      setAuthModalMode('login')
+      setIsAuthModalOpen(true)
+      return
+    }
+
     if (draftTrees.length >= 5) {
       setPickingError('Mỗi người chơi chỉ được chọn tối đa 5 Cây Bài trong một ván đấu.')
       return
     }
 
-    const coinsLeft = userCoins - totalCardsPicked
-    if (coinsLeft < 3) {
+    const coinsLeft = userCoins - totalCostCoins
+    if (coinsLeft < TREE_PRICE) {
       setPickingError(
-        `Bạn cần còn ít nhất 3 Xu để mua thêm 1 Cây Bài mới (Hiện còn: ${coinsLeft} Xu). Vui lòng nạp thêm Xu.`
+        `Bạn cần có ít nhất 15 Xu để mua thêm 1 Cây Bài mới (Hiện còn: ${coinsLeft} Xu). Vui lòng nạp thêm Xu.`
       )
       return
     }
@@ -1184,15 +1222,26 @@ export default function BaiChoiGame({
 
   const handleAutoPickTree = (treeIndex: number) => {
     setPickingError('')
+
+    if (!currentUser) {
+      setPickingError('Bạn chưa đăng nhập! Vui lòng Đăng nhập / Đăng ký tài khoản để chọn thẻ bài.')
+      setAuthModalMode('login')
+      setIsAuthModalOpen(true)
+      return
+    }
+
     const targetTree = draftTrees[treeIndex]
     if (!targetTree) return
 
     const neededCount = 3 - targetTree.cards.length
     if (neededCount <= 0) return
 
-    const coinsLeft = userCoins - totalCardsPicked
-    if (coinsLeft < neededCount) {
-      setPickingError(`Số dư Xu không đủ! Cần thêm ${neededCount} Xu để hoàn thành cây này.`)
+    const neededCoins = neededCount * CARD_PRICE
+    const coinsLeft = userCoins - totalCostCoins
+    if (coinsLeft < neededCoins) {
+      setPickingError(
+        `Số dư Xu không đủ! Cần thêm ${neededCoins} Xu (${neededCount} thẻ x 5 Xu) để hoàn thành cây này. Hiện còn: ${coinsLeft} Xu.`
+      )
       return
     }
 
@@ -1239,6 +1288,13 @@ export default function BaiChoiGame({
   const handleStartGameFromPicking = () => {
     setPickingError('')
 
+    if (!currentUser) {
+      setPickingError('Bạn chưa đăng nhập! Vui lòng Đăng nhập hoặc Đăng ký bằng Email / Số điện thoại để vào hội.')
+      setAuthModalMode('login')
+      setIsAuthModalOpen(true)
+      return
+    }
+
     if (draftTrees.length === 0) {
       setPickingError('Vui lòng chọn ít nhất 1 Cây Bài hoàn chỉnh để vào hội.')
       return
@@ -1248,7 +1304,7 @@ export default function BaiChoiGame({
       const tree = draftTrees[i]
       if (tree.cards.length !== 3) {
         setPickingError(
-          `${tree.name} mới có ${tree.cards.length}/3 thẻ. Hãy chọn đủ 3 thẻ (1 Xu/thẻ) hoặc xóa cây chưa xong.`
+          `${tree.name} mới có ${tree.cards.length}/3 thẻ. Hãy chọn đủ 3 thẻ (5 Xu/thẻ, 15 Xu/cây) hoặc xóa cây chưa xong.`
         )
         setActiveDraftTreeIndex(i)
         return
@@ -1271,10 +1327,10 @@ export default function BaiChoiGame({
       signatureMap.set(sig, tree.name)
     }
 
-    const cost = draftTrees.length * 3
+    const cost = draftTrees.length * TREE_PRICE
     const spendResult = authService.spendCoins(
       cost,
-      `Mua ${draftTrees.length} Cây Bài (${cost} thẻ) vào hội chơi với máy`
+      `Mua ${draftTrees.length} Cây Bài (${cost} Xu) vào hội chơi với máy`
     )
 
     if (!spendResult.success) {
@@ -1381,101 +1437,63 @@ export default function BaiChoiGame({
     >
       <div className="pointer-events-none fixed inset-0 opacity-20" style={{ backgroundImage: 'url(/assets/Background-toan.jpg)', backgroundSize: 'cover' }} />
 
-      {/* NÚT QUAY LẠI */}
+      {/* NÚT QUAY LẠI (THU NHỎ LẠI MỘT XÍU, GỌN GÀNG TINH TẾ) */}
       <button
         onClick={handleRequestBack}
-        className={`
-          fixed
-          z-[80]
-          flex
-          items-center
-          justify-center
-          gap-1
-          rounded-full
-          border-2
-          border-white/70
-          bg-[#075f63]/85
-          text-white
-          shadow-xl
-          backdrop-blur-sm
-          transition
-          hover:scale-105
-          hover:bg-[#c44837]
-          cursor-pointer
-          ${screen === 'card-picking'
-            ? 'left-2.5 top-2 sm:left-3.5 sm:top-2.5 h-7 sm:h-8 px-2.5 sm:px-3 text-xs font-bold'
-            : 'left-3 top-3 sm:left-5 sm:top-5 h-10 sm:h-12 px-3 sm:px-4 text-sm sm:text-base font-bold'
-          }
-        `}
+        className="fixed z-[80] flex items-center justify-center gap-1 rounded-full border border-white/60 bg-[#075f63]/85 text-white shadow-lg backdrop-blur-sm transition hover:scale-105 hover:bg-[#c44837] cursor-pointer left-2.5 top-2.5 sm:left-4 sm:top-3 h-7 sm:h-8 px-2.5 sm:px-3 text-xs font-bold"
         aria-label="Quay lại"
         title="Quay lại trang trước"
       >
-        <span className={screen === 'card-picking' ? 'text-sm sm:text-base leading-none' : 'text-xl leading-none'}>←</span>
+        <span className="text-sm sm:text-base leading-none">←</span>
         <span>Quay lại</span>
       </button>
 
-      {/* HUY HIỆU VÍ XU TRÊN ĐẦU (GÓC TRÊN BÊN PHẢI) */}
-      {(screen === 'playing' || screen === 'card-picking') && (
+      {/* HUY HIỆU VÍ XU TRÊN ĐẦU (ẨN KHI ĐANG CHƠI ĐỂ KHÔNG ĐÈ LÊN BIỂN NGƯỜI THAM GIA) */}
+      {screen === 'card-picking' && (
         <div
-          className={`
-            fixed
-            z-[80]
-            flex
-            items-center
-            rounded-full
-            border
-            border-[#f6d274]/50
-            bg-[#073f43]/90
-            backdrop-blur-md
-            shadow-xl
-            transition-all
-            ${screen === 'card-picking'
-              ? 'right-11 top-2 sm:right-13 sm:top-2.5 h-7 sm:h-8 px-2 sm:px-2.5 gap-1 text-[11px] sm:text-xs'
-              : 'right-16 top-3 sm:right-20 sm:top-5 h-10 sm:h-12 px-2.5 sm:px-3.5 gap-1.5 sm:gap-2 text-xs sm:text-sm'
-            }
-          `}
+          className="fixed z-[80] flex items-center rounded-full border border-[#f6d274]/50 bg-[#073f43]/90 backdrop-blur-md shadow-xl transition-all right-11 top-2 sm:right-13 sm:top-2.5 h-7 sm:h-8 px-2 sm:px-2.5 gap-1.5 text-[11px] sm:text-xs"
         >
-          <ChoiCoin size={screen === 'card-picking' ? 12 : 'sm'} glow animate />
-          <span className="font-bold text-[#fce893] whitespace-nowrap">{userCoins} Xu</span>
-          <button
-            type="button"
-            onClick={() => setIsTopupModalOpen(true)}
-            className="ml-0.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-1.5 py-0.2 sm:px-2 sm:py-0.5 text-[9px] sm:text-[10px] font-bold text-slate-900 shadow hover:brightness-110 active:scale-95 transition cursor-pointer"
-          >
-            + Nạp
-          </button>
+          {currentUser ? (
+            <>
+              <ChoiCoin size={12} glow animate />
+              <span className="font-bold text-[#fce893] whitespace-nowrap">{userCoins} Xu</span>
+              <button
+                type="button"
+                onClick={() => setIsTopupModalOpen(true)}
+                className="ml-0.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-slate-900 shadow hover:brightness-110 active:scale-95 transition cursor-pointer"
+              >
+                + Nạp
+              </button>
+            </>
+          ) : (
+            <>
+              <span className="font-bold text-amber-200/90 whitespace-nowrap text-[10px] sm:text-[11px]">Chưa đăng nhập</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthModalMode('login')
+                  setIsAuthModalOpen(true)
+                }}
+                className="ml-0.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 px-2 py-0.5 text-[9px] sm:text-[10px] font-black text-slate-950 shadow hover:brightness-110 active:scale-95 transition cursor-pointer"
+              >
+                Đăng nhập
+              </button>
+            </>
+          )}
         </div>
       )}
 
-      {/* NÚT ĐÓNG (×) */}
-      <button
-        onClick={handleRequestLeave}
-        className={`
-          fixed
-          z-[80]
-          grid
-          place-items-center
-          rounded-full
-          border-2
-          border-white/70
-          bg-[#075f63]/85
-          text-white
-          shadow-xl
-          backdrop-blur-sm
-          transition
-          hover:scale-105
-          hover:bg-[#c44837]
-          cursor-pointer
-          ${screen === 'card-picking'
-            ? 'right-2.5 top-2 sm:right-3.5 sm:top-2.5 h-7 w-7 sm:h-8 sm:w-8 text-base sm:text-lg font-light leading-none'
-            : 'right-3 top-3 sm:right-5 sm:top-5 h-10 w-10 sm:h-12 sm:w-12 text-2xl sm:text-3xl font-light leading-none'
-          }
-        `}
-        aria-label="Đóng trò chơi"
-        title="Đóng trò chơi"
-      >
-        ×
-      </button>
+      {/* NÚT ĐÓNG (×) - ẨN KHI ĐANG TRONG BÀN CHƠI */}
+      {screen !== 'playing' && (
+        <button
+          onClick={handleRequestLeave}
+          className="fixed z-[80] grid place-items-center rounded-full border-2 border-white/70 bg-[#075f63]/85 text-white shadow-xl backdrop-blur-sm transition hover:scale-105 hover:bg-[#c44837] cursor-pointer right-2.5 top-2 sm:right-3.5 sm:top-2.5 h-7 w-7 sm:h-8 sm:w-8 text-base sm:text-lg font-light leading-none"
+          aria-label="Đóng trò chơi"
+          title="Đóng trò chơi"
+        >
+          ×
+        </button>
+      )}
       <main
         className={`
           relative
@@ -1807,7 +1825,7 @@ export default function BaiChoiGame({
               >
                 <div>
                   <span className="inline-block px-3 py-0.5 rounded-full bg-white/90 backdrop-blur-md border border-[#1b4e4a]/30 text-[#123e3b] font-black text-[10px] sm:text-xs uppercase tracking-[.14em] shadow-sm mb-1.5">
-                    🏮 Khai Canh Lập Cây • 1 Thẻ = 5 Xu
+                    🏮 Khai Canh Lập Cây • 5 Xu / Thẻ • 15 Xu / Cây (3 Thẻ)
                   </span>
                 </div>
                 {/* DÙNG THẺ DIV VỚI FONT-SIZE TRỰC TIẾP (TRÁNH BỊ DÍNH LUẬT CSS H2 TOÀN CỤC CỦA INDEX.CSS) */}
@@ -1943,7 +1961,7 @@ export default function BaiChoiGame({
                               className="inline-flex items-center font-bold text-[#103431]"
                               style={{ fontSize: 'clamp(7px, 0.55cqw, 8px)' }}
                             >
-                              1 Xu
+                              5 Xu
                             </span>
                           )}
                         </div>
@@ -1958,11 +1976,10 @@ export default function BaiChoiGame({
                 type="button"
                 onClick={handleAddNewTree}
                 disabled={draftTrees.length >= 5}
-                className={`absolute z-20 flex items-center justify-center pl-5 rounded-full font-black transition-all border-0 shadow-none outline-none select-none ${
-                  draftTrees.length >= 5
-                    ? 'opacity-40 cursor-not-allowed text-[#083a3f]/60'
-                    : 'text-[#083a3f] hover:text-[#041a1c] cursor-pointer hover:bg-white/15 active:scale-95 group pointer-events-auto'
-                }`}
+                className={`absolute z-20 flex items-center justify-center pl-5 rounded-full font-black transition-all border-0 shadow-none outline-none select-none ${draftTrees.length >= 5
+                  ? 'opacity-40 cursor-not-allowed text-[#083a3f]/60'
+                  : 'text-[#083a3f] hover:text-[#041a1c] cursor-pointer hover:bg-white/15 active:scale-95 group pointer-events-auto'
+                  }`}
                 style={{
                   left: '73.0%',
                   top: '10.6%',
@@ -1979,11 +1996,10 @@ export default function BaiChoiGame({
 
               {/* === KHU VỰC 4B: HÀNG TAB CÂY BÀI (HỖ TRỢ 1 ĐẾN TỐI ĐA 5 CÂY BÀI) === */}
               <div
-                className={`absolute z-20 flex items-center pointer-events-auto transition-all ${
-                  draftTrees.length === 1
-                    ? 'overflow-hidden'
-                    : 'rounded-full bg-[#073238]/85 backdrop-blur-sm p-1 border border-[#5ae3dd]/40 shadow-md gap-1'
-                }`}
+                className={`absolute z-20 flex items-center pointer-events-auto transition-all ${draftTrees.length === 1
+                  ? 'overflow-hidden'
+                  : 'rounded-full bg-[#073238]/85 backdrop-blur-sm p-1 border border-[#5ae3dd]/40 shadow-md gap-1'
+                  }`}
                 style={{
                   left: '59.5%',
                   top: '17.94%',
@@ -2024,13 +2040,12 @@ export default function BaiChoiGame({
                         setActiveDraftTreeIndex(idx)
                         setPickingError('')
                       }}
-                      className={`flex-1 h-full min-w-0 flex items-center justify-center gap-1 px-1 rounded-full font-black transition-all cursor-pointer whitespace-nowrap shadow-sm select-none ${
-                        isActive
-                          ? 'bg-gradient-to-r from-amber-400 to-amber-300 text-[#073238] shadow-md ring-1 ring-amber-100/70 scale-[1.02]'
-                          : isComplete
-                            ? 'bg-emerald-600/85 hover:bg-emerald-600 text-white'
-                            : 'bg-white/20 hover:bg-white/30 text-white/90'
-                      }`}
+                      className={`flex-1 h-full min-w-0 flex items-center justify-center gap-1 px-1 rounded-full font-black transition-all cursor-pointer whitespace-nowrap shadow-sm select-none ${isActive
+                        ? 'bg-gradient-to-r from-amber-400 to-amber-300 text-[#073238] shadow-md ring-1 ring-amber-100/70 scale-[1.02]'
+                        : isComplete
+                          ? 'bg-emerald-600/85 hover:bg-emerald-600 text-white'
+                          : 'bg-white/20 hover:bg-white/30 text-white/90'
+                        }`}
                       style={{ fontSize: 'clamp(8px, 0.65cqw, 11px)' }}
                       title={`Cây Bài #${idx + 1} (${tree.cards.length}/3 thẻ)`}
                     >
@@ -2038,11 +2053,10 @@ export default function BaiChoiGame({
                         {draftTrees.length <= 3 ? `Cây #${idx + 1}` : `Cây ${idx + 1}`}
                       </span>
                       <span
-                        className={`px-1 py-0.2 rounded-full font-bold text-[8.5px] ${
-                          isActive
-                            ? 'bg-[#073238]/15 text-[#073238]'
-                            : 'bg-black/25 text-white'
-                        }`}
+                        className={`px-1 py-0.2 rounded-full font-bold text-[8.5px] ${isActive
+                          ? 'bg-[#073238]/15 text-[#073238]'
+                          : 'bg-black/25 text-white'
+                          }`}
                       >
                         {tree.cards.length}/3
                       </span>
@@ -2156,7 +2170,7 @@ export default function BaiChoiGame({
                         className="text-teal-300/70"
                         style={{ fontSize: 'clamp(7px, 0.55cqw, 8px)' }}
                       >
-                        1 Xu
+                        5 Xu
                       </span>
                     </div>
                   )
@@ -2180,7 +2194,7 @@ export default function BaiChoiGame({
                   <span className="text-[#c44837] font-black flex items-center gap-0.5">
                     <ChoiCoin size={12} /> {totalCostCoins} Xu
                     <span className="text-[10px] text-[#063339]/70 font-normal">
-                      ({draftTrees.length} cây • {totalCardsPicked} thẻ)
+                      ({draftTrees.length} cây • {totalCardsPicked} thẻ • 5 Xu/thẻ)
                     </span>
                   </span>
                 </div>
@@ -2194,15 +2208,22 @@ export default function BaiChoiGame({
                   </span>
                 </div>
 
-                {userCoins < totalCostCoins && (
+                {(!currentUser || userCoins < totalCostCoins) && (
                   <div className="flex items-center justify-between text-[10px] text-rose-700 font-bold">
-                    <span>Số dư không đủ!</span>
+                    <span>{!currentUser ? 'Chưa đăng nhập tài khoản' : 'Số dư không đủ!'}</span>
                     <button
                       type="button"
-                      onClick={() => setIsTopupModalOpen(true)}
+                      onClick={() => {
+                        if (!currentUser) {
+                          setAuthModalMode('login')
+                          setIsAuthModalOpen(true)
+                        } else {
+                          setIsTopupModalOpen(true)
+                        }
+                      }}
                       className="underline text-amber-800 hover:text-amber-900 cursor-pointer"
                     >
-                      Nạp Xu ngay →
+                      {!currentUser ? 'Đăng nhập ngay →' : 'Nạp Xu ngay →'}
                     </button>
                   </div>
                 )}
@@ -2517,27 +2538,27 @@ export default function BaiChoiGame({
           const getPaddleStyle = (treeCount: number, treeIndex: number) => {
             if (treeCount === 1) {
               return {
-                left: '49.5%',
-                top: '25.5%',
-                width: '29.0%',
-                height: '35.0%',
+                left: '50.6%',
+                top: '25.0%',
+                width: '27.0%',
+                height: '48.0%',
               }
             }
             if (treeCount === 2) {
               return {
                 left: treeIndex === 0 ? '43.1%' : '63.6%',
-                top: '29.0%',
+                top: '34.0%',
                 width: '15.8%',
-                height: '26.0%',
+                height: '19.5%',
               }
             }
             if (treeCount === 3) {
               const lefts = ['39.1%', '53.1%', '66.1%']
               return {
                 left: lefts[treeIndex] || '53.1%',
-                top: '33.0%',
+                top: '36.5%',
                 width: '10.4%',
-                height: '21.5%',
+                height: '16.2%',
               }
             }
             if (treeCount === 4) {
@@ -2545,16 +2566,16 @@ export default function BaiChoiGame({
                 const lefts = ['39.1%', '52.7%', '66.1%']
                 return {
                   left: lefts[treeIndex],
-                  top: '18.0%',
+                  top: '21.0%',
                   width: '10.4%',
-                  height: '21.0%',
+                  height: '16.2%',
                 }
               }
               return {
                 left: '52.7%',
-                top: '59.5%',
+                top: '62.6%',
                 width: '10.4%',
-                height: '21.0%',
+                height: '16.2%',
               }
             }
             // treeCount === 5
@@ -2562,17 +2583,17 @@ export default function BaiChoiGame({
               const lefts = ['39.1%', '52.7%', '66.1%']
               return {
                 left: lefts[treeIndex],
-                top: '18.0%',
+                top: '21.0%',
                 width: '10.4%',
-                height: '21.0%',
+                height: '16.2%',
               }
             }
             const bottomRowLefts = ['46.0%', '60.4%']
             return {
               left: bottomRowLefts[treeIndex - 3] || '46.0%',
-              top: '59.5%',
+              top: '62.6%',
               width: '10.4%',
-              height: '21.0%',
+              height: '16.2%',
             }
           }
 
@@ -2609,27 +2630,25 @@ export default function BaiChoiGame({
                 <div
                   className="absolute z-20 flex flex-col items-center justify-center pointer-events-auto"
                   style={{
-                    left: currentTreeCount === 1 ? '16.0%' : '14.5%',
-                    top: '20.0%',
-                    width: '18.0%',
-                    height: '52.0%',
+                    left: currentTreeCount === 1 ? '15.4%' : '13.75%',
+                    top: '24.8%',
+                    width: currentTreeCount === 1 ? '17.55%' : '17.6%',
+                    height: '44.5%',
                   }}
                 >
-                  {/* VÙNG LÁ BÀI RÚT (TỈ LỆ CHUẨN THẺ BÀI CHÒI 1:2.6, CANH CHUẨN NGAY TRÊN ĐÀI SÁNG) */}
+                  {/* VÙNG LÁ BÀI RÚT (CANH CHÍNH GIỮA TUYỆT ĐỐI KHUNG SÂN KHẤU VÀ ĐÀI SÁNG) */}
                   {(isCalling || currentCard) ? (
                     <div className="relative flex flex-col items-center justify-center w-full h-full">
                       <div
                         className={`draw-card-wrapper ${isCalling ? 'draw-card-calling' : ''}`}
                         style={{
-                          width: '46%',
-                          maxWidth: '150px',
-                          aspectRatio: '510 / 1350',
-                          marginBottom: '8px',
+                          height: '90%',
+                          aspectRatio: '510 / 1417',
                         }}
                       >
                         <div className={`draw-card-inner ${currentCard ? 'draw-card-flipped' : ''}`}>
                           {/* MẶT SAU */}
-                          <div className="draw-card-face draw-card-back shadow-2xl rounded-xl overflow-hidden border border-amber-300/40">
+                          <div className="draw-card-face draw-card-back shadow-2xl rounded-xl overflow-hidden ">
                             <img
                               src="/assets/phiasau.png"
                               alt="Mặt sau quân Bài Chòi"
@@ -2659,20 +2678,6 @@ export default function BaiChoiGame({
                           </div>
                         </div>
                       </div>
-
-                      {/* THANH TRẠNG THÁI / LỜI HÔ ĐẶT NGAY DƯỚI CHÂN LÁ BÀI */}
-                      {isCalling && currentCallingCard ? (
-                        <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-black/85 border border-[#f6d274]/60 backdrop-blur-md shadow-2xl transition-all animate-pulse max-w-[95%]">
-                          <span className="text-xs text-[#f6d274]">🎶</span>
-                          <span className="text-[11px] sm:text-xs font-semibold italic text-[#ffe58b] tracking-wide font-serif truncate">
-                            "{getChantLyrics(currentCallingCard.id, currentCallingCard.name)[chantLyricIndex]}"
-                          </span>
-                        </div>
-                      ) : currentCard ? (
-                        <span className="px-3 py-1.5 rounded-full bg-[#0a383f]/95 border border-[#5ae3dd]/70 font-black text-[#5ae3dd] text-xs sm:text-sm tracking-wider shadow-xl max-w-[95%] truncate text-center">
-                          QUÂN {currentCard.name.toUpperCase()}
-                        </span>
-                      ) : null}
                     </div>
                   ) : null}
                 </div>
@@ -2692,7 +2697,7 @@ export default function BaiChoiGame({
                   className="absolute z-20 flex items-center justify-center font-black transition-all cursor-pointer rounded-full outline-none select-none hover:scale-[1.03] active:scale-[0.97] group disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 pointer-events-auto"
                   style={{
                     left: '12.0%',
-                    top: '75.5%',
+                    top: currentTreeCount === 1 ? '75.2%' : '77.0%',
                     width: '10.3%',
                     height: '4.8%',
                     fontSize: 'clamp(10px, 0.8cqw, 13.5px)',
@@ -2709,32 +2714,453 @@ export default function BaiChoiGame({
                   </span>
                 </button>
 
-                {/* NÚT 2: GÕ MÕ */}
+                {/* NÚT 2: GÕ MÕ (CHỮ XANH NHẢY KHI CÓ THỂ GÕ, KHÔNG CÓ KHUNG VIỀN VÀNG) */}
                 <button
                   type="button"
                   onClick={claimCard}
                   disabled={isCalling || !currentCard || Boolean(winner)}
                   title="Gõ mõ nhận thẻ trúng cờ"
                   aria-label="Gõ mõ"
-                  className={`absolute z-20 flex items-center justify-center font-black transition-all cursor-pointer rounded-full outline-none select-none hover:scale-[1.03] active:scale-[0.97] group disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 pointer-events-auto ${
-                    canClaim && !isCalling
-                      ? 'animate-bounce shadow-[0_0_20px_rgba(255,215,0,0.8)] ring-2 ring-amber-300'
-                      : ''
-                  }`}
+                  className="absolute z-20 flex items-center justify-center font-black transition-all cursor-pointer rounded-full outline-none select-none hover:scale-[1.03] active:scale-[0.97] group disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 pointer-events-auto"
                   style={{
                     left: '25.8%',
-                    top: '75.5%',
+                    top: currentTreeCount === 1 ? '75.2%' : '77.0%',
                     width: '10.2%',
                     height: '4.8%',
                     fontSize: 'clamp(11px, 0.9cqw, 15px)',
                   }}
                 >
-                  <span className={`font-black drop-shadow-sm tracking-wide ${
-                    canClaim && !isCalling ? 'text-[#c44837] animate-pulse font-extrabold' : 'text-[#093c40]'
-                  }`}>
+                  <span className={`font-black drop-shadow-sm tracking-wide ${canClaim && !isCalling ? 'text-[#065f64] animate-bounce font-black inline-block' : 'text-[#093c40]'
+                    }`}>
                     GÕ MÕ
                   </span>
                 </button>
+
+                {/* === TIÊU ĐỀ & SỐ CỜ TRÊN BẢNG CHÒI (CHO FORM 1 ĐẾN 5 CÂY BÀI) === */}
+                {currentTreeCount === 1 && (
+                  <>
+                    {/* Ô DÀI: TÊN CÂY BÀI */}
+                    <div
+                      className="absolute z-20 flex items-center justify-center font-black tracking-wider text-[#063f47] text-xs sm:text-sm select-none truncate pointer-events-none"
+                      style={{
+                        left: '51.2%',
+                        top: '16.3%',
+                        width: '17.1%',
+                        height: '4.3%',
+                      }}
+                    >
+                      {effectiveTrees[0]?.name?.toUpperCase() === 'CÂY BÀI CỦA BẠN' ? 'CÂY BÀI #1' : (effectiveTrees[0]?.name?.toUpperCase() || 'CÂY BÀI #1')}
+                    </div>
+
+                    {/* Ô NGẮN: SỐ CỜ TRÚNG (DƯỚI LÁ CỜ VÀNG) */}
+                    <div
+                      className="absolute z-20 flex items-center justify-center font-black text-[#063f47] text-xs sm:text-sm select-none pointer-events-none"
+                      style={{
+                        left: '72.6%',
+                        top: '16.2%',
+                        width: '5.3%',
+                        height: '4.3%',
+                      }}
+                    >
+                      {effectiveTrees[0]?.claimedCardIds?.length || 0}/3
+                    </div>
+                  </>
+                )}
+
+                {/* FORM 2 CÂY (ẢNH 26.PNG) */}
+                {currentTreeCount === 2 && (
+                  <>
+                    {[
+                      {
+                        titleLeft: '44.1%',
+                        titleTop: '29.9%',
+                        titleWidth: '8.55%',
+                        titleHeight: '2.2%',
+                        flagLeft: '54.5%',
+                        flagTop: '26.4%',
+                        flagWidth: '1.6%',
+                        flagHeight: '3.4%',
+                        pillLeft: '54.0%',
+                        pillTop: '29.9%',
+                        pillWidth: '3.6%',
+                        pillHeight: '2.2%',
+                      },
+                      {
+                        titleLeft: '64.7%',
+                        titleTop: '29.9%',
+                        titleWidth: '8.5%',
+                        titleHeight: '2.2%',
+                        flagLeft: '75.1%',
+                        flagTop: '26.4%',
+                        flagWidth: '1.6%',
+                        flagHeight: '3.4%',
+                        pillLeft: '74.6%',
+                        pillTop: '29.9%',
+                        pillWidth: '3.6%',
+                        pillHeight: '2.2%',
+                      },
+                    ].map((cfg, idx) => (
+                      <Fragment key={`h2-${idx}`}>
+                        {/* VIÊN THUỐC DÀI BÊN TRÁI: TÊN CÂY BÀI */}
+                        <div
+                          className="absolute z-20 flex items-center justify-center font-black tracking-wider text-[#063f47] text-[10px] sm:text-xs select-none truncate pointer-events-none"
+                          style={{
+                            left: cfg.titleLeft,
+                            top: cfg.titleTop,
+                            width: cfg.titleWidth,
+                            height: cfg.titleHeight,
+                          }}
+                        >
+                          {effectiveTrees[idx]?.name?.toUpperCase()?.replace('CỦA BẠN', '#1') || `CÂY BÀI #${idx + 1}`}
+                        </div>
+
+                        {/* LÁ CỜ VÀNG CẮM BÊN TRÊN VIÊN THUỐC NGẮN */}
+                        <div
+                          className="absolute z-20 pointer-events-none select-none"
+                          style={{
+                            left: cfg.flagLeft,
+                            top: cfg.flagTop,
+                            width: cfg.flagWidth,
+                            height: cfg.flagHeight,
+                          }}
+                        >
+                          <svg viewBox="0 0 24 24" className="w-full h-full drop-shadow-sm overflow-visible" fill="none">
+                            <line x1="4" y1="2" x2="4" y2="23" stroke="#2d5e68" strokeWidth="2.5" strokeLinecap="round" />
+                            <path d="M4.5 3 C10 1.8 15 5.2 22 3.8 C18.5 8.5 14 10.5 4.5 12 Z" fill="#feee7c" stroke="#eed14d" strokeWidth="0.8" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+
+                        {/* VIÊN THUỐC NGẮN BÊN PHẢI: SỐ CỜ 0/3 */}
+                        <div
+                          className="absolute z-20 flex items-center justify-center rounded-full bg-[#8cc9dd] border border-[#6ab4cc]/40 font-black text-[#063f47] text-[10px] sm:text-xs select-none pointer-events-none shadow-sm"
+                          style={{
+                            left: cfg.pillLeft,
+                            top: cfg.pillTop,
+                            width: cfg.pillWidth,
+                            height: cfg.pillHeight,
+                          }}
+                        >
+                          {effectiveTrees[idx]?.claimedCardIds?.length || 0}/3
+                        </div>
+                      </Fragment>
+                    ))}
+                  </>
+                )}
+
+                {/* FORM 3 CÂY (ẢNH 25.PNG) */}
+                {currentTreeCount === 3 && (
+                  <>
+                    {[
+                      {
+                        titleLeft: '39.15%',
+                        titleTop: '32.89%',
+                        titleWidth: '5.8%',
+                        titleHeight: '2.28%',
+                        flagLeft: '46.8%',
+                        flagTop: '28.8%',
+                        flagWidth: '1.4%',
+                        flagHeight: '3.3%',
+                        pillLeft: '46.4%',
+                        pillTop: '32.14%',
+                        pillWidth: '2.7%',
+                        pillHeight: '2.28%',
+                      },
+                      {
+                        titleLeft: '53.25%',
+                        titleTop: '33.34%',
+                        titleWidth: '5.8%',
+                        titleHeight: '2.28%',
+                        flagLeft: '60.5%',
+                        flagTop: '29.4%',
+                        flagWidth: '1.4%',
+                        flagHeight: '3.3%',
+                        pillLeft: '60.1%',
+                        pillTop: '32.74%',
+                        pillWidth: '2.7%',
+                        pillHeight: '2.28%',
+                      },
+                      {
+                        titleLeft: '66.1%',
+                        titleTop: '33.45%',
+                        titleWidth: '6.8%',
+                        titleHeight: '2.28%',
+                        flagLeft: '73.8%',
+                        flagTop: '29.4%',
+                        flagWidth: '1.4%',
+                        flagHeight: '3.3%',
+                        pillLeft: '73.4%',
+                        pillTop: '32.74%',
+                        pillWidth: '2.7%',
+                        pillHeight: '2.28%',
+                      },
+                    ].map((cfg, idx) => (
+                      <Fragment key={`h3-${idx}`}>
+                        <div
+                          className="absolute z-20 flex items-center justify-center font-black tracking-wider text-[#063f47] text-[8.5px] sm:text-[10px] select-none truncate pointer-events-none"
+                          style={{
+                            left: cfg.titleLeft,
+                            top: cfg.titleTop,
+                            width: cfg.titleWidth,
+                            height: cfg.titleHeight,
+                          }}
+                        >
+                          {effectiveTrees[idx]?.name?.toUpperCase()?.replace('CỦA BẠN', '#1') || `CÂY BÀI #${idx + 1}`}
+                        </div>
+
+                        <div
+                          className="absolute z-20 pointer-events-none select-none"
+                          style={{
+                            left: cfg.flagLeft,
+                            top: cfg.flagTop,
+                            width: cfg.flagWidth,
+                            height: cfg.flagHeight,
+                          }}
+                        >
+                          <svg viewBox="0 0 24 24" className="w-full h-full drop-shadow-sm overflow-visible" fill="none">
+                            <line x1="4" y1="2" x2="4" y2="23" stroke="#2d5e68" strokeWidth="2.5" strokeLinecap="round" />
+                            <path d="M4.5 3 C10 1.8 15 5.2 22 3.8 C18.5 8.5 14 10.5 4.5 12 Z" fill="#feee7c" stroke="#eed14d" strokeWidth="0.8" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+
+                        <div
+                          className="absolute z-20 flex items-center justify-center rounded-full bg-[#8cc9dd] border border-[#6ab4cc]/40 font-black text-[#063f47] text-[8.5px] sm:text-[10px] select-none pointer-events-none shadow-sm"
+                          style={{
+                            left: cfg.pillLeft,
+                            top: cfg.pillTop,
+                            width: cfg.pillWidth,
+                            height: cfg.pillHeight,
+                          }}
+                        >
+                          {effectiveTrees[idx]?.claimedCardIds?.length || 0}/3
+                        </div>
+                      </Fragment>
+                    ))}
+                  </>
+                )}
+
+                {/* FORM 4 CÂY (ẢNH 24.PNG) */}
+                {currentTreeCount === 4 && (
+                  <>
+                    {[
+                      {
+                        titleLeft: '39.9%',
+                        titleTop: '18.2%',
+                        titleWidth: '5.5%',
+                        titleHeight: '2.0%',
+                        flagLeft: '46.4%',
+                        flagTop: '15.3%',
+                        flagWidth: '1.4%',
+                        flagHeight: '2.8%',
+                        pillLeft: '46.1%',
+                        pillTop: '18.2%',
+                        pillWidth: '2.6%',
+                        pillHeight: '2.0%',
+                      },
+                      {
+                        titleLeft: '53.35%',
+                        titleTop: '18.2%',
+                        titleWidth: '5.5%',
+                        titleHeight: '2.0%',
+                        flagLeft: '59.8%',
+                        flagTop: '15.3%',
+                        flagWidth: '1.4%',
+                        flagHeight: '2.8%',
+                        pillLeft: '59.5%',
+                        pillTop: '18.2%',
+                        pillWidth: '2.6%',
+                        pillHeight: '2.0%',
+                      },
+                      {
+                        titleLeft: '66.85%',
+                        titleTop: '18.2%',
+                        titleWidth: '5.5%',
+                        titleHeight: '2.0%',
+                        flagLeft: '73.3%',
+                        flagTop: '15.3%',
+                        flagWidth: '1.4%',
+                        flagHeight: '2.8%',
+                        pillLeft: '73.0%',
+                        pillTop: '18.2%',
+                        pillWidth: '2.6%',
+                        pillHeight: '2.0%',
+                      },
+                      {
+                        titleLeft: '53.3%',
+                        titleTop: '59.8%',
+                        titleWidth: '5.5%',
+                        titleHeight: '2.0%',
+                        flagLeft: '59.8%',
+                        flagTop: '56.9%',
+                        flagWidth: '1.4%',
+                        flagHeight: '2.8%',
+                        pillLeft: '59.5%',
+                        pillTop: '59.8%',
+                        pillWidth: '2.6%',
+                        pillHeight: '2.0%',
+                      },
+                    ].map((cfg, idx) => (
+                      <Fragment key={`h4-${idx}`}>
+                        <div
+                          className="absolute z-20 flex items-center justify-center font-black tracking-wider text-[#063f47] text-[8.5px] sm:text-[10px] select-none truncate pointer-events-none"
+                          style={{
+                            left: cfg.titleLeft,
+                            top: cfg.titleTop,
+                            width: cfg.titleWidth,
+                            height: cfg.titleHeight,
+                          }}
+                        >
+                          {effectiveTrees[idx]?.name?.toUpperCase()?.replace('CỦA BẠN', '#1') || `CÂY BÀI #${idx + 1}`}
+                        </div>
+
+                        <div
+                          className="absolute z-20 pointer-events-none select-none"
+                          style={{
+                            left: cfg.flagLeft,
+                            top: cfg.flagTop,
+                            width: cfg.flagWidth,
+                            height: cfg.flagHeight,
+                          }}
+                        >
+                          <svg viewBox="0 0 24 24" className="w-full h-full drop-shadow-sm overflow-visible" fill="none">
+                            <line x1="4" y1="2" x2="4" y2="23" stroke="#2d5e68" strokeWidth="2.5" strokeLinecap="round" />
+                            <path d="M4.5 3 C10 1.8 15 5.2 22 3.8 C18.5 8.5 14 10.5 4.5 12 Z" fill="#feee7c" stroke="#eed14d" strokeWidth="0.8" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+
+                        <div
+                          className="absolute z-20 flex items-center justify-center rounded-full bg-[#8cc9dd] border border-[#6ab4cc]/40 font-black text-[#063f47] text-[8.5px] sm:text-[10px] select-none pointer-events-none shadow-sm"
+                          style={{
+                            left: cfg.pillLeft,
+                            top: cfg.pillTop,
+                            width: cfg.pillWidth,
+                            height: cfg.pillHeight,
+                          }}
+                        >
+                          {effectiveTrees[idx]?.claimedCardIds?.length || 0}/3
+                        </div>
+                      </Fragment>
+                    ))}
+                  </>
+                )}
+
+                {/* FORM 5 CÂY (ẢNH 23.PNG) */}
+                {currentTreeCount === 5 && (
+                  <>
+                    {[
+                      {
+                        titleLeft: '39.9%',
+                        titleTop: '18.2%',
+                        titleWidth: '5.5%',
+                        titleHeight: '2.0%',
+                        flagLeft: '46.4%',
+                        flagTop: '15.3%',
+                        flagWidth: '1.4%',
+                        flagHeight: '2.8%',
+                        pillLeft: '46.1%',
+                        pillTop: '18.2%',
+                        pillWidth: '2.6%',
+                        pillHeight: '2.0%',
+                      },
+                      {
+                        titleLeft: '53.35%',
+                        titleTop: '18.2%',
+                        titleWidth: '5.5%',
+                        titleHeight: '2.0%',
+                        flagLeft: '59.8%',
+                        flagTop: '15.3%',
+                        flagWidth: '1.4%',
+                        flagHeight: '2.8%',
+                        pillLeft: '59.5%',
+                        pillTop: '18.2%',
+                        pillWidth: '2.6%',
+                        pillHeight: '2.0%',
+                      },
+                      {
+                        titleLeft: '66.85%',
+                        titleTop: '18.2%',
+                        titleWidth: '5.5%',
+                        titleHeight: '2.0%',
+                        flagLeft: '73.3%',
+                        flagTop: '15.3%',
+                        flagWidth: '1.4%',
+                        flagHeight: '2.8%',
+                        pillLeft: '73.0%',
+                        pillTop: '18.2%',
+                        pillWidth: '2.6%',
+                        pillHeight: '2.0%',
+                      },
+                      {
+                        titleLeft: '46.65%',
+                        titleTop: '59.4%',
+                        titleWidth: '5.5%',
+                        titleHeight: '2.0%',
+                        flagLeft: '53.1%',
+                        flagTop: '56.9%',
+                        flagWidth: '1.4%',
+                        flagHeight: '2.8%',
+                        pillLeft: '52.8%',
+                        pillTop: '59.8%',
+                        pillWidth: '2.6%',
+                        pillHeight: '2.0%',
+                      },
+                      {
+                        titleLeft: '61.0%',
+                        titleTop: '59.4%',
+                        titleWidth: '5.5%',
+                        titleHeight: '2.0%',
+                        flagLeft: '67.5%',
+                        flagTop: '56.9%',
+                        flagWidth: '1.4%',
+                        flagHeight: '2.8%',
+                        pillLeft: '67.2%',
+                        pillTop: '59.8%',
+                        pillWidth: '2.6%',
+                        pillHeight: '2.0%',
+                      },
+                    ].map((cfg, idx) => (
+                      <Fragment key={`h5-${idx}`}>
+                        <div
+                          className="absolute z-20 flex items-center justify-center font-black tracking-wider text-[#063f47] text-[8.5px] sm:text-[10px] select-none truncate pointer-events-none"
+                          style={{
+                            left: cfg.titleLeft,
+                            top: cfg.titleTop,
+                            width: cfg.titleWidth,
+                            height: cfg.titleHeight,
+                          }}
+                        >
+                          {effectiveTrees[idx]?.name?.toUpperCase()?.replace('CỦA BẠN', '#1') || `CÂY BÀI #${idx + 1}`}
+                        </div>
+
+                        <div
+                          className="absolute z-20 pointer-events-none select-none"
+                          style={{
+                            left: cfg.flagLeft,
+                            top: cfg.flagTop,
+                            width: cfg.flagWidth,
+                            height: cfg.flagHeight,
+                          }}
+                        >
+                          <svg viewBox="0 0 24 24" className="w-full h-full drop-shadow-sm overflow-visible" fill="none">
+                            <line x1="4" y1="2" x2="4" y2="23" stroke="#2d5e68" strokeWidth="2.5" strokeLinecap="round" />
+                            <path d="M4.5 3 C10 1.8 15 5.2 22 3.8 C18.5 8.5 14 10.5 4.5 12 Z" fill="#feee7c" stroke="#eed14d" strokeWidth="0.8" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+
+                        <div
+                          className="absolute z-20 flex items-center justify-center rounded-full bg-[#8cc9dd] border border-[#6ab4cc]/40 font-black text-[#063f47] text-[8.5px] sm:text-[10px] select-none pointer-events-none shadow-sm"
+                          style={{
+                            left: cfg.pillLeft,
+                            top: cfg.pillTop,
+                            width: cfg.pillWidth,
+                            height: cfg.pillHeight,
+                          }}
+                        >
+                          {effectiveTrees[idx]?.claimedCardIds?.length || 0}/3
+                        </div>
+                      </Fragment>
+                    ))}
+                  </>
+                )}
 
                 {/* === KHU VỰC 3: CÁC BẢNG CHÒI CỦA NGƯỜI CHƠI (CHỈ HIỆN LÁ BÀI, KHÔNG HIỆN CHỮ) === */}
                 {effectiveTrees.slice(0, currentTreeCount).map((tree, idx) => {
@@ -2746,8 +3172,13 @@ export default function BaiChoiGame({
                       className="absolute z-20 pointer-events-auto select-none"
                       style={paddleStyle}
                     >
-                      {/* VÙNG 3 LÁ BÀI BÊN TRONG BẢNG CHÒI - CHỈ HIỆN LÁ BÀI, KHÔNG CÓ CHỮ */}
-                      <div className="w-full h-full grid grid-cols-3 gap-1 p-0.5 items-center justify-items-center">
+                      {/* VÙNG 3 LÁ BÀI BÊN TRONG BẢNG CHÒI - DÀN HÀNG ĐỀU NHAU TUYỆT ĐỐI */}
+                      <div className={`w-full h-full flex items-center justify-center p-0.5 ${currentTreeCount === 1
+                        ? 'gap-2 sm:gap-3.5'
+                        : currentTreeCount === 2
+                          ? 'gap-1.5 sm:gap-2'
+                          : 'gap-0.5 sm:gap-1'
+                        }`}>
                         {tree.cards.map((card) => {
                           const isClaimed = tree.claimedCardIds.includes(card.id)
                           const isHit = !isCalling && currentCard?.id === card.id && !isClaimed
@@ -2758,19 +3189,18 @@ export default function BaiChoiGame({
                               type="button"
                               onClick={isHit ? claimCard : undefined}
                               title={card.name}
-                              className={`relative flex items-center justify-center h-full w-full p-0.5 rounded-lg transition-all duration-200 outline-none select-none cursor-pointer ${
-                                isHit
-                                  ? 'bg-amber-400/40 border-2 border-amber-300 ring-2 ring-amber-300 animate-pulse scale-105 shadow-xl'
-                                  : isClaimed
-                                    ? 'opacity-85 ring-2 ring-amber-400/90 shadow-md'
-                                    : 'hover:scale-102 hover:brightness-105'
-                              }`}
+                              className={`relative flex items-center justify-center h-full aspect-[510/1417] p-0.5 rounded-lg transition-all duration-200 outline-none select-none cursor-pointer ${isHit
+                                ? 'bg-amber-400/40 ring-2 ring-amber-300 animate-pulse scale-105 shadow-xl'
+                                : isClaimed
+                                  ? 'opacity-85 ring-2 ring-amber-400/90 shadow-md'
+                                  : 'hover:scale-102 hover:brightness-105'
+                                }`}
                             >
                               <div className="w-full h-full flex items-center justify-center overflow-hidden rounded">
                                 <img
                                   src={card.image}
                                   alt={card.name}
-                                  className="h-full w-full object-contain pointer-events-none drop-shadow"
+                                  className="h-full w-full object-cover pointer-events-none drop-shadow"
                                   draggable={false}
                                 />
                               </div>
@@ -2804,9 +3234,7 @@ export default function BaiChoiGame({
                   return (
                     <div
                       key={`${player}-${index}`}
-                      className={`absolute z-20 flex items-center justify-between px-3.5 rounded-xl pointer-events-auto transition-all select-none ${
-                        isMe ? 'ring-2 ring-amber-400 bg-amber-400/15' : ''
-                      }`}
+                      className="absolute z-20 flex items-center justify-between px-3.5 rounded-xl pointer-events-auto transition-all select-none"
                       style={{
                         left: '84.0%',
                         top: plankTops[index],
@@ -2833,21 +3261,217 @@ export default function BaiChoiGame({
           )
         })()}
 
-        {screen === 'result' && (
-          <section className="w-full max-w-xl rounded-[2rem] border border-[#f29963]/50 bg-[#0b5558]/95 p-8 text-center shadow-2xl sm:p-12">
-            <div className="text-6xl">{winner === playerName ? '🎊' : '🏁'}</div>
-            <p className="mt-5 text-xs font-bold uppercase tracking-[.25em] text-[#f29963]">Kết thúc ván</p>
-            <h2 className="mt-2 text-4xl font-black" style={{ fontFamily: 'var(--font-display)' }}>{winner === playerName ? 'Bạn đã hô TỚI!' : `${winner} chiến thắng!`}</h2>
-            <p className="mt-4 text-white/65">Cảm ơn {playerName} đã cùng vào hội.</p>
-            {winner === playerName && (
-              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/15 px-4 py-2 text-sm font-bold text-[#ffda86]">
-                <ChoiCoin size="sm" glow animate />
-                <span>Thưởng thắng cuộc: +15 Xu Chòi (Số dư: {userCoins} Xu)</span>
+        {screen === 'result' && (() => {
+          const isWinnerMe = winner === playerName
+          const winningTree = playerTrees.find((t) => t.claimedCardIds.length >= 3) || playerTrees[0]
+          const isMobile = isMobilePortrait || isMobileDevice || (typeof window !== 'undefined' && window.innerWidth < 768)
+
+          // Lấy 3 lá bài chiến thắng để vinh danh
+          const winningBotIndex = BOT_NAMES.indexOf(winner)
+          const winningCards = isWinnerMe
+            ? (winningTree?.cards?.length === 3 ? winningTree.cards : hand.slice(0, 3))
+            : (winningBotIndex >= 0 && botHands[winningBotIndex]?.length === 3
+                ? botHands[winningBotIndex]
+                : [])
+
+          return (
+            <section className="fixed inset-0 z-50 flex items-center justify-center bg-[#031c21] overflow-hidden select-none animate-fadeIn">
+              {/* Lớp nền lan tỏa màu lễ hội truyền thống */}
+              <div
+                className="pointer-events-none absolute inset-0 opacity-50"
+                style={{
+                  background: 'radial-gradient(circle at 50% 50%, #0c4d56 0%, #031d22 75%, #010f12 100%)',
+                }}
+              />
+
+              {/* Sân khấu video Hô Tới: Tràn viền chuẩn tỷ lệ 1304x658 của video hotoi.mp4 */}
+              <div
+                className="relative flex-none flex items-center justify-center overflow-hidden"
+                style={{
+                  width: 'max(100vw, calc(100vh * (1304 / 658)))',
+                  height: 'max(100vh, calc(100vw * (658 / 1304)))',
+                }}
+              >
+                {/* Video nền lễ hội Hô Tới sôi động */}
+                <video
+                  src="/assets/game/hotoi.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover pointer-events-none select-none"
+                />
+
+                {/* KHU VỰC NỘI DUNG TỰ ĐỘNG THÍCH ỨNG THEO ĐIỆN THOẠI & LAPTOP (LUÔN NẰM TRONG KHUÔN XANH) */}
+                <div
+                  className="absolute z-20 flex flex-col items-center justify-between pointer-events-auto text-center"
+                  style={{
+                    left: '50.0%',
+                    top: isMobile ? '21.5%' : '25.0%',
+                    transform: 'translateX(-50%)',
+                    width: isMobile ? 'min(21.0%, calc(100vw - 32px))' : '18.2%',
+                    maxWidth: isMobile ? 'calc(100vw - 28px)' : 'none',
+                    height: isMobile ? '65.5%' : '61.5%',
+                  }}
+                >
+                  {/* 1. HUY HIỆU ĐỈNH NÓC ĐÌNH CHÒI */}
+                  <div className="flex flex-col items-center shrink-0">
+                    <div
+                      className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400/25 via-amber-300/35 to-amber-400/25 border border-amber-300/60 shadow-xs text-amber-200 font-extrabold uppercase tracking-wider ${
+                        isMobile ? 'px-3 py-0.5 text-[10px] sm:text-[11px]' : 'px-2 py-0.5 text-[7px] sm:text-[8px] md:text-[9.5px]'
+                      }`}
+                    >
+                      <span className={isMobile ? 'text-[11px]' : 'text-[8px]'}>🏮</span>
+                      <span>KẾT THÚC VÁN ĐẤU</span>
+                      <span className={isMobile ? 'text-[11px]' : 'text-[8px]'}>🏮</span>
+                    </div>
+                  </div>
+
+                  {/* 2. TIÊU ĐỀ HÔ TỚI & LỜI CHÚC MỪNG */}
+                  <div className="shrink-0 text-center my-0.5 px-0.5">
+                    <h2
+                      className={`font-black text-transparent bg-clip-text bg-gradient-to-b from-[#fffbe0] via-[#ffd54f] to-[#f59e0b] drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] leading-tight tracking-normal ${
+                        isMobile ? 'text-lg sm:text-xl' : 'text-xs sm:text-sm md:text-base lg:text-lg'
+                      }`}
+                      style={{
+                        fontFamily: 'var(--font-display)',
+                      }}
+                    >
+                      {isWinnerMe ? 'BẠN ĐÃ HÔ TỚI!' : `${winner.toUpperCase()} ĐÃ TỚI!`}
+                    </h2>
+                    <p
+                      className={`text-teal-100/90 font-medium leading-tight mt-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] px-0.5 ${
+                        isMobile ? 'text-xs' : 'text-[7px] sm:text-[8px] md:text-[9.5px]'
+                      }`}
+                    >
+                      {isWinnerMe
+                        ? `Chúc mừng ${playerName} đã rinh trọn ba cờ chiến thắng!`
+                        : `Ván đấu đã khép lại, chúc ${playerName} may mắn ở hội sau!`}
+                    </p>
+                  </div>
+
+                  {/* 3. BỘ 3 LÁ BÀI CHIẾN THẮNG */}
+                  {winningCards.length === 3 && (
+                    <div className="w-full flex flex-col items-center shrink-0 my-0.5">
+                      <div
+                        className={`text-amber-300 font-bold uppercase tracking-wider mb-0.5 flex items-center gap-1 drop-shadow-sm ${
+                          isMobile ? 'text-[10px]' : 'text-[6.5px] sm:text-[7.5px] md:text-[8.5px]'
+                        }`}
+                      >
+                        <span>⚑</span>
+                        <span>
+                          {isWinnerMe
+                            ? `${winningTree?.name?.toUpperCase() || 'CÂY BÀI #1'} • ĐỦ 3/3 CỜ`
+                            : `CÂY BÀI CỦA ${winner.toUpperCase()}`}
+                        </span>
+                        <span>⚑</span>
+                      </div>
+
+                      <div className={`flex items-center justify-center w-full ${isMobile ? 'gap-2 sm:gap-2.5' : 'gap-1 sm:gap-1.5'}`}>
+                        {winningCards.map((card) => (
+                          <div
+                            key={card.id}
+                            className={`relative flex flex-col items-center group ${
+                              isMobile ? 'w-12 sm:w-14' : 'w-7 sm:w-8 md:w-9'
+                            }`}
+                          >
+                            <div className="w-full aspect-[510/1417] rounded overflow-hidden border border-amber-300/80 bg-amber-100/10 shadow-xs p-0.5">
+                              <img
+                                src={card.image}
+                                alt={card.name}
+                                className="w-full h-full object-cover rounded-xs pointer-events-none"
+                                draggable={false}
+                              />
+                            </div>
+                            <span
+                              className={`mt-0.5 font-bold text-white/90 truncate max-w-full drop-shadow ${
+                                isMobile ? 'text-[9.5px] sm:text-[10.5px]' : 'text-[6px] sm:text-[7px] md:text-[8px]'
+                              }`}
+                            >
+                              {card.name}
+                            </span>
+                            <span className={`absolute -top-1 -right-0.5 filter drop-shadow ${isMobile ? 'text-[11px]' : 'text-[7px] sm:text-[8px]'}`}>
+                              🚩
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 4. VIÊN THUỐC THƯỞNG XU / TRẠNG THÁI */}
+                  {isWinnerMe ? (
+                    <div
+                      className={`shrink-0 w-full rounded-full border border-amber-300/40 bg-gradient-to-r from-amber-500/20 via-amber-400/25 to-amber-500/20 backdrop-blur-sm flex items-center justify-center gap-1.5 shadow-xs text-center ${
+                        isMobile ? 'px-3 py-1.5' : 'px-1.5 py-0.5 sm:py-1'
+                      }`}
+                    >
+                      <ChoiCoin size={isMobile ? 15 : 11} glow animate />
+                      <span
+                        className={`font-bold text-[#ffda86] drop-shadow-sm leading-none ${
+                          isMobile ? 'text-xs sm:text-[13px]' : 'text-[7px] sm:text-[8px] md:text-[9.5px]'
+                        }`}
+                      >
+                        Thưởng: <strong className="text-white font-black">+15 Xu</strong>{' '}
+                        {currentUser ? `(Dư: ${userCoins})` : ''}
+                      </span>
+                      {!currentUser && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAuthModalMode('login')
+                            setIsAuthModalOpen(true)
+                          }}
+                          className={`font-bold underline hover:text-white cursor-pointer ml-1 text-amber-300 ${
+                            isMobile ? 'text-[11px]' : 'text-[6.5px] sm:text-[7.5px]'
+                          }`}
+                        >
+                          Nhận xu
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div
+                      className={`shrink-0 px-2 py-0.5 rounded-full border border-white/15 bg-white/5 text-teal-100/80 font-medium text-center ${
+                        isMobile ? 'text-xs py-1 px-3' : 'text-[7px] sm:text-[8px] md:text-[9px]'
+                      }`}
+                    >
+                      Hội vui có lúc, chúc bạn may mắn ván sau!
+                    </div>
+                  )}
+
+                  {/* 5. HAI NÚT HÀNH ĐỘNG DƯỚI ĐÁY */}
+                  <div className={`shrink-0 w-full grid grid-cols-2 pt-0.5 ${isMobile ? 'gap-2' : 'gap-1 sm:gap-1.5'}`}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        stopAudio()
+                        onlineMode ? backToMode() : goToCardPicking()
+                      }}
+                      className={`w-full rounded-xl bg-gradient-to-r from-[#d93829] via-[#c44837] to-[#a82a1d] hover:brightness-110 active:scale-95 text-white font-black tracking-normal border border-amber-300/60 shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5 select-none ${
+                        isMobile ? 'py-2.5 px-2 text-xs sm:text-sm min-h-[42px]' : 'py-1 sm:py-1.5 px-1 text-[7.5px] sm:text-[8.5px] md:text-[10px]'
+                      }`}
+                    >
+                      <span className={isMobile ? 'text-xs' : 'text-[8px] sm:text-[9px]'}>↺</span>
+                      <span>{onlineMode ? 'Về phòng hội' : 'Chơi ván nữa'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={backToMode}
+                      className={`w-full rounded-xl bg-[#0c404e]/85 hover:bg-[#0c404e] active:scale-95 text-white font-bold tracking-normal border border-white/30 hover:border-white/50 shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5 select-none ${
+                        isMobile ? 'py-2.5 px-2 text-xs sm:text-sm min-h-[42px]' : 'py-1 sm:py-1.5 px-1 text-[7.5px] sm:text-[8.5px] md:text-[10px]'
+                      }`}
+                    >
+                      <span className={isMobile ? 'text-xs' : 'text-[8px] sm:text-[9px]'}>⌂</span>
+                      <span>Về sảnh hội</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-            )}
-            <div className="mt-8 grid grid-cols-2 gap-3"><button onClick={() => { stopAudio(); onlineMode ? backToMode() : goToCardPicking() }} className="rounded-xl bg-[#c44837] px-4 py-3 font-bold">{onlineMode ? 'Về phòng hội' : 'Chơi ván nữa'}</button><button onClick={backToMode} className="rounded-xl border border-white/20 px-4 py-3 font-bold hover:bg-white/10">Về sảnh hội</button></div>
-          </section>
-        )}
+            </section>
+          )
+        })()}
       </main>
 
       {/* MODAL NẠP XU (ĐỒNG BỘ SUPABASE DATABASE) */}
@@ -2855,10 +3479,26 @@ export default function BaiChoiGame({
         isOpen={isTopupModalOpen}
         onClose={() => setIsTopupModalOpen(false)}
         currentUser={currentUser}
+        onOpenAuth={(mode) => {
+          setAuthModalMode(mode === 'register' ? 'register' : 'login')
+          setIsAuthModalOpen(true)
+        }}
         onSuccess={(newCoins) => {
           setUserCoins(newCoins)
           const updated = authService.getCurrentUser()
           setCurrentUser(updated)
+        }}
+      />
+
+      {/* MODAL ĐĂNG NHẬP / ĐĂNG KÝ BẰNG EMAIL / SỐ ĐIỆN THOẠI */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        initialMode={authModalMode}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={(user) => {
+          setCurrentUser(user)
+          setUserCoins(user.coins ?? 0)
+          setIsAuthModalOpen(false)
         }}
       />
 
