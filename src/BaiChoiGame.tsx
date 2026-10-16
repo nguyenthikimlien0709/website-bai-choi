@@ -409,6 +409,7 @@ export default function BaiChoiGame({
   initialAudioMode?: 'online' | 'offline'
 }) {
   const [audioMode, setAudioMode] = useState<'online' | 'offline'>(initialAudioMode)
+  const [screen, setScreen] = useState<Screen>('name')
   // ==========================================
   // QUẢN LÝ TÀI KHOẢN & XU (BẮT BUỘC ĐĂNG NHẬP / ĐĂNG KÝ)
   // ==========================================
@@ -3532,7 +3533,7 @@ export default function BaiChoiGame({
                 <p className="text-xs text-rose-200/90 leading-relaxed">
                   Số Xu bạn đã bỏ ra để mua thẻ/cây bài vào hội{' '}
                   <strong className="text-[#ffda86]">
-                    ({(playerTrees.length > 0 ? playerTrees.length * 3 : (draftTrees.length * 3 || 3))} Xu)
+                    ({((playerTrees.length > 0 ? playerTrees.length : Math.max(1, draftTrees.length)) * 15)} Xu cho {(playerTrees.length > 0 ? playerTrees.length : Math.max(1, draftTrees.length))} Cây Bài)
                   </strong>{' '}
                   sẽ bị mất và <strong>không được hoàn lại</strong>!
                 </p>
