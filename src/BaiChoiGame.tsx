@@ -569,11 +569,6 @@ export default function BaiChoiGame({
     )
   })
 
-  const [isMobileDevice, setIsMobileDevice] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return window.innerWidth < 768
-  })
-
   const introVideoSrc = isMobilePortrait
     ? '/sound-online/video-daugame-dienthoai.mp4'
     : '/sound-online/video-daugame.mp4'
@@ -581,7 +576,6 @@ export default function BaiChoiGame({
   useEffect(() => {
     const checkOrientation = () => {
       setIsMobilePortrait(window.innerWidth < 768 && window.innerHeight > window.innerWidth)
-      setIsMobileDevice(window.innerWidth < 768)
     }
     checkOrientation()
     window.addEventListener('resize', checkOrientation)
@@ -3264,7 +3258,6 @@ export default function BaiChoiGame({
         {screen === 'result' && (() => {
           const isWinnerMe = winner === playerName
           const winningTree = playerTrees.find((t) => t.claimedCardIds.length >= 3) || playerTrees[0]
-          const isMobile = isMobilePortrait || isMobileDevice || (typeof window !== 'undefined' && window.innerWidth < 768)
 
           // Lấy 3 lá bài chiến thắng để vinh danh
           const winningBotIndex = BOT_NAMES.indexOf(winner)
@@ -3302,48 +3295,37 @@ export default function BaiChoiGame({
                   className="w-full h-full object-cover pointer-events-none select-none"
                 />
 
-                {/* KHU VỰC NỘI DUNG TỰ ĐỘNG THÍCH ỨNG THEO ĐIỆN THOẠI & LAPTOP (LUÔN NẰM TRONG KHUÔN XANH) */}
+                {/* KHU VỰC NỘI DUNG NẰM GỌN TRONG KHUÔN CHÒI XANH (ĐỒNG NHẤT GIỮA ĐIỆN THOẠI & LAPTOP) */}
                 <div
                   className="absolute z-20 flex flex-col items-center justify-between pointer-events-auto text-center"
                   style={{
                     left: '50.0%',
-                    top: isMobile ? '21.5%' : '25.0%',
+                    top: '25.0%',
                     transform: 'translateX(-50%)',
-                    width: isMobile ? 'min(21.0%, calc(100vw - 32px))' : '18.2%',
-                    maxWidth: isMobile ? 'calc(100vw - 28px)' : 'none',
-                    height: isMobile ? '65.5%' : '61.5%',
+                    width: '18.2%',
+                    height: '61.5%',
                   }}
                 >
                   {/* 1. HUY HIỆU ĐỈNH NÓC ĐÌNH CHÒI */}
                   <div className="flex flex-col items-center shrink-0">
-                    <div
-                      className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400/25 via-amber-300/35 to-amber-400/25 border border-amber-300/60 shadow-xs text-amber-200 font-extrabold uppercase tracking-wider ${
-                        isMobile ? 'px-3 py-0.5 text-[10px] sm:text-[11px]' : 'px-2 py-0.5 text-[7px] sm:text-[8px] md:text-[9.5px]'
-                      }`}
-                    >
-                      <span className={isMobile ? 'text-[11px]' : 'text-[8px]'}>🏮</span>
+                    <div className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400/25 via-amber-300/35 to-amber-400/25 border border-amber-300/60 shadow-xs px-2 py-0.5 text-amber-200 font-extrabold text-[7.5px] sm:text-[8.5px] md:text-[9.5px] uppercase tracking-wider">
+                      <span className="text-[8px]">🏮</span>
                       <span>KẾT THÚC VÁN ĐẤU</span>
-                      <span className={isMobile ? 'text-[11px]' : 'text-[8px]'}>🏮</span>
+                      <span className="text-[8px]">🏮</span>
                     </div>
                   </div>
 
                   {/* 2. TIÊU ĐỀ HÔ TỚI & LỜI CHÚC MỪNG */}
                   <div className="shrink-0 text-center my-0.5 px-0.5">
                     <h2
-                      className={`font-black text-transparent bg-clip-text bg-gradient-to-b from-[#fffbe0] via-[#ffd54f] to-[#f59e0b] drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] leading-tight tracking-normal ${
-                        isMobile ? 'text-lg sm:text-xl' : 'text-xs sm:text-sm md:text-base lg:text-lg'
-                      }`}
+                      className="text-xs sm:text-sm md:text-base lg:text-lg font-black text-transparent bg-clip-text bg-gradient-to-b from-[#fffbe0] via-[#ffd54f] to-[#f59e0b] drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] leading-tight tracking-normal"
                       style={{
                         fontFamily: 'var(--font-display)',
                       }}
                     >
                       {isWinnerMe ? 'BẠN ĐÃ HÔ TỚI!' : `${winner.toUpperCase()} ĐÃ TỚI!`}
                     </h2>
-                    <p
-                      className={`text-teal-100/90 font-medium leading-tight mt-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] px-0.5 ${
-                        isMobile ? 'text-xs' : 'text-[7px] sm:text-[8px] md:text-[9.5px]'
-                      }`}
-                    >
+                    <p className="text-[7px] sm:text-[8px] md:text-[9.5px] text-teal-100/90 font-medium leading-tight mt-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] px-0.5">
                       {isWinnerMe
                         ? `Chúc mừng ${playerName} đã rinh trọn ba cờ chiến thắng!`
                         : `Ván đấu đã khép lại, chúc ${playerName} may mắn ở hội sau!`}
@@ -3353,11 +3335,7 @@ export default function BaiChoiGame({
                   {/* 3. BỘ 3 LÁ BÀI CHIẾN THẮNG */}
                   {winningCards.length === 3 && (
                     <div className="w-full flex flex-col items-center shrink-0 my-0.5">
-                      <div
-                        className={`text-amber-300 font-bold uppercase tracking-wider mb-0.5 flex items-center gap-1 drop-shadow-sm ${
-                          isMobile ? 'text-[10px]' : 'text-[6.5px] sm:text-[7.5px] md:text-[8.5px]'
-                        }`}
-                      >
+                      <div className="text-[6.5px] sm:text-[7.5px] md:text-[8.5px] text-amber-300 font-bold uppercase tracking-wider mb-0.5 flex items-center gap-1 drop-shadow-sm">
                         <span>⚑</span>
                         <span>
                           {isWinnerMe
@@ -3367,13 +3345,11 @@ export default function BaiChoiGame({
                         <span>⚑</span>
                       </div>
 
-                      <div className={`flex items-center justify-center w-full ${isMobile ? 'gap-2 sm:gap-2.5' : 'gap-1 sm:gap-1.5'}`}>
+                      <div className="flex items-center justify-center gap-1 sm:gap-1.5 w-full">
                         {winningCards.map((card) => (
                           <div
                             key={card.id}
-                            className={`relative flex flex-col items-center group ${
-                              isMobile ? 'w-12 sm:w-14' : 'w-7 sm:w-8 md:w-9'
-                            }`}
+                            className="w-7 sm:w-8 md:w-9 relative flex flex-col items-center group"
                           >
                             <div className="w-full aspect-[510/1417] rounded overflow-hidden border border-amber-300/80 bg-amber-100/10 shadow-xs p-0.5">
                               <img
@@ -3383,14 +3359,10 @@ export default function BaiChoiGame({
                                 draggable={false}
                               />
                             </div>
-                            <span
-                              className={`mt-0.5 font-bold text-white/90 truncate max-w-full drop-shadow ${
-                                isMobile ? 'text-[9.5px] sm:text-[10.5px]' : 'text-[6px] sm:text-[7px] md:text-[8px]'
-                              }`}
-                            >
+                            <span className="mt-0.5 text-[6px] sm:text-[7px] md:text-[8px] font-bold text-white/90 truncate max-w-full drop-shadow">
                               {card.name}
                             </span>
-                            <span className={`absolute -top-1 -right-0.5 filter drop-shadow ${isMobile ? 'text-[11px]' : 'text-[7px] sm:text-[8px]'}`}>
+                            <span className="absolute -top-1 -right-0.5 text-[7px] sm:text-[8px] filter drop-shadow">
                               🚩
                             </span>
                           </div>
@@ -3401,17 +3373,9 @@ export default function BaiChoiGame({
 
                   {/* 4. VIÊN THUỐC THƯỞNG XU / TRẠNG THÁI */}
                   {isWinnerMe ? (
-                    <div
-                      className={`shrink-0 w-full rounded-full border border-amber-300/40 bg-gradient-to-r from-amber-500/20 via-amber-400/25 to-amber-500/20 backdrop-blur-sm flex items-center justify-center gap-1.5 shadow-xs text-center ${
-                        isMobile ? 'px-3 py-1.5' : 'px-1.5 py-0.5 sm:py-1'
-                      }`}
-                    >
-                      <ChoiCoin size={isMobile ? 15 : 11} glow animate />
-                      <span
-                        className={`font-bold text-[#ffda86] drop-shadow-sm leading-none ${
-                          isMobile ? 'text-xs sm:text-[13px]' : 'text-[7px] sm:text-[8px] md:text-[9.5px]'
-                        }`}
-                      >
+                    <div className="shrink-0 w-full px-1.5 py-0.5 sm:py-1 rounded-full border border-amber-300/40 bg-gradient-to-r from-amber-500/20 via-amber-400/25 to-amber-500/20 backdrop-blur-sm flex items-center justify-center gap-1 shadow-xs text-center">
+                      <ChoiCoin size={11} glow animate />
+                      <span className="text-[7px] sm:text-[8px] md:text-[9.5px] font-bold text-[#ffda86] drop-shadow-sm leading-none">
                         Thưởng: <strong className="text-white font-black">+15 Xu</strong>{' '}
                         {currentUser ? `(Dư: ${userCoins})` : ''}
                       </span>
@@ -3422,48 +3386,38 @@ export default function BaiChoiGame({
                             setAuthModalMode('login')
                             setIsAuthModalOpen(true)
                           }}
-                          className={`font-bold underline hover:text-white cursor-pointer ml-1 text-amber-300 ${
-                            isMobile ? 'text-[11px]' : 'text-[6.5px] sm:text-[7.5px]'
-                          }`}
+                          className="font-bold underline hover:text-white cursor-pointer ml-1 text-amber-300 text-[6.5px] sm:text-[7.5px]"
                         >
                           Nhận xu
                         </button>
                       )}
                     </div>
                   ) : (
-                    <div
-                      className={`shrink-0 px-2 py-0.5 rounded-full border border-white/15 bg-white/5 text-teal-100/80 font-medium text-center ${
-                        isMobile ? 'text-xs py-1 px-3' : 'text-[7px] sm:text-[8px] md:text-[9px]'
-                      }`}
-                    >
+                    <div className="shrink-0 px-2 py-0.5 rounded-full border border-white/15 bg-white/5 text-[7px] sm:text-[8px] md:text-[9px] text-teal-100/80 font-medium text-center">
                       Hội vui có lúc, chúc bạn may mắn ván sau!
                     </div>
                   )}
 
                   {/* 5. HAI NÚT HÀNH ĐỘNG DƯỚI ĐÁY */}
-                  <div className={`shrink-0 w-full grid grid-cols-2 pt-0.5 ${isMobile ? 'gap-2' : 'gap-1 sm:gap-1.5'}`}>
+                  <div className="shrink-0 w-full grid grid-cols-2 gap-1 sm:gap-1.5 pt-0.5">
                     <button
                       type="button"
                       onClick={() => {
                         stopAudio()
                         onlineMode ? backToMode() : goToCardPicking()
                       }}
-                      className={`w-full rounded-xl bg-gradient-to-r from-[#d93829] via-[#c44837] to-[#a82a1d] hover:brightness-110 active:scale-95 text-white font-black tracking-normal border border-amber-300/60 shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5 select-none ${
-                        isMobile ? 'py-2.5 px-2 text-xs sm:text-sm min-h-[42px]' : 'py-1 sm:py-1.5 px-1 text-[7.5px] sm:text-[8.5px] md:text-[10px]'
-                      }`}
+                      className="w-full py-1 sm:py-1.5 px-1 rounded-xl bg-gradient-to-r from-[#d93829] via-[#c44837] to-[#a82a1d] hover:brightness-110 active:scale-95 text-white font-black text-[7.5px] sm:text-[8.5px] md:text-[10px] tracking-normal border border-amber-300/60 shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1 select-none"
                     >
-                      <span className={isMobile ? 'text-xs' : 'text-[8px] sm:text-[9px]'}>↺</span>
+                      <span className="text-[8px] sm:text-[9px]">↺</span>
                       <span>{onlineMode ? 'Về phòng hội' : 'Chơi ván nữa'}</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={backToMode}
-                      className={`w-full rounded-xl bg-[#0c404e]/85 hover:bg-[#0c404e] active:scale-95 text-white font-bold tracking-normal border border-white/30 hover:border-white/50 shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5 select-none ${
-                        isMobile ? 'py-2.5 px-2 text-xs sm:text-sm min-h-[42px]' : 'py-1 sm:py-1.5 px-1 text-[7.5px] sm:text-[8.5px] md:text-[10px]'
-                      }`}
+                      className="w-full py-1 sm:py-1.5 px-1 rounded-xl bg-[#0c404e]/85 hover:bg-[#0c404e] active:scale-95 text-white font-bold text-[7.5px] sm:text-[8.5px] md:text-[10px] tracking-normal border border-white/30 hover:border-white/50 shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1 select-none"
                     >
-                      <span className={isMobile ? 'text-xs' : 'text-[8px] sm:text-[9px]'}>⌂</span>
+                      <span className="text-[8px] sm:text-[9px]">⌂</span>
                       <span>Về sảnh hội</span>
                     </button>
                   </div>
