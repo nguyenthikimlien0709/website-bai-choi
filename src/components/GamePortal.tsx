@@ -55,7 +55,13 @@ export default function GamePortal({
           onLogout={onLogout}
           onGoToShop={onGoToShop}
           onBackToSite={onBackToSite}
-          onOpenGameOffline={() => setIsPlayingGame(true)}
+          onOpenGameOffline={() => {
+            if (!currentUser) {
+              onOpenAuth('login')
+              return
+            }
+            setIsPlayingGame(true)
+          }}
         />
       </main>
 

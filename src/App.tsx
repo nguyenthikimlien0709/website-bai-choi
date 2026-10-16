@@ -340,10 +340,10 @@ function ReferenceScreen({
   return (
     <section
       id={id}
-      className={`relative flex min-h-[100svh] scroll-mt-20 items-center overflow-x-clip px-4 pb-12 pt-24 sm:px-8 sm:pb-14 sm:pt-28 lg:px-12 landscape:min-h-0 landscape:py-10 landscape:pt-16 ${className}`}
+      className={`relative flex min-h-0 sm:min-h-[100svh] scroll-mt-20 items-center overflow-x-hidden px-3.5 py-8 sm:px-8 sm:pb-14 sm:pt-28 lg:px-12 landscape:min-h-0 landscape:py-10 landscape:pt-16 ${className}`}
     >
       {overlay}
-      <div className="relative z-10 mx-auto w-full max-w-7xl">
+      <div className="relative z-10 mx-auto w-full max-w-7xl overflow-x-hidden">
         {children}
       </div>
     </section>
@@ -403,6 +403,62 @@ function HeroScreen({
         backgroundImage: 'linear-gradient(180deg, #62D5DC 0%, #A2EBDC 25%, #E3F2EE 65%, #F4F8F6 100%)',
       }}
     >
+      {/* ── Mobile Top Header (< 640px) ── */}
+      <header className="sm:hidden w-full bg-[#1b3b55]/95 backdrop-blur-md px-3 py-2 flex items-center justify-between sticky top-0 z-50 border-b border-teal-500/30 text-white shadow-md">
+        <a href="#home" className="flex items-center gap-2 min-h-[44px]">
+          <img src="/assets/choi-transparent.png" alt="Logo" className="h-7 w-7 object-contain" />
+          <span className="font-black text-xs tracking-wider uppercase text-amber-200">Bài Chòi</span>
+        </a>
+
+        <div className="flex items-center gap-1.5">
+          {/* Ví Xu */}
+          <button
+            type="button"
+            onClick={onOpenCoins}
+            className="min-h-[44px] px-2.5 py-1 rounded-full bg-[#283c5d] border border-teal-400/60 flex items-center gap-1.5 shadow-xs active:scale-95 transition cursor-pointer"
+            title="Ví Xu Chòi"
+          >
+            <img src="/assets/xu-choi.png" alt="Xu" className="w-4 h-4 object-contain" />
+            <span className="font-bold text-[11px] text-white">{(currentUser?.coins ?? 50).toLocaleString()}</span>
+            <span className="text-amber-300 font-bold text-xs leading-none">+</span>
+          </button>
+
+          {/* Tài khoản */}
+          <button
+            type="button"
+            onClick={() => {
+              if (currentUser) {
+                setUserDropdown(!userDropdown)
+              } else {
+                onOpenAuth('login')
+              }
+            }}
+            className="min-h-[44px] px-2.5 py-1 rounded-full bg-[#283c5d] border border-teal-400/60 flex items-center gap-1.5 shadow-xs active:scale-95 transition cursor-pointer"
+          >
+            <div className="w-5 h-5 rounded-full bg-[#27b8c7] overflow-hidden flex items-center justify-center shrink-0">
+              {currentUser?.avatar ? (
+                <img src={currentUser.avatar} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-[10px]">👤</span>
+              )}
+            </div>
+            <span className="text-[11px] font-bold text-white max-w-[55px] truncate">
+              {currentUser ? (currentUser.username || currentUser.fullName) : (isVietnamese ? 'Đăng nhập' : 'Login')}
+            </span>
+          </button>
+
+          {/* Nút Drawer Menu ☰ */}
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Menu"
+            className="min-h-[44px] min-w-[44px] rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-lg text-white active:scale-95 transition cursor-pointer border border-white/20"
+          >
+            ☰
+          </button>
+        </div>
+      </header>
+
       {/* Thanh thông báo gợi ý xoay ngang màn hình trên thiết bị di động */}
       {isMobilePortrait && (
         <div className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 px-3 py-1.5 text-[10px] sm:text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-md z-40">
@@ -429,7 +485,7 @@ function HeroScreen({
         <button
           type="button"
           onClick={onOpenCoins}
-          className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform rounded-full flex items-center justify-between px-2 sm:px-2.5 bg-[#283c5d] border border-teal-400/60 shadow-xs hover:brightness-110"
+          className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform rounded-full hidden sm:flex items-center justify-between px-2 sm:px-2.5 bg-[#283c5d] border border-teal-400/60 shadow-xs hover:brightness-110"
           style={{
             left: '66.0%',
             top: '2.87%',
@@ -707,6 +763,33 @@ function HeroScreen({
         />
       </div>
 
+      {/* ── Mobile Action Bar (Luật chơi & Chơi ngay với min 46px touch target) ── */}
+      <div className="sm:hidden w-full px-4 py-3 bg-gradient-to-r from-[#205e6b] via-[#1b505c] to-[#15424d] flex items-center justify-center gap-3 border-t border-teal-300/20 shadow-lg">
+        <a
+          href="#rules"
+          onClick={(e) => {
+            e.preventDefault()
+            const el = document.getElementById('rules')
+            if (el) el.scrollIntoView({ behavior: 'smooth' })
+          }}
+          className="flex-1 min-h-[46px] px-3 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-center text-xs flex items-center justify-center gap-1.5 border border-white/30 shadow-sm active:scale-95 transition"
+        >
+          <span>📜</span>
+          <span>{isVietnamese ? 'Luật Chơi' : 'Rules'}</span>
+        </a>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            onPlay()
+          }}
+          className="flex-1 min-h-[46px] px-3 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-black text-center text-xs flex items-center justify-center gap-1.5 border border-amber-300 shadow-md active:scale-95 transition cursor-pointer"
+        >
+          <span>🎮</span>
+          <span>{isVietnamese ? 'Chơi Ngay' : 'Play Now'}</span>
+        </button>
+      </div>
+
       {/* Modal Quản lý Tài Khoản (Cài đặt, Vé của tôi, Theo dõi đơn hàng, Lịch sử) */}
       {accountCenterOpen && currentUser && (
         <AccountCenterModal
@@ -737,7 +820,8 @@ function HeroScreen({
                 <button
                   type="button"
                   onClick={() => setDrawerOpen(false)}
-                  className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 font-bold transition cursor-pointer"
+                  className="h-10 w-10 min-h-[44px] min-w-[44px] rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 font-bold transition cursor-pointer active:scale-95 text-base"
+                  aria-label="Đóng menu"
                 >
                   ✕
                 </button>
@@ -778,6 +862,12 @@ function HeroScreen({
                 type="button"
                 onClick={() => {
                   setDrawerOpen(false)
+                  if (!currentUser) {
+                    setPendingGameOpen(true)
+                    setAuthModalMode('login')
+                    setAuthModalOpen(true)
+                    return
+                  }
                   onGoToPortal?.('game')
                 }}
                 className="px-4 py-3 rounded-2xl font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition text-left cursor-pointer block w-full"
@@ -859,9 +949,9 @@ function IntroScreens({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
       {/* Screen 2: home introduction (UNESCO) - Liền mạch, mượt mà không bị cắt */}
       <ReferenceScreen id="overview">
         <div className="relative z-10 mx-auto w-full max-w-3xl text-center">
-          <div data-reveal="up" className="mx-auto px-5 py-6 sm:px-8 sm:py-8">
+          <div data-reveal="up" className="mx-auto px-3.5 py-6 sm:px-8 sm:py-8">
             {/* Huy hiệu UNESCO - Chữ trắng, bự lên, in đậm */}
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm lg:text-base font-bold tracking-wider text-white backdrop-blur-md border border-white/30 uppercase shadow-md">
+            <div className="mb-4 sm:mb-5 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 sm:px-5 sm:py-2 text-[11px] sm:text-sm lg:text-base font-bold tracking-wider text-white backdrop-blur-md border border-white/30 uppercase shadow-md text-left">
               <span className="text-sm sm:text-base">🏛️</span>
               <span className="font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]">
                 {isVietnamese ? 'Di sản văn hóa phi vật thể UNESCO' : 'UNESCO Intangible Cultural Heritage'}
@@ -869,15 +959,15 @@ function IntroScreens({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
             </div>
 
             {/* Đoạn 1: Lời giới thiệu chính */}
-            <p className="text-sm leading-7 sm:text-base sm:leading-8 lg:text-lg lg:leading-9 font-medium text-white/95 max-w-2xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+            <p className="text-xs leading-6 sm:text-base sm:leading-8 lg:text-lg lg:leading-9 font-medium text-white/95 max-w-2xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
               {c.hero.body}
             </p>
 
             {/* Vạch ngăn cách trang nhã */}
-            <div className="mx-auto my-4 sm:my-5 h-px w-20 sm:w-28 bg-gradient-to-r from-transparent via-amber-300/80 to-transparent" />
+            <div className="mx-auto my-3.5 sm:my-5 h-px w-20 sm:w-28 bg-gradient-to-r from-transparent via-amber-300/80 to-transparent" />
 
             {/* Đoạn 2: Thông tin vinh danh UNESCO */}
-            <p className="text-xs leading-6 sm:text-sm sm:leading-7 lg:text-base text-emerald-100/90 font-medium max-w-xl mx-auto drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+            <p className="text-[11px] leading-5 sm:text-sm sm:leading-7 lg:text-base text-emerald-100/90 font-medium max-w-xl mx-auto drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
               {overview}
             </p>
           </div>
@@ -889,20 +979,20 @@ function IntroScreens({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
         <div className="flex w-full justify-end">
           <div
             data-reveal="up"
-            className="w-full max-w-xl lg:max-w-2xl rounded-3xl px-6 py-8 sm:px-10 sm:py-12"
+            className="w-full max-w-xl lg:max-w-2xl rounded-3xl px-4 py-6 sm:px-10 sm:py-12"
             style={{
               background:
                 'linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.18) 22%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.02) 60%, rgba(0,0,0,0.18) 78%, rgba(0,0,0,0.55) 100%)',
             }}
           >
             <h2
-              className="mb-5 flex items-center gap-3 text-2xl sm:text-3xl lg:text-4xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
+              className="mb-3.5 sm:mb-5 flex items-center gap-2.5 sm:gap-3 text-xl sm:text-3xl lg:text-4xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
               style={{ fontFamily: 'var(--font-section)' }}
             >
-              <span className="h-3 w-3 shrink-0 rounded-full bg-amber-300 shadow-[0_0_8px_#FCD34D]" />
+              <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0 rounded-full bg-amber-300 shadow-[0_0_8px_#FCD34D]" />
               {isVietnamese ? 'GIỚI THIỆU' : 'INTRODUCTION'}
             </h2>
-            <p className="text-sm leading-7 sm:text-base sm:leading-8 lg:text-lg lg:leading-9 font-medium text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+            <p className="text-xs leading-6 sm:text-base sm:leading-8 lg:text-lg lg:leading-9 font-medium text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
               {c.history.description}
             </p>
           </div>
@@ -914,21 +1004,21 @@ function IntroScreens({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
         <div className="mx-auto max-w-4xl text-center">
           <div
             data-reveal="up"
-            className="mx-auto rounded-3xl px-6 py-8 sm:px-10 sm:py-12"
+            className="mx-auto rounded-3xl px-4 py-6 sm:px-10 sm:py-12"
             style={{
               background:
                 'linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.18) 22%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.02) 60%, rgba(0,0,0,0.18) 78%, rgba(0,0,0,0.55) 100%)',
             }}
           >
             <h2
-              className="mb-5 inline-flex items-center gap-3 text-2xl sm:text-3xl lg:text-4xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
+              className="mb-3.5 sm:mb-5 inline-flex items-center gap-2.5 sm:gap-3 text-xl sm:text-3xl lg:text-4xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
               style={{ fontFamily: 'var(--font-section)' }}
             >
-              <span className="h-3 w-3 shrink-0 rounded-full bg-amber-300 shadow-[0_0_8px_#FCD34D]" />
+              <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0 rounded-full bg-amber-300 shadow-[0_0_8px_#FCD34D]" />
               {isVietnamese ? 'GIỚI THIỆU' : 'INTRODUCTION'}
             </h2>
             <p
-              className="mx-auto max-w-3xl text-sm leading-7 sm:text-base sm:leading-8 lg:text-lg lg:leading-9 font-medium text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
+              className="mx-auto max-w-3xl text-xs leading-6 sm:text-base sm:leading-8 lg:text-lg lg:leading-9 font-medium text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
             >
               {longIntroduction}
             </p>
@@ -1172,21 +1262,21 @@ function History({ c }: { c: typeof content.VIE }) {
 // ─── Rules ────────────────────────────────────────────────────────────────────
 function Rules({ c }: { c: typeof content.VIE }) {
   return (
-    <section id="rules" className="flex min-h-[100svh] scroll-mt-20 items-center px-4 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28 landscape:min-h-0 landscape:py-10">
+    <section id="rules" className="flex min-h-0 sm:min-h-[100svh] scroll-mt-20 items-center px-3.5 py-10 sm:px-8 sm:py-24 lg:px-12 lg:py-28 landscape:min-h-0 landscape:py-10">
       <div className="mx-auto w-full max-w-7xl">
-        <div data-reveal="up" className="mb-9 text-center sm:mb-12 lg:mb-14">
-          <div data-reveal="scale" className="inline-block rounded-3xl bg-white px-8 py-5 shadow-2xl border border-white">
-            <div data-reveal="up" data-reveal-delay="1" className="mb-3 inline-flex items-center gap-2">
-              <LotusOrnament size={20} />
-              <span className="text-xs font-semibold uppercase tracking-widest text-amber-800">
+        <div data-reveal="up" className="mb-7 text-center sm:mb-12 lg:mb-14">
+          <div data-reveal="scale" className="inline-block rounded-3xl bg-white px-4 py-4 sm:px-8 sm:py-5 max-w-full shadow-2xl border border-white">
+            <div data-reveal="up" data-reveal-delay="1" className="mb-2 sm:mb-3 inline-flex items-center gap-2">
+              <LotusOrnament size={18} />
+              <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-widest text-amber-800">
                 {c.rules.sub}
               </span>
-              <LotusOrnament size={20} />
+              <LotusOrnament size={18} />
             </div>
             <h2
               data-reveal="up"
               data-reveal-delay="2"
-              className="mb-3 text-3xl font-bold sm:text-4xl lg:text-5xl text-[#04374f]"
+              className="mb-2.5 sm:mb-3 text-2xl sm:text-4xl lg:text-5xl font-bold text-[#04374f]"
               style={{ fontFamily: 'var(--font-section)' }}
             >
               {c.rules.title}
@@ -1197,18 +1287,18 @@ function Rules({ c }: { c: typeof content.VIE }) {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+        <div className="grid gap-3.5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           {c.rules.steps.map((step, index) => (
             <article
               key={step.num}
               data-reveal="up"
               data-reveal-delay={index + 1}
-              className="relative flex h-full flex-col rounded-3xl bg-white/20 backdrop-blur-md p-5 sm:p-7 lg:p-8 shadow-2xl border border-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(0,0,0,0.18)] hover:border-amber-400/50"
+              className="relative flex h-full flex-col rounded-3xl bg-white/20 backdrop-blur-md p-4 sm:p-7 lg:p-8 shadow-2xl border border-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(0,0,0,0.18)] hover:border-amber-400/50"
             >
               <div
                 data-reveal="scale"
                 data-reveal-delay={index + 1}
-                className="mb-5 flex h-12 w-12 items-center justify-center rounded-full text-sm font-black sm:mb-6 sm:h-14 sm:w-14 sm:text-base"
+                className="mb-4 sm:mb-6 flex h-11 w-11 sm:h-14 sm:w-14 items-center justify-center rounded-full text-sm font-black sm:text-base"
                 style={{
                   background: 'linear-gradient(135deg, #C44837 0%, #7C2421 100%)',
                   color: '#FFFFFF',
@@ -1218,11 +1308,11 @@ function Rules({ c }: { c: typeof content.VIE }) {
               >
                 {step.num}
               </div>
-              <h3 data-reveal="up" data-reveal-delay={index + 2} className="text-lg font-bold leading-snug sm:text-xl lg:text-2xl text-[#04374f]" style={{ fontFamily: 'var(--font-display)' }}>
+              <h3 data-reveal="up" data-reveal-delay={index + 2} className="text-base sm:text-xl lg:text-2xl font-bold leading-snug text-[#04374f]" style={{ fontFamily: 'var(--font-display)' }}>
                 {step.title}
               </h3>
-              <div className="my-5 h-0.5 w-10 bg-amber-500" />
-              <p data-reveal="up" data-reveal-delay={index + 2} className="flex-1 text-sm leading-7 sm:text-base sm:leading-8 text-stone-700">
+              <div className="my-3 sm:my-5 h-0.5 w-10 bg-amber-500" />
+              <p data-reveal="up" data-reveal-delay={index + 2} className="flex-1 text-xs leading-6 sm:text-base sm:leading-8 text-stone-800">
                 {step.body}
               </p>
             </article>
@@ -1468,13 +1558,13 @@ function Characters({ c }: { c: typeof content.VIE }) {
             key={pho.id}
             id={phoIndex === 0 ? 'characters-showcase' : undefined}
             data-reveal="up"
-            className="relative flex min-h-[100svh] scroll-mt-20 items-center justify-center px-4 py-10 sm:px-8 sm:py-14 lg:px-12 landscape:min-h-0 landscape:py-8"
+            className="relative flex min-h-0 sm:min-h-[100svh] scroll-mt-20 items-center justify-center px-2 py-8 sm:px-8 sm:py-14 lg:px-12 landscape:min-h-0 landscape:py-8 overflow-x-hidden"
           >
-            <div className="mx-auto w-full max-w-7xl">
+            <div className="mx-auto w-full max-w-7xl overflow-x-hidden">
               {phoIndex === 0 && (
                 <div
                   data-reveal="up"
-                  className="mb-6 text-center sm:mb-8"
+                  className="mb-5 text-center sm:mb-8"
                 >
                   <div className="inline-block text-center">
                     <div data-reveal="up" data-reveal-delay="1" className="mb-1.5 inline-flex items-center gap-2">
@@ -1504,19 +1594,23 @@ function Characters({ c }: { c: typeof content.VIE }) {
               {/* TÊN PHÔ */}
               {/* =========================== */}
 
-              <div className="mb-6 text-center sm:mb-8">
+              <div className="mb-5 text-center sm:mb-8">
                 <span
                   className="
                     inline-flex
                     items-center
-                    gap-3
-                    px-6
-                    py-2
-                    text-sm
+                    gap-2.5
+                    sm:gap-3
+                    px-4
+                    sm:px-6
+                    py-1.5
+                    sm:py-2
+                    text-xs
+                    sm:text-base
                     font-black
                     uppercase
-                    tracking-[0.28em]
-                    sm:text-base
+                    tracking-[0.24em]
+                    sm:tracking-[0.28em]
                     text-white
                     drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]
                   "
@@ -1525,13 +1619,13 @@ function Characters({ c }: { c: typeof content.VIE }) {
                   }}
                 >
                   <span
-                    className="h-px w-6 sm:w-12 bg-gradient-to-r from-transparent to-amber-300"
+                    className="h-px w-5 sm:w-12 bg-gradient-to-r from-transparent to-amber-300"
                   />
 
                   {pho.title}
 
                   <span
-                    className="h-px w-6 sm:w-12 bg-gradient-to-r from-amber-300 to-transparent"
+                    className="h-px w-5 sm:w-12 bg-gradient-to-r from-amber-300 to-transparent"
                   />
                 </span>
               </div>
@@ -1545,16 +1639,15 @@ function Characters({ c }: { c: typeof content.VIE }) {
                 className="
                     relative
                     mx-auto
-
                     flex
                     w-full
                     max-w-6xl
                     items-center
                     justify-center
-
-                    gap-1
+                    gap-1.5
                     sm:gap-3
                     lg:gap-5
+                    overflow-x-hidden
                   "
               >
 
@@ -1573,31 +1666,25 @@ function Characters({ c }: { c: typeof content.VIE }) {
                   }
                   className="
                       pho-arrow
-
                       flex
-                      h-12
-                      w-12
+                      h-11
+                      w-11
+                      min-h-[44px]
+                      min-w-[44px]
                       shrink-0
-
                       items-center
                       justify-center
-
                       rounded-full
-
-                      text-3xl
+                      text-2xl
                       font-light
                       text-white/80
                       hover:text-white
                       drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]
-
                       transition
                       duration-300
-
                       hover:-translate-x-1
                       hover:scale-110
-
                       active:scale-95
-
                       sm:h-16
                       sm:w-16
                       sm:text-5xl
@@ -1612,7 +1699,7 @@ function Characters({ c }: { c: typeof content.VIE }) {
                 </button>
 
                 {/* ========================= */}
-                {/* LÁ NHỎ BÊN TRÁI */}
+                {/* LÁ NHỎ BÊN TRÁI (ẨN TRÊN MOBILE ĐỂ TRÁNH TRÀN NGANG) */}
                 {/* ========================= */}
 
                 <button
@@ -1625,21 +1712,19 @@ function Characters({ c }: { c: typeof content.VIE }) {
                     )
                   }
                   className="
-    relative
-    shrink-0
-
-    w-[15vw]
-    min-w-[65px]
-    max-w-[120px]
-
-    scale-[0.86]
-    opacity-100
-
-    transition-all
-    duration-300
-
-    hover:scale-[0.92]
-  "
+                    relative
+                    shrink-0
+                    hidden
+                    sm:block
+                    w-[15vw]
+                    min-w-[65px]
+                    max-w-[120px]
+                    scale-[0.86]
+                    opacity-100
+                    transition-all
+                    duration-300
+                    hover:scale-[0.92]
+                  "
                   aria-label={
                     isVietnamese
                       ? 'Xem lá trước'
@@ -1649,13 +1734,13 @@ function Characters({ c }: { c: typeof content.VIE }) {
                   <div className="absolute -inset-1 rounded-2xl bg-black/40 blur-md pointer-events-none -z-10" />
                   <div
                     className="
-      w-full
-      overflow-hidden
-      rounded-xl
-      shadow-[0_16px_36px_rgba(0,0,0,0.7)]
-      ring-1
-      ring-white/20
-    "
+                      w-full
+                      overflow-hidden
+                      rounded-xl
+                      shadow-[0_16px_36px_rgba(0,0,0,0.7)]
+                      ring-1
+                      ring-white/20
+                    "
                     style={{
                       aspectRatio: '510 / 1417',
                     }}
@@ -1665,10 +1750,10 @@ function Characters({ c }: { c: typeof content.VIE }) {
                       alt={prevCard.alt}
                       loading="lazy"
                       className="
-        h-full
-        w-full
-        object-cover
-      "
+                        h-full
+                        w-full
+                        object-cover
+                      "
                     />
                   </div>
                 </button>
@@ -1683,10 +1768,9 @@ function Characters({ c }: { c: typeof content.VIE }) {
                 <div
                   className="
                       relative
-
-                      w-[36vw]
-                      max-w-[165px]
-
+                      w-[48vw]
+                      min-w-[140px]
+                      max-w-[190px]
                       sm:w-[150px]
                       lg:w-[165px]
                     "
@@ -1908,21 +1992,18 @@ function Characters({ c }: { c: typeof content.VIE }) {
 
                               <p
                                 className="
-    w-full
-    px-1
-    pb-4
-
-    text-[8px]
-    leading-[12px]
-    text-white/85
-
-    sm:px-0
-    sm:text-xs
-    sm:leading-5
-
-    lg:text-sm
-    lg:leading-6
-  "
+                                  w-full
+                                  px-1
+                                  pb-3
+                                  text-[10.5px]
+                                  leading-4
+                                  text-white/90
+                                  sm:px-0
+                                  sm:text-xs
+                                  sm:leading-5
+                                  lg:text-sm
+                                  lg:leading-6
+                                "
                                 style={{
                                   WebkitTextSizeAdjust: '100%',
                                   textSizeAdjust: '100%',
@@ -1962,7 +2043,10 @@ function Characters({ c }: { c: typeof content.VIE }) {
                     }
                     className="
                       w-full
-                      mt-2.5
+                      mt-2
+                      min-h-[44px]
+                      px-2
+                      py-2
                       flex
                       items-center
                       justify-center
@@ -2045,7 +2129,7 @@ function Characters({ c }: { c: typeof content.VIE }) {
 
 
                 {/* ========================= */}
-                {/* LÁ NHỎ BÊN PHẢI */}
+                {/* LÁ NHỎ BÊN PHẢI (ẨN TRÊN MOBILE ĐỂ TRÁNH TRÀN NGANG) */}
                 {/* ========================= */}
 
                 <button
@@ -2058,21 +2142,19 @@ function Characters({ c }: { c: typeof content.VIE }) {
                     )
                   }
                   className="
-    relative
-    shrink-0
-
-    w-[15vw]
-    min-w-[65px]
-    max-w-[120px]
-
-    scale-[0.86]
-    opacity-100
-
-    transition-all
-    duration-300
-
-    hover:scale-[0.92]
-  "
+                    relative
+                    shrink-0
+                    hidden
+                    sm:block
+                    w-[15vw]
+                    min-w-[65px]
+                    max-w-[120px]
+                    scale-[0.86]
+                    opacity-100
+                    transition-all
+                    duration-300
+                    hover:scale-[0.92]
+                  "
                   aria-label={
                     isVietnamese
                       ? 'Xem lá tiếp theo'
@@ -2082,13 +2164,13 @@ function Characters({ c }: { c: typeof content.VIE }) {
                   <div className="absolute -inset-1 rounded-2xl bg-black/40 blur-md pointer-events-none -z-10" />
                   <div
                     className="
-      w-full
-      overflow-hidden
-      rounded-xl
-      shadow-[0_16px_36px_rgba(0,0,0,0.7)]
-      ring-1
-      ring-white/20
-    "
+                      w-full
+                      overflow-hidden
+                      rounded-xl
+                      shadow-[0_16px_36px_rgba(0,0,0,0.7)]
+                      ring-1
+                      ring-white/20
+                    "
                     style={{
                       aspectRatio: '510 / 1417',
                     }}
@@ -2098,10 +2180,10 @@ function Characters({ c }: { c: typeof content.VIE }) {
                       alt={nextCard.alt}
                       loading="lazy"
                       className="
-        h-full
-        w-full
-        object-cover
-      "
+                        h-full
+                        w-full
+                        object-cover
+                      "
                     />
                   </div>
                 </button>
@@ -2123,31 +2205,25 @@ function Characters({ c }: { c: typeof content.VIE }) {
                   }
                   className="
                       pho-arrow
-
                       flex
-                      h-12
-                      w-12
+                      h-11
+                      w-11
+                      min-h-[44px]
+                      min-w-[44px]
                       shrink-0
-
                       items-center
                       justify-center
-
                       rounded-full
-
-                      text-3xl
+                      text-2xl
                       font-light
                       text-white/80
                       hover:text-white
                       drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]
-
                       transition
                       duration-300
-
                       hover:translate-x-1
                       hover:scale-110
-
                       active:scale-95
-
                       sm:h-16
                       sm:w-16
                       sm:text-5xl
@@ -2890,124 +2966,7 @@ export default function App() {
   const [activePortal, setActivePortal] = useState<'site' | 'admin' | 'staff' | 'shop' | 'game'>(detectInitialPortal)
   const isDirectScan = activePortal !== 'site'
 
-  const [isMobilePortrait, setIsMobilePortrait] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return window.innerWidth < 1024 && window.innerHeight > window.innerWidth
-  })
-  const mobileScrollRef = useRef<HTMLDivElement>(null)
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
-  const lastTouchRef = useRef<{ x: number; y: number; time: number } | null>(null)
-  const axisLockRef = useRef<'x' | 'y' | null>(null)
-  const velocityRef = useRef<number>(0)
-  const animFrameRef = useRef<number | null>(null)
 
-  useEffect(() => {
-    const handleOrientation = () => {
-      setIsMobilePortrait(window.innerWidth < 1024 && window.innerHeight > window.innerWidth)
-    }
-    window.addEventListener('resize', handleOrientation)
-    window.addEventListener('orientationchange', handleOrientation)
-    return () => {
-      window.removeEventListener('resize', handleOrientation)
-      window.removeEventListener('orientationchange', handleOrientation)
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
-    }
-  }, [])
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (!isMobilePortrait) return
-    if (animFrameRef.current) {
-      cancelAnimationFrame(animFrameRef.current)
-      animFrameRef.current = null
-    }
-    const touch = e.touches[0]
-    const now = performance.now()
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY }
-    lastTouchRef.current = { x: touch.clientX, y: touch.clientY, time: now }
-    axisLockRef.current = null
-    velocityRef.current = 0
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isMobilePortrait || !touchStartRef.current || !lastTouchRef.current || !mobileScrollRef.current) return
-    const touch = e.touches[0]
-    const now = performance.now()
-    const dt = Math.max(1, now - lastTouchRef.current.time)
-
-    // Khóa trục lướt (Axis Lock) ngay khi ngón tay di chuyển > 6px để loại bỏ hoàn toàn hiện tượng giật nhảy giữa X và Y
-    if (!axisLockRef.current) {
-      const totalDx = touchStartRef.current.x - touch.clientX
-      const totalDy = touchStartRef.current.y - touch.clientY
-      if (Math.abs(totalDx) > 6 || Math.abs(totalDy) > 6) {
-        axisLockRef.current = Math.abs(totalDx) > Math.abs(totalDy) ? 'x' : 'y'
-      } else {
-        return
-      }
-    }
-
-    // Tính bước dịch chuyển nhất quán theo trục đã khóa (Lướt lên -> Đi lên, Lướt xuống -> Đi xuống)
-    let delta = 0
-    if (axisLockRef.current === 'x') {
-      delta = touch.clientX - lastTouchRef.current.x
-    } else {
-      delta = touch.clientY - lastTouchRef.current.y
-    }
-
-    // Làm mượt vận tốc trượt bằng Moving Average để tránh giật ngược chiều
-    const instantVelocity = delta / dt
-    velocityRef.current = velocityRef.current * 0.3 + instantVelocity * 0.7
-
-    // Cuộn trang mượt mà trong giới hạn
-    const container = mobileScrollRef.current
-    const maxScroll = container.scrollHeight - container.clientHeight
-    container.scrollTop = Math.max(0, Math.min(maxScroll, container.scrollTop + delta))
-
-    lastTouchRef.current = { x: touch.clientX, y: touch.clientY, time: now }
-  }
-
-  const handleTouchEnd = () => {
-    if (!isMobilePortrait || !mobileScrollRef.current || !lastTouchRef.current) return
-
-    const now = performance.now()
-    const timeSinceLastMove = now - lastTouchRef.current.time
-
-    // Nếu người dùng dừng ngón tay lại trước khi nhấc lên (> 60ms) -> Dừng ngay, không quán tính
-    if (timeSinceLastMove > 60) {
-      velocityRef.current = 0
-      return
-    }
-
-    // Chuyển đổi vận tốc quán tính và giới hạn tốc độ tối đa
-    let v = velocityRef.current * 15
-    if (v > 36) v = 36
-    if (v < -36) v = -36
-
-    // Trượt quán tính mượt mà (Inertia glide) với hệ số ma sát 0.94
-    const glide = () => {
-      const container = mobileScrollRef.current
-      if (!container) return
-
-      const maxScroll = container.scrollHeight - container.clientHeight
-      const currentScroll = container.scrollTop
-
-      if ((currentScroll <= 0 && v < 0) || (currentScroll >= maxScroll && v > 0)) {
-        animFrameRef.current = null
-        return
-      }
-
-      if (Math.abs(v) > 0.25) {
-        container.scrollTop = Math.max(0, Math.min(maxScroll, currentScroll + v))
-        v *= 0.94
-        animFrameRef.current = requestAnimationFrame(glide)
-      } else {
-        animFrameRef.current = null
-      }
-    }
-
-    if (Math.abs(v) > 0.6) {
-      animFrameRef.current = requestAnimationFrame(glide)
-    }
-  }
 
   const [gameInitialTab, setGameInitialTab] = useState<GamePortalTab>('arena')
   const [authModalOpen, setAuthModalOpen] = useState(false)
@@ -3084,6 +3043,7 @@ export default function App() {
   const [introShown, setIntroShown] = useState(() => !isDirectScan && !hasSeenIntro)
   const [showContent, setShowContent] = useState(() => isDirectScan || hasSeenIntro)
   const [gameOpen, setGameOpen] = useState(false)
+  const [pendingGameOpen, setPendingGameOpen] = useState(false)
   const [gameAudioMode, setGameAudioMode] = useState<'online' | 'offline'>('online')
 
   useEffect(() => {
@@ -3334,43 +3294,14 @@ export default function App() {
         </IntroErrorBoundary>
       )}
       <div
-        ref={mobileScrollRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className={showContent ? 'web-entered' : ''}
-        style={
-          isMobilePortrait
-            ? {
-                position: 'fixed',
-                left: '50%',
-                top: '50%',
-                width: '100dvh',
-                height: '100dvw',
-                transform: 'translate(-50%, -50%) rotate(90deg)',
-                transformOrigin: 'center center',
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                touchAction: 'none',
-                scrollBehavior: 'auto',
-                WebkitOverflowScrolling: 'touch',
-                fontFamily: 'var(--font-body)',
-                background: '#408A8C',
-                color: '#006368',
-                opacity: showContent ? 1 : 0,
-                transition: 'opacity 0.8s ease',
-              }
-            : {
-                position: 'relative',
-                width: '100%',
-                minHeight: '100vh',
-                fontFamily: 'var(--font-body)',
-                background: '#408A8C',
-                color: '#006368',
-                opacity: showContent ? 1 : 0,
-                transition: 'opacity 0.8s ease',
-              }
-        }
+        className={`relative w-full min-h-screen overflow-x-hidden ${showContent ? 'web-entered' : ''}`}
+        style={{
+          fontFamily: 'var(--font-body)',
+          background: '#408A8C',
+          color: '#006368',
+          opacity: showContent ? 1 : 0,
+          transition: 'opacity 0.8s ease',
+        }}
       >
         <div className={`relative isolate ${showContent ? 'site-content-enter' : ''}`}>
           {/* Lướt 1: Trang chủ mới dựa trên CHOINGAY.png */}
@@ -3379,6 +3310,12 @@ export default function App() {
             lang={lang}
             setLang={setLang}
             onPlay={() => {
+              if (!currentUser) {
+                setPendingGameOpen(true)
+                setAuthModalMode('login')
+                setAuthModalOpen(true)
+                return
+              }
               setGameOpen(true)
             }}
             currentUser={currentUser}
@@ -3397,13 +3334,22 @@ export default function App() {
 
           {/* Dưới trang chủ: 7 lướt cuộn liền mạch với tranh cuộn nền.jpg */}
           <div className="relative w-full overflow-hidden scroll-panorama-bg">
-            {/* Lớp phủ đen loang 2 bên từ đầu đến cuối (Edge vignette) */}
+            {/* Lớp phủ đen loang 2 bên từ đầu đến cuối trên Desktop (Edge vignette) */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 z-0"
+              className="pointer-events-none absolute inset-0 z-0 hidden sm:block"
               style={{
                 background:
                   'linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.48) 14%, rgba(0,0,0,0.08) 28%, transparent 38%, transparent 62%, rgba(0,0,0,0.08) 72%, rgba(0,0,0,0.48) 86%, rgba(0,0,0,0.85) 100%)',
+              }}
+            />
+            {/* Lớp phủ mềm mại trên Mobile để văn bản không bị tối 2 bên */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-0 sm:hidden"
+              style={{
+                background:
+                  'linear-gradient(90deg, rgba(0,0,0,0.45) 0%, transparent 6%, transparent 94%, rgba(0,0,0,0.45) 100%)',
               }}
             />
             <div className="relative z-10">
@@ -3420,6 +3366,12 @@ export default function App() {
               if (sec === 'shop') {
                 setActivePortal('shop')
               } else if (sec === 'play-offline' || sec === 'game') {
+                if (!currentUser) {
+                  setPendingGameOpen(true)
+                  setAuthModalMode('login')
+                  setAuthModalOpen(true)
+                  return
+                }
                 setGameOpen(true)
               }
             }}
@@ -3435,9 +3387,18 @@ export default function App() {
       <AuthModal
         isOpen={authModalOpen}
         initialMode={authModalMode}
-        onClose={() => setAuthModalOpen(false)}
+        onClose={() => {
+          setAuthModalOpen(false)
+          setPendingGameOpen(false)
+        }}
         onSuccess={(user) => {
           setCurrentUser(user)
+          setAuthModalOpen(false)
+          if (pendingGameOpen) {
+            setPendingGameOpen(false)
+            setGameOpen(true)
+            return
+          }
           if (user.role === 'admin') {
             setActivePortal('admin')
           } else if (user.role === 'staff') {

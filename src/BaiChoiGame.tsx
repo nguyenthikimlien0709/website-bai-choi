@@ -409,9 +409,18 @@ export default function BaiChoiGame({
   initialAudioMode?: 'online' | 'offline'
 }) {
   const [audioMode, setAudioMode] = useState<'online' | 'offline'>(initialAudioMode)
-  const [screen, setScreen] = useState<Screen>('name')
-  const [nameInput, setNameInput] = useState('')
-  const [playerName, setPlayerName] = useState('')
+  // ==========================================
+  // QUẢN LÝ TÀI KHOẢN & XU (BẮT BUỘC ĐĂNG NHẬP / ĐĂNG KÝ)
+  // ==========================================
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => authService.getCurrentUser())
+  const [nameInput, setNameInput] = useState(() => {
+    const user = authService.getCurrentUser()
+    return user?.fullName || user?.username || ''
+  })
+  const [playerName, setPlayerName] = useState(() => {
+    const user = authService.getCurrentUser()
+    return user?.fullName || user?.username || ''
+  })
   const [error, setError] = useState('')
 
   // 5 lá bài ngẫu nhiên từ 3 phô cho màn hình chọn chế độ
@@ -447,23 +456,31 @@ export default function BaiChoiGame({
   const fallbackTimerRef = useRef<number | null>(null)
   const [chantLyricIndex, setChantLyricIndex] = useState(0)
 
-  // ==========================================
-  // QUẢN LÝ XU & ĐA CÂY BÀI (DATABASE & SUPABASE)
-  // ==========================================
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => authService.getCurrentUser())
   const [userCoins, setUserCoins] = useState<number>(() => {
     const user = authService.getCurrentUser()
     return user?.coins ?? 0
   })
   const [isTopupModalOpen, setIsTopupModalOpen] = useState(false)
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(() => !authService.getCurrentUser())
   const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login')
 
-  // Đăng ký đồng bộ thông tin tài khoản thật từ authService
+  // Đăng ký đồng bộ thông tin tài khoản thật từ authService và bắt buộc đăng nhập nếu chưa có
   useEffect(() => {
+    if (!authService.getCurrentUser()) {
+      setAuthModalMode('login')
+      setIsAuthModalOpen(true)
+    }
+
     return authService.subscribe((user) => {
       setCurrentUser(user)
       setUserCoins(user?.coins ?? 0)
+      if (user) {
+        setNameInput((prev) => prev || user.fullName || user.username || '')
+        setPlayerName((prev) => prev || user.fullName || user.username || '')
+      } else {
+        setAuthModalMode('login')
+        setIsAuthModalOpen(true)
+      }
     })
   }, [])
 
@@ -509,7 +526,12 @@ export default function BaiChoiGame({
   const players = useMemo(() => onlineMode ? onlinePlayers.map((player) => player.name) : [playerName, ...BOT_NAMES], [onlineMode, onlinePlayers, playerName])
 
   const goToCardPicking = () => {
-    const user = authService.getCurrentUser()
+    const user = authService.getCurrentUser() || currentUser
+    if (!user) {
+      setAuthModalMode('login')
+      setIsAuthModalOpen(true)
+      return
+    }
     setCurrentUser(user)
     setUserCoins(user?.coins ?? 0)
     setDraftTrees([{ id: 'tree-1', name: 'Cây Bài #1', cards: [] }])
@@ -958,9 +980,15 @@ export default function BaiChoiGame({
   }
 
   const submitName = () => {
+    const user = authService.getCurrentUser() || currentUser
+    if (!user) {
+      setAuthModalMode('login')
+      setIsAuthModalOpen(true)
+      return
+    }
     const nextName = cleanName(nameInput)
     if (nextName.length < 2) {
-      setError('')
+      setError('Vui lòng nhập tên người chơi (tối thiểu 2 ký tự)')
       return
     }
     if (/^(máy|anh hiệu|chị hiệu)$/i.test(nextName)) {
@@ -1036,8 +1064,8 @@ export default function BaiChoiGame({
     setMessage(winnerName === playerName ? 'TỚI! Ba cờ đã về chòi của bạn!' : `${winnerName} đã hô TỚI!`)
     if (winnerName === playerName && currentUser) {
       try {
-        const updated = authService.addCoins(15, 'Thưởng thắng TỚI trong hội Bài Chòi')
-        setUserCoins(updated.coins ?? (userCoins + 15))
+        const updated = authService.addCoins(30, 'Thưởng thắng TỚI trong hội Bài Chòi')
+        setUserCoins(updated.coins ?? (userCoins + 30))
       } catch (e) {
         console.warn('Lỗi thưởng xu:', e)
       }
@@ -1507,33 +1535,15 @@ export default function BaiChoiGame({
         <div
           className="absolute z-[80] flex items-center rounded-full border border-[#f6d274]/50 bg-[#073f43]/90 backdrop-blur-md shadow-xl transition-all right-9 top-2 sm:right-13 sm:top-2.5 h-6 sm:h-8 px-2 sm:px-2.5 gap-1.5 text-[10px] sm:text-xs"
         >
-          {currentUser ? (
-            <>
-              <ChoiCoin size={12} glow animate />
-              <span className="font-bold text-[#fce893] whitespace-nowrap">{userCoins} Xu</span>
-              <button
-                type="button"
-                onClick={() => setIsTopupModalOpen(true)}
-                className="ml-0.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-slate-900 shadow hover:brightness-110 active:scale-95 transition cursor-pointer"
-              >
-                + Nạp
-              </button>
-            </>
-          ) : (
-            <>
-              <span className="font-bold text-amber-200/90 whitespace-nowrap text-[10px] sm:text-[11px]">Chưa đăng nhập</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthModalMode('login')
-                  setIsAuthModalOpen(true)
-                }}
-                className="ml-0.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 px-2 py-0.5 text-[9px] sm:text-[10px] font-black text-slate-950 shadow hover:brightness-110 active:scale-95 transition cursor-pointer"
-              >
-                Đăng nhập
-              </button>
-            </>
-          )}
+          <ChoiCoin size={12} glow animate />
+          <span className="font-bold text-[#fce893] whitespace-nowrap">{userCoins} Xu</span>
+          <button
+            type="button"
+            onClick={() => setIsTopupModalOpen(true)}
+            className="ml-0.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-slate-900 shadow hover:brightness-110 active:scale-95 transition cursor-pointer"
+          >
+            + Nạp
+          </button>
         </div>
       )}
 
@@ -2235,22 +2245,15 @@ export default function BaiChoiGame({
                   </span>
                 </div>
 
-                {(!currentUser || userCoins < totalCostCoins) && (
+                {userCoins < totalCostCoins && (
                   <div className="flex items-center justify-between text-[10px] text-rose-700 font-bold">
-                    <span>{!currentUser ? 'Chưa đăng nhập tài khoản' : 'Số dư không đủ!'}</span>
+                    <span>Số dư không đủ!</span>
                     <button
                       type="button"
-                      onClick={() => {
-                        if (!currentUser) {
-                          setAuthModalMode('login')
-                          setIsAuthModalOpen(true)
-                        } else {
-                          setIsTopupModalOpen(true)
-                        }
-                      }}
+                      onClick={() => setIsTopupModalOpen(true)}
                       className="underline text-amber-800 hover:text-amber-900 cursor-pointer"
                     >
-                      {!currentUser ? 'Đăng nhập ngay →' : 'Nạp Xu ngay →'}
+                      Nạp Xu ngay →
                     </button>
                   </div>
                 )}
@@ -3400,21 +3403,9 @@ export default function BaiChoiGame({
                     <div className="shrink-0 w-full px-1.5 py-0.5 sm:py-1 rounded-full border border-amber-300/40 bg-gradient-to-r from-amber-500/20 via-amber-400/25 to-amber-500/20 backdrop-blur-sm flex items-center justify-center gap-1 shadow-xs text-center">
                       <ChoiCoin size={11} glow animate />
                       <span className="text-[7px] sm:text-[8px] md:text-[9.5px] font-bold text-[#ffda86] drop-shadow-sm leading-none">
-                        Thưởng: <strong className="text-white font-black">+15 Xu</strong>{' '}
-                        {currentUser ? `(Dư: ${userCoins})` : ''}
+                        Thưởng: <strong className="text-white font-black">+30 Xu</strong>{' '}
+                        (Dư: {userCoins} Xu)
                       </span>
-                      {!currentUser && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAuthModalMode('login')
-                            setIsAuthModalOpen(true)
-                          }}
-                          className="font-bold underline hover:text-white cursor-pointer ml-1 text-amber-300 text-[6.5px] sm:text-[7.5px]"
-                        >
-                          Nhận xu
-                        </button>
-                      )}
                     </div>
                   ) : (
                     <div className="shrink-0 px-2 py-0.5 rounded-full border border-white/15 bg-white/5 text-[7px] sm:text-[8px] md:text-[9px] text-teal-100/80 font-medium text-center">
@@ -3472,10 +3463,26 @@ export default function BaiChoiGame({
       <AuthModal
         isOpen={isAuthModalOpen}
         initialMode={authModalMode}
-        onClose={() => setIsAuthModalOpen(false)}
+        onClose={() => {
+          setIsAuthModalOpen(false)
+          if (!currentUser && !authService.getCurrentUser()) {
+            onClose()
+          }
+        }}
         onSuccess={(user) => {
           setCurrentUser(user)
-          setUserCoins(user.coins ?? 0)
+          setNameInput((prev) => prev || user.fullName || user.username || '')
+          setPlayerName((prev) => prev || user.fullName || user.username || '')
+          let coins = user.coins ?? 0
+          if (screen === 'result' && winner === playerName) {
+            try {
+              const updated = authService.addCoins(30, 'Thưởng thắng TỚI trong hội Bài Chòi')
+              coins = updated.coins ?? (coins + 30)
+            } catch (e) {
+              console.warn('Lỗi thưởng xu:', e)
+            }
+          }
+          setUserCoins(coins)
           setIsAuthModalOpen(false)
         }}
       />
