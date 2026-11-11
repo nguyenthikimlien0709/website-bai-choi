@@ -9,7 +9,6 @@ export default function IntroAnimation({ onDone }: IntroAnimationProps) {
   const [isFadingOut, setIsFadingOut] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [isAutoplayBlocked, setIsAutoplayBlocked] = useState(false)
-  const [progress, setProgress] = useState(0)
   const [rotationAngle, setRotationAngle] = useState<90 | -90>(90)
   const [showRotateHint, setShowRotateHint] = useState(true)
 
@@ -115,12 +114,6 @@ export default function IntroAnimation({ onDone }: IntroAnimationProps) {
     }
   }
 
-  const handleTimeUpdate = () => {
-    const video = videoRef.current
-    if (!video || !video.duration) return
-    setProgress((video.currentTime / video.duration) * 100)
-  }
-
   return (
     <div
       className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black select-none overflow-hidden transition-opacity duration-700 ${
@@ -164,21 +157,12 @@ export default function IntroAnimation({ onDone }: IntroAnimationProps) {
           playsInline
           autoPlay
           preload="auto"
-          onTimeUpdate={handleTimeUpdate}
           onEnded={handleFinish}
           onError={(e) => {
             console.error('Lỗi phát video intro:', e)
             handleFinish()
           }}
         />
-
-        {/* Thanh tiến trình thời gian mỏng màu hoàng kim viền trên */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-white/10 z-30 pointer-events-none">
-          <div
-            className="h-full bg-gradient-to-r from-[#D8B069] via-[#F29963] to-[#D8B069] transition-all duration-150 ease-linear shadow-[0_0_8px_rgba(216,176,105,0.8)]"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
 
         {/* Gợi ý xoay màn hình thông minh trên điện thoại (tự ẩn sau vài giây hoặc bấm để đảo chiều 180 độ) */}
         {isMobilePortrait && showRotateHint && (
