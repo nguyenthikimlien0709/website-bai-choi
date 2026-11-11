@@ -2903,11 +2903,12 @@ function detectInitialPortal(): 'site' | 'admin' | 'staff' | 'shop' | 'game' {
     return 'shop'
   }
 
-  // 3. Admin / Staff
-  if (hash.includes('admin') || search.includes('portal=admin')) {
+  // 3. Admin / Staff (Bảo mật: Chỉ mở nếu người dùng đã đăng nhập đúng quyền)
+  const currentSaved = authService.getCurrentUser()
+  if ((hash.includes('admin') || search.includes('portal=admin')) && currentSaved?.role === 'admin') {
     return 'admin'
   }
-  if (hash.includes('staff') || search.includes('portal=staff')) {
+  if ((hash.includes('staff') || search.includes('portal=staff')) && currentSaved?.role === 'staff') {
     return 'staff'
   }
 
@@ -2945,6 +2946,22 @@ export default function App() {
       setCurrentUser(user)
     })
   }, [])
+
+  // Bảo vệ phân quyền: Nếu không có quyền Admin hoặc Staff thì luôn trở về trang chủ
+  useEffect(() => {
+    if (activePortal === 'admin' && currentUser?.role !== 'admin') {
+      setActivePortal('site')
+      if (window.location.hash.includes('admin')) {
+        window.history.replaceState(null, '', window.location.pathname)
+      }
+    }
+    if (activePortal === 'staff' && currentUser?.role !== 'staff') {
+      setActivePortal('site')
+      if (window.location.hash.includes('staff')) {
+        window.history.replaceState(null, '', window.location.pathname)
+      }
+    }
+  }, [activePortal, currentUser])
 
   // Tự động mở màn hình đặt lại mật khẩu khi người dùng bấm vào liên kết trong email
   useEffect(() => {
@@ -3160,11 +3177,6 @@ export default function App() {
           onSuccess={(user) => {
             setCurrentUser(user)
             setAuthModalOpen(false)
-            if (user.role === 'admin') {
-              setActivePortal('admin')
-            } else if (user.role === 'staff') {
-              setActivePortal('staff')
-            }
           }}
         />
         <CoinTopupModal
@@ -3219,11 +3231,6 @@ export default function App() {
           onSuccess={(user) => {
             setCurrentUser(user)
             setAuthModalOpen(false)
-            if (user.role === 'admin') {
-              setActivePortal('admin')
-            } else if (user.role === 'staff') {
-              setActivePortal('staff')
-            }
           }}
         />
         <CoinTopupModal
@@ -3356,13 +3363,6 @@ export default function App() {
             setPendingGameOpen(false)
             setGameOpen(true)
             return
-          }
-          if (user.role === 'admin') {
-            setActivePortal('admin')
-          } else if (user.role === 'staff') {
-            setActivePortal('staff')
-          } else {
-            setActivePortal('site')
           }
         }}
       />
