@@ -9,8 +9,7 @@ export default function IntroAnimation({ onDone }: IntroAnimationProps) {
   const [isFadingOut, setIsFadingOut] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [isAutoplayBlocked, setIsAutoplayBlocked] = useState(false)
-  const [rotationAngle, setRotationAngle] = useState<90 | -90>(90)
-  const [showRotateHint, setShowRotateHint] = useState(true)
+  const [rotationAngle] = useState<90 | -90>(90)
 
   // Phát hiện kích thước và hướng màn hình hiện tại
   const [dimensions, setDimensions] = useState({
@@ -41,13 +40,6 @@ export default function IntroAnimation({ onDone }: IntroAnimationProps) {
     Math.min(dimensions.width, dimensions.height) <= 850 ||
     (typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent))
   const isMobilePortrait = isPortrait && isMobileDevice
-
-  // Tự động ẩn gợi ý xoay sau 4.5 giây
-  useEffect(() => {
-    if (!isMobilePortrait) return
-    const timer = setTimeout(() => setShowRotateHint(false), 4500)
-    return () => clearTimeout(timer)
-  }, [isMobilePortrait])
 
   // Cố gắng khóa hướng ngang trên các thiết bị hỗ trợ Screen Orientation API
   useEffect(() => {
@@ -163,25 +155,6 @@ export default function IntroAnimation({ onDone }: IntroAnimationProps) {
             handleFinish()
           }}
         />
-
-        {/* Gợi ý xoay màn hình thông minh trên điện thoại (tự ẩn sau vài giây hoặc bấm để đảo chiều 180 độ) */}
-        {isMobilePortrait && showRotateHint && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                setRotationAngle((prev) => (prev === 90 ? -90 : 90))
-              }}
-              className="flex items-center gap-2 rounded-full border border-[#D8B069]/40 bg-black/75 px-3.5 py-1.5 text-[11px] font-medium text-[#D8B069] shadow-[0_4px_16px_rgba(0,0,0,0.6)] backdrop-blur-md transition-all active:scale-95"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-              </svg>
-              <span>Đang xoay ngang video (Bấm để đổi chiều)</span>
-            </button>
-          </div>
-        )}
 
         {/* Nút bật/tắt âm thanh ở góc dưới bên trái */}
         <div className="absolute bottom-5 left-5 z-40 flex items-center gap-2">

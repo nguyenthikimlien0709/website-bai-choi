@@ -405,46 +405,43 @@ function HeroScreen({
     >
       {/* ── Mobile Top Header (< 640px) ── */}
       <header className="sm:hidden w-full bg-[#1b3b55]/95 backdrop-blur-md px-3 py-2 flex items-center justify-between sticky top-0 z-50 border-b border-teal-500/30 text-white shadow-md">
-        <a href="#home" className="flex items-center gap-2 min-h-[44px]">
-          <img src="/assets/choi-transparent.png" alt="Logo" className="h-7 w-7 object-contain" />
+        <a href="#home" className="flex items-center gap-1.5 min-h-[36px]">
+          <img src="/assets/choi-transparent.png" alt="Logo" className="h-6 w-6 object-contain" />
           <span className="font-black text-xs tracking-wider uppercase text-amber-200">Bài Chòi</span>
         </a>
 
         <div className="flex items-center gap-1.5">
+          {/* Nút Cửa Hàng (Mua Hàng) nhanh trên Mobile */}
+          <button
+            type="button"
+            onClick={() => onGoToPortal?.('shop')}
+            className="h-8 px-2.5 rounded-full bg-gradient-to-r from-[#c8382b] to-[#a82d21] text-white text-[11px] font-bold flex items-center gap-1 shadow-xs active:scale-95 transition cursor-pointer"
+            title="Cửa Hàng & Vé Sự Kiện"
+          >
+            <span>🛍️</span>
+            <span>Cửa hàng</span>
+          </button>
+
+          {/* Nút Chơi Ngay nhanh trên Mobile */}
+          <button
+            type="button"
+            onClick={onPlay}
+            className="h-8 px-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 text-[11px] font-black flex items-center gap-1 shadow-xs active:scale-95 transition cursor-pointer"
+            title="Chơi Bài Chòi Ngay"
+          >
+            <span>🎮</span>
+            <span>Chơi ngay</span>
+          </button>
+
           {/* Ví Xu */}
           <button
             type="button"
             onClick={onOpenCoins}
-            className="min-h-[44px] px-2.5 py-1 rounded-full bg-[#283c5d] border border-teal-400/60 flex items-center gap-1.5 shadow-xs active:scale-95 transition cursor-pointer"
+            className="h-8 px-2 rounded-full bg-[#283c5d] border border-teal-400/60 flex items-center gap-1 shadow-xs active:scale-95 transition cursor-pointer"
             title="Ví Xu Chòi"
           >
-            <img src="/assets/xu-choi.png" alt="Xu" className="w-4 h-4 object-contain" />
-            <span className="font-bold text-[11px] text-white">{(currentUser?.coins ?? 50).toLocaleString()}</span>
-            <span className="text-amber-300 font-bold text-xs leading-none">+</span>
-          </button>
-
-          {/* Tài khoản */}
-          <button
-            type="button"
-            onClick={() => {
-              if (currentUser) {
-                setUserDropdown(!userDropdown)
-              } else {
-                onOpenAuth('login')
-              }
-            }}
-            className="min-h-[44px] px-2.5 py-1 rounded-full bg-[#283c5d] border border-teal-400/60 flex items-center gap-1.5 shadow-xs active:scale-95 transition cursor-pointer"
-          >
-            <div className="w-5 h-5 rounded-full bg-[#27b8c7] overflow-hidden flex items-center justify-center shrink-0">
-              {currentUser?.avatar ? (
-                <img src={currentUser.avatar} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-[10px]">👤</span>
-              )}
-            </div>
-            <span className="text-[11px] font-bold text-white max-w-[55px] truncate">
-              {currentUser ? (currentUser.username || currentUser.fullName) : (isVietnamese ? 'Đăng nhập' : 'Login')}
-            </span>
+            <img src="/assets/xu-choi.png" alt="Xu" className="w-3.5 h-3.5 object-contain" />
+            <span className="font-bold text-[10px] text-white">{(currentUser?.coins ?? 50).toLocaleString()}</span>
           </button>
 
           {/* Nút Drawer Menu ☰ */}
@@ -452,20 +449,12 @@ function HeroScreen({
             type="button"
             onClick={() => setDrawerOpen(true)}
             aria-label="Menu"
-            className="min-h-[44px] min-w-[44px] rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-lg text-white active:scale-95 transition cursor-pointer border border-white/20"
+            className="h-8 w-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm text-white active:scale-95 transition cursor-pointer border border-white/20"
           >
             ☰
           </button>
         </div>
       </header>
-
-      {/* Thanh thông báo gợi ý xoay ngang màn hình trên thiết bị di động */}
-      {isMobilePortrait && (
-        <div className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 px-3 py-1.5 text-[10px] sm:text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-md z-40">
-          <span>📱🔄</span>
-          <span>Xoay ngang điện thoại (và tắt Khóa xoay màn hình 🔒) để xem toàn bộ website chuẩn 100% như trên máy tính</span>
-        </div>
-      )}
 
       {/* Khung hiển thị chuẩn tỉ lệ 16:9 matching Figma/mockup */}
       <div className={`relative w-full max-w-[1920px] aspect-[16/9] mx-auto ${userDropdown ? 'overflow-visible' : 'overflow-hidden'}`}>
@@ -511,7 +500,7 @@ function HeroScreen({
         {/* 2. Vùng bấm Tài khoản người dùng (Khớp chuẩn 100% với huy hiệu nền mới x: 79.0%, w: 10.6%) */}
         <div
           ref={userMenuRef}
-          className={`absolute ${userDropdown ? 'z-[60]' : 'z-30'}`}
+          className={`absolute ${userDropdown ? 'z-[60]' : 'z-30'} hidden sm:block`}
           style={{
             left: '79.0%',
             top: '2.96%',
@@ -716,7 +705,7 @@ function HeroScreen({
           type="button"
           onClick={() => setDrawerOpen(true)}
           aria-label="Menu"
-          className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform"
+          className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform hidden sm:block"
           style={{
             left: '89.2%',
             top: '3.0%',
@@ -739,10 +728,10 @@ function HeroScreen({
           }}
           className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform"
           style={{
-            left: '50.5%',
-            top: '63.5%',
-            width: '21.5%',
-            height: '12.5%',
+            left: '49%',
+            top: '60%',
+            width: '24%',
+            height: '18%',
           }}
         />
 
@@ -755,39 +744,12 @@ function HeroScreen({
           }}
           className="absolute z-30 cursor-pointer outline-none focus:outline-none focus:ring-0 active:scale-95 transition-transform"
           style={{
-            left: '75.5%',
-            top: '63.5%',
-            width: '21.5%',
-            height: '12.5%',
+            left: '74%',
+            top: '60%',
+            width: '24%',
+            height: '18%',
           }}
         />
-      </div>
-
-      {/* ── Mobile Action Bar (Luật chơi & Chơi ngay với min 46px touch target) ── */}
-      <div className="sm:hidden w-full px-4 py-3 bg-gradient-to-r from-[#205e6b] via-[#1b505c] to-[#15424d] flex items-center justify-center gap-3 border-t border-teal-300/20 shadow-lg">
-        <a
-          href="#rules"
-          onClick={(e) => {
-            e.preventDefault()
-            const el = document.getElementById('rules')
-            if (el) el.scrollIntoView({ behavior: 'smooth' })
-          }}
-          className="flex-1 min-h-[46px] px-3 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-center text-xs flex items-center justify-center gap-1.5 border border-white/30 shadow-sm active:scale-95 transition"
-        >
-          <span>📜</span>
-          <span>{isVietnamese ? 'Luật Chơi' : 'Rules'}</span>
-        </a>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault()
-            onPlay()
-          }}
-          className="flex-1 min-h-[46px] px-3 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-black text-center text-xs flex items-center justify-center gap-1.5 border border-amber-300 shadow-md active:scale-95 transition cursor-pointer"
-        >
-          <span>🎮</span>
-          <span>{isVietnamese ? 'Chơi Ngay' : 'Play Now'}</span>
-        </button>
       </div>
 
       {/* Modal Quản lý Tài Khoản (Cài đặt, Vé của tôi, Theo dõi đơn hàng, Lịch sử) */}
@@ -862,17 +824,12 @@ function HeroScreen({
                 type="button"
                 onClick={() => {
                   setDrawerOpen(false)
-                  if (!currentUser) {
-                    setPendingGameOpen(true)
-                    setAuthModalMode('login')
-                    setAuthModalOpen(true)
-                    return
-                  }
-                  onGoToPortal?.('game')
+                  onPlay()
                 }}
-                className="px-4 py-3 rounded-2xl font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition text-left cursor-pointer block w-full"
+                className="px-4 py-3 rounded-2xl font-bold text-amber-950 bg-gradient-to-r from-amber-400 to-amber-300 hover:brightness-105 border border-amber-400 transition text-left cursor-pointer flex items-center gap-2.5 w-full shadow-xs"
               >
-                <span>{isVietnamese ? 'Ống Rút Bài Quản Trò' : 'Virtual Caller Tube'}</span>
+                <span>🎮</span>
+                <span>{isVietnamese ? 'Hội Chơi Bài Chòi (Chơi Ngay)' : 'Play Bai Choi Game'}</span>
               </button>
               <button
                 type="button"
@@ -880,9 +837,10 @@ function HeroScreen({
                   setDrawerOpen(false)
                   onGoToPortal?.('shop')
                 }}
-                className="px-4 py-3 rounded-2xl font-bold text-teal-800 bg-teal-50 hover:bg-teal-100 transition text-left cursor-pointer block w-full"
+                className="px-4 py-3 rounded-2xl font-bold text-white bg-gradient-to-r from-[#c8382b] to-[#a82d21] hover:brightness-110 transition text-left cursor-pointer flex items-center gap-2.5 w-full shadow-xs"
               >
-                <span>{isVietnamese ? 'Cửa Hàng & Vé Sự Kiện' : 'Shop & Tickets'}</span>
+                <span>🛍️</span>
+                <span>{isVietnamese ? 'Cửa Hàng (Mua Ấn Phẩm & Vé)' : 'Shop & Tickets'}</span>
               </button>
             </div>
 

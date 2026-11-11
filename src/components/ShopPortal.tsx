@@ -643,7 +643,7 @@ export default function ShopPortal({
                     STORE
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-500 tracking-wider font-semibold block mt-0.5">Heritage & Ticket Box</span>
+                <span className="text-[10px] text-slate-500 tracking-wider font-semibold hidden min-[400px]:block mt-0.5">Heritage & Ticket Box</span>
               </div>
             </button>
           </div>
@@ -983,7 +983,7 @@ export default function ShopPortal({
                       👤
                     </span>
                   )}
-                  <span className="max-w-[170px] truncate text-slate-800 font-medium">
+                  <span className="max-w-[70px] sm:max-w-[170px] truncate text-slate-800 font-medium">
                     {getDisplayUsername(effectiveUser)}
                   </span>
                   <span className="text-[10px] text-slate-400 ml-0.5">{userDropdownOpen ? '⌃' : '⌄'}</span>
@@ -1330,7 +1330,7 @@ export default function ShopPortal({
           </div>
 
           {/* Cột phải: Khu vực chiếc bảng vé của cô bé (Đã có Đánh giá, Giá vé & Nút Đặt Vé trực tiếp trên mặt bảng xanh) */}
-          <div className="lg:col-span-5 h-[360px] sm:h-[430px] lg:h-[480px] flex items-center justify-center relative">
+          <div className="hidden lg:flex lg:col-span-5 lg:h-[480px] items-center justify-center relative">
             {/* Vùng bấm đặt vé tương tác phủ trên toàn bộ chiếc bảng */}
             <div
               onClick={() => handleHeroCTA(currentSlide)}
