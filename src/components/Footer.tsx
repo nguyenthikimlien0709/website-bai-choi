@@ -148,7 +148,7 @@ export default function Footer({
                   onClick={() => handleNav('game')}
                   className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center min-h-[44px] sm:min-h-0 py-1 sm:py-0.5 text-left w-full font-semibold text-amber-200"
                 >
-                  Ống Rút Bài Quản Trò 🎋
+                  Hội chơi Bài Chòi (Chơi Ngay) 🎮
                 </button>
               </li>
               <li>
@@ -157,7 +157,7 @@ export default function Footer({
                   onClick={() => handleNav('shop')}
                   className="hover:text-amber-200 hover:translate-x-1 transition cursor-pointer flex items-center min-h-[44px] sm:min-h-0 py-1 sm:py-0.5 text-left w-full font-semibold text-amber-100"
                 >
-                  Cửa hàng & Vé sự kiện 🎟️
+                  Cửa hàng (Mua Ấn Phẩm & Vé) 🛍️
                 </button>
               </li>
             </ul>

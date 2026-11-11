@@ -934,7 +934,7 @@ function IntroScreens({ c, lang }: { c: typeof content.VIE; lang: Lang }) {
 
       {/* Screen 3: card introduction (Thẻ bài) - Bỏ ảnh phải, chuyển văn bản qua phải, khung loang đen */}
       <ReferenceScreen id="history">
-        <div className="flex w-full justify-end">
+        <div className="flex w-full justify-center sm:justify-end">
           <div
             data-reveal="up"
             className="w-full max-w-xl lg:max-w-2xl rounded-3xl px-4 py-6 sm:px-10 sm:py-12"
@@ -1251,7 +1251,7 @@ function Rules({ c }: { c: typeof content.VIE }) {
               key={step.num}
               data-reveal="up"
               data-reveal-delay={index + 1}
-              className="relative flex h-full flex-col rounded-3xl bg-white/20 backdrop-blur-md p-4 sm:p-7 lg:p-8 shadow-2xl border border-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(0,0,0,0.18)] hover:border-amber-400/50"
+              className="relative flex h-full flex-col rounded-3xl bg-white/85 sm:bg-white/20 backdrop-blur-md p-4 sm:p-7 lg:p-8 shadow-2xl border border-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(0,0,0,0.18)] hover:border-amber-400/50"
             >
               <div
                 data-reveal="scale"
