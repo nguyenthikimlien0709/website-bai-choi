@@ -41,6 +41,7 @@ export default function AuthModal({
 
   // OTP state
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', ''])
+  const [demoOtpCode, setDemoOtpCode] = useState('')
   const [otpError, setOtpError] = useState('')
   const [otpSuccess, setOtpSuccess] = useState(false)
   const [otpLoading, setOtpLoading] = useState(false)
@@ -169,6 +170,7 @@ export default function AuthModal({
       })
 
       if (res.success) {
+        if (res.demoOtp) setDemoOtpCode(res.demoOtp)
         setOtpDigits(['', '', '', '', '', ''])
         setCountdown(30)
         setMode('otp')
@@ -224,14 +226,12 @@ export default function AuthModal({
     setOtpError('')
     try {
       const res = await authService.verifyOtp(fullOtp)
-      if (res.success) {
+      if (res.success && res.user) {
         setOtpSuccess(true)
         setTimeout(() => {
-          setMode('login')
-          setLoginIdentifier(res.user?.username || '')
-          setLoginPassword('')
-          setOtpSuccess(false)
-        }, 1500)
+          onSuccess?.(res.user!)
+          onClose()
+        }, 1200)
       } else {
         setOtpError(res.message || 'Mã xác thực không hợp lệ.')
       }
@@ -244,6 +244,7 @@ export default function AuthModal({
     if (countdown > 0) return
     const res = await authService.resendOtp()
     if (res.success) {
+      if (res.demoOtp) setDemoOtpCode(res.demoOtp)
       setCountdown(30)
       setOtpError('')
       setOtpDigits(['', '', '', '', '', ''])
@@ -273,6 +274,7 @@ export default function AuthModal({
     try {
       const res = await authService.startForgotPassword(cleanEmail)
       if (res.success && res.email) {
+        if (res.demoOtp) setDemoOtpCode(res.demoOtp)
         setForgotEmail(res.email)
         setResetOtpDigits(['', '', '', '', '', ''])
         setNewPassword('')
@@ -382,6 +384,7 @@ export default function AuthModal({
     if (forgotCountdown > 0) return
     const res = await authService.resendForgotOtp()
     if (res.success) {
+      if (res.demoOtp) setDemoOtpCode(res.demoOtp)
       setForgotCountdown(30)
       setResetError('')
       setResetOtpDigits(['', '', '', '', '', ''])
@@ -663,6 +666,28 @@ export default function AuthModal({
               ))}
             </div>
 
+            {/* Hộp gợi ý mã xác thực tiện lợi */}
+            <div className="mx-auto mt-4 max-w-sm rounded-xl bg-amber-50/90 border border-amber-200 p-3 text-left shadow-xs">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs font-bold text-amber-900">💡 Mã xác thực nhanh:</p>
+                  <p className="text-[11px] text-amber-700 mt-0.5">
+                    Mã của bạn: <span className="font-mono font-bold text-amber-950 bg-amber-200/70 px-1.5 py-0.5 rounded">{demoOtpCode || '123456'}</span> (hoặc xem email)
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const code = (demoOtpCode || '123456').slice(0, 6)
+                    setOtpDigits(code.split(''))
+                  }}
+                  className="shrink-0 rounded-lg bg-amber-600 px-2.5 py-1 text-xs font-bold text-white hover:bg-amber-700 active:scale-95 transition cursor-pointer"
+                >
+                  Điền mã
+                </button>
+              </div>
+            </div>
+
             {/* Thông báo thành công (Ảnh 3) */}
             {otpSuccess && (
               <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-xs font-semibold text-emerald-700 border border-emerald-200 animate-in fade-in">
@@ -798,6 +823,51 @@ export default function AuthModal({
               </button>
             </form>
 
+            {/* Gợi ý tài khoản trải nghiệm nhanh */}
+            <div className="mt-4 rounded-xl border border-slate-200/90 bg-slate-50/90 p-3 text-left">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 text-center">
+                🚀 Thử nghiệm nhanh với tài khoản mẫu
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginIdentifier('admin')
+                    setLoginPassword('Admin@1234')
+                    setLoginError('')
+                  }}
+                  className="rounded-lg bg-white border border-slate-200 p-2 text-center hover:border-amber-400 hover:bg-amber-50/50 transition cursor-pointer"
+                >
+                  <div className="text-xs font-bold text-slate-800">Quản trị</div>
+                  <div className="text-[10px] text-slate-400">admin</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginIdentifier('staff1')
+                    setLoginPassword('Staff@1234')
+                    setLoginError('')
+                  }}
+                  className="rounded-lg bg-white border border-slate-200 p-2 text-center hover:border-emerald-400 hover:bg-emerald-50/50 transition cursor-pointer"
+                >
+                  <div className="text-xs font-bold text-slate-800">Nhân viên</div>
+                  <div className="text-[10px] text-slate-400">staff1</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginIdentifier('lien_nguyen')
+                    setLoginPassword('User@1234')
+                    setLoginError('')
+                  }}
+                  className="rounded-lg bg-white border border-slate-200 p-2 text-center hover:border-rose-400 hover:bg-rose-50/50 transition cursor-pointer"
+                >
+                  <div className="text-xs font-bold text-slate-800">Kim Liên</div>
+                  <div className="text-[10px] text-slate-400">lien_nguyen</div>
+                </button>
+              </div>
+            </div>
+
             <div className="mt-5 text-center text-xs text-slate-500">
               Chưa có tài khoản?{' '}
               <button
@@ -912,6 +982,28 @@ export default function AuthModal({
                   className="h-11 w-10 sm:h-12 sm:w-11 rounded-xl border-2 border-slate-200 bg-white text-center text-lg font-bold text-slate-800 shadow-sm focus:border-[#c8382b] focus:outline-none focus:ring-2 focus:ring-[#c8382b]/30"
                 />
               ))}
+            </div>
+
+            {/* Hộp gợi ý mã OTP reset nhanh */}
+            <div className="mx-auto mt-3 max-w-sm rounded-xl bg-amber-50/90 border border-amber-200 p-2.5 text-left shadow-xs">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs font-bold text-amber-900">💡 Mã xác thực reset:</p>
+                  <p className="text-[11px] text-amber-700 mt-0.5">
+                    Mã của bạn: <span className="font-mono font-bold text-amber-950 bg-amber-200/70 px-1.5 py-0.5 rounded">{demoOtpCode || '123456'}</span>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const code = (demoOtpCode || '123456').slice(0, 6)
+                    setResetOtpDigits(code.split(''))
+                  }}
+                  className="shrink-0 rounded-lg bg-amber-600 px-2.5 py-1 text-xs font-bold text-white hover:bg-amber-700 active:scale-95 transition cursor-pointer"
+                >
+                  Điền mã
+                </button>
+              </div>
             </div>
 
             {resetSuccess && (

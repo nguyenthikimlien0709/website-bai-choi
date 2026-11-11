@@ -11,19 +11,31 @@ const supabaseAnonKey =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   ''
 
+// Tự động nhận diện nếu URL bị trống, là placeholder hoặc domain cũ đã hết hạn
+const isInvalidUrl =
+  !supabaseUrl ||
+  supabaseUrl.trim() === '' ||
+  supabaseUrl.includes('your-project') ||
+  supabaseUrl.includes('xftddnlvjihitigvdvvz')
+
 export const isSupabaseConfigured = Boolean(
-  supabaseUrl &&
+  !isInvalidUrl &&
   supabaseAnonKey &&
-  !supabaseUrl.includes('your-project')
+  supabaseAnonKey.trim() !== ''
 )
 
 // Supabase client instance
 export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+    })
   : null
 
 if (isSupabaseConfigured) {
-  console.log('⚡ [Supabase] Đã kết nối thành công tới máy chủ:', supabaseUrl)
+  console.log('⚡ [Supabase] Đã kích hoạt cấu hình máy chủ Cloud:', supabaseUrl)
 } else {
-  console.log('ℹ️ [Supabase] Đang chạy chế độ lưu trữ cục bộ (Local Storage).')
+  console.log('ℹ️ [Hệ thống] Đang hoạt động ở chế độ Lưu trữ cục bộ & Offline an toàn 100% (Local Storage).')
 }
